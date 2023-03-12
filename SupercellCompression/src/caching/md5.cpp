@@ -9,6 +9,7 @@
  */
 
 #include "md5.h"
+#include <vector>
 
  /* Define the static member of MD5. */
 const byte MD5::PADDING[64] = { 0x80 };
@@ -20,12 +21,12 @@ const char MD5::HEX_NUMBERS[16] = {
 };
 
 /**
- * @Construct a MD5 object with a string.
+ * @Construct a MD5 object with a data.
  *
  * @param {message} the message will be transformed.
  *
  */
-MD5::MD5(const string& message) {
+MD5::MD5(void* data, uint32_t size) {
     finished = false;
     /* Reset number of bits. */
     count[0] = count[1] = 0;
@@ -36,7 +37,7 @@ MD5::MD5(const string& message) {
     state[3] = 0x10325476;
 
     /* Initialization the object according to message. */
-    init((const byte*)message.c_str(), message.length());
+    init((const byte*)data, size);
 }
 
 /**

@@ -1,6 +1,6 @@
 
 
-workspace "SupercellFlash"
+workspace "SupercellTools"
     architecture "x64"
 
     configurations {
@@ -8,7 +8,18 @@ workspace "SupercellFlash"
         "Release"
     }
 
-    startproject "Test"
+    -- startproject "SupercellFlash"
+	-- startproject "SupercellFlashTests"
 
-include "SupercellFlash"
-include "Test"
+group "Compression"
+	include "external/lzma"
+    include "external/lzham"
+    include "external/zstd"
+
+group "Libraries" 
+	include "SupercellBytestream"
+	include "SupercellCompression"
+
+group "Tests"
+	include "Tests/SupercellFlash"
+	include "Tests/SupercellCompression"

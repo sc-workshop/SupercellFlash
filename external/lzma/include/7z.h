@@ -97,11 +97,6 @@ typedef struct
 
 UInt64 SzAr_GetFolderUnpackSize(const CSzAr *p, UInt32 folderIndex);
 
-SRes SzAr_DecodeFolder(const CSzAr *p, UInt32 folderIndex,
-    ILookInStream *stream, UInt64 startPos,
-    Byte *outBuffer, size_t outSize,
-    ISzAllocPtr allocMain);
-
 typedef struct
 {
   CSzAr db;

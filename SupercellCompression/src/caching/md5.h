@@ -8,8 +8,7 @@
  *
  */
 
-#ifndef MD5_H
-#define MD5_H
+#pragma once 
 
  /* Parameters of MD5. */
 #define s11 7
@@ -89,7 +88,7 @@ typedef unsigned int bit32;
 class MD5 {
 public:
 	/* Construct a MD5 object with a string. */
-	MD5(const string& message);
+	MD5(void* data, uint32_t size);
 
 	/* Generate md5 digest. */
 	const byte* getDigest();
@@ -133,5 +132,3 @@ private:
 	/* Hex numbers. */
 	static const char HEX_NUMBERS[16];
 };
-
-#endif // MD5_H
