@@ -21,7 +21,6 @@ namespace sc
 {
 	void LZHAM::compress(BytestreamBase& inStream, BytestreamBase& outStream)
 	{
-		inStream.set(0);
 		uint32_t fileSize = inStream.size();
 
 		const uint32_t inBufferSize = LZHAM_COMP_INPUT_BUFFER_SIZE;
@@ -106,9 +105,7 @@ namespace sc
 		}
 
 		free(inBuffer);
-		inBuffer = NULL;
 		free(outBuffer);
-		outBuffer = NULL;
 	}
 
 	void LZHAM::decompress(BytestreamBase& inStream, BytestreamBase& outStream)

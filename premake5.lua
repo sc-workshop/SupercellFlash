@@ -8,9 +8,6 @@ workspace "SupercellTools"
         "Release"
     }
 
-    -- startproject "SupercellFlash"
-	-- startproject "SupercellFlashTests"
-
 group "Compression"
 	include "external/lzma"
     include "external/lzham"
@@ -19,6 +16,7 @@ group "Compression"
 group "Libraries" 
 	include "SupercellBytestream"
 	include "SupercellCompression"
+	include "SupercellFlash"
 
 group "Tests"
 	include "Tests/SupercellFlash"

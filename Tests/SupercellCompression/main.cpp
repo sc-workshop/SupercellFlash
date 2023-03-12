@@ -100,8 +100,7 @@ int main(int argc, char* argv[])
 		sc::ReadFileStream inStream(inFilepath);
 		sc::WriteFileStream outStream(outFilepath);
 
-		bool hasMetadata;
-		sc::Decompressor::decompress(inStream, outStream, hasMetadata);
+		sc::Decompressor::decompress(inStream, outStream);
 	}
 	else if (mode == "c") {
 		sc::CompressionSignature signature = sc::CompressionSignature::LZMA;

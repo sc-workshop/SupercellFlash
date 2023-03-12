@@ -116,8 +116,6 @@ namespace sc
 		CLzmaEncHandle enc;
 		SRes res;
 		CLzmaEncProps props;
-		inStream.set(0);
-
 		enc = LzmaEnc_Create(&g_Alloc);
 		if (enc == 0)
 			throw CompressException("Failed to initialize LZMA compress stream");

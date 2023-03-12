@@ -62,13 +62,8 @@ namespace sc {
 	class WriteFileStream : public FileStream {
 	public:
 		WriteFileStream(std::string filepath) {
-			if (fs::exists(filepath)) {
-				file = fopen(filepath.c_str(), "wb");
-				fileInitialize();
-			}
-			else {
-				throw StreamException(StreamError::EXIST_ERROR, "File not found: " + filepath);
-			}
+			file = fopen(filepath.c_str(), "wb");
+			fileInitialize();
 		}
 		size_t _write(void* buff, size_t buffSize) override
 		{

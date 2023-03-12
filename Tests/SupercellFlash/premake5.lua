@@ -13,7 +13,9 @@ project "SupercellFlashTests"
     }
 
     includedirs {
-		"%{wks.location}/SupercellFlash/src"
+		"%{wks.location}/SupercellFlash/include",
+		"%{wks.location}/SupercellCompression/include",
+		"%{wks.location}/SupercellBytestream/include"
     }
 	
 	links {

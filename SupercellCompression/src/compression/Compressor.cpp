@@ -49,18 +49,20 @@ namespace sc
 			outStream.writeUInt32BE(2);
 		}
 
+		md5 hashCtx;
+		uint8_t hash[16];
 
+		uint8_t* buffer = new uint8_t[inStream.size()]();
 		inStream.set(0);
-		void* hashBuffer = malloc(inStream.size());
-		inStream.read(hashBuffer, inStream.size());
+		inStream.read(buffer, inStream.size());
 		inStream.set(0);
-		const uint8_t* md5 = MD5(hashBuffer, inStream.size()).getDigest();
+
+		hashCtx.update(buffer, inStream.size());
+		hashCtx.final(hash);
 
 		outStream.writeUInt32BE(16);
-		outStream.write(&md5, 16);
+		outStream.write(&hash, 16);
 		
-		free(hashBuffer);
-
 		commonCompress(inStream, outStream, signature);
 
 		if (metadata) {
@@ -72,6 +74,7 @@ namespace sc
 
 	void Compressor::commonCompress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature)
 	{
+		inStream.set(0);
 		switch (signature)
 		{
 		case CompressionSignature::LZMA:
@@ -88,7 +91,6 @@ namespace sc
 
 		default:
 			std::vector<uint8_t> dataBuffer(inStream.size());
-			inStream.set(0);
 			inStream.read(dataBuffer.data(), dataBuffer.size());
 			outStream.write(dataBuffer.data(), dataBuffer.size());
 			break;

@@ -73,7 +73,6 @@ namespace sc {
 		{
 			m_buffer = nullptr;
 			position = 0;
-			delete this;
 		};
 
 		std::vector<uint8_t>* buffer(uint8_t* data) {

@@ -13,12 +13,12 @@ namespace sc
 		/**
 		 * Decompress file and then store it in cache, without need to decompress in the future.
 		 */
-		static void decompress(const std::string& filepath, std::string& outFilepath, bool& hasMetadata);
+		static bool decompress(const std::string& filepath, std::string& outFilepath);
 
 		/**
 		 * Decompress file from stream.
 		 */
-		static void decompress(Bytestream& inStream, Bytestream& outStream, bool& hasMetadata);
+		static bool decompress(Bytestream& inStream, Bytestream& outStream);
 
 		/**
 		 * Decompress assets like .csv or other compressed assets
@@ -26,7 +26,7 @@ namespace sc
 		static void commonDecompress(Bytestream& inStream, Bytestream& outStream);
 
 	private:
-		static void getHeader(Bytestream& inputSteam, CompressionSignature& signature, std::vector<uint8_t>& hash, bool& hasMetadata);
+		static bool getHeader(Bytestream& inputSteam, CompressionSignature& signature, std::vector<uint8_t>& hash);
 		static void commonDecompress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature);
 	};
 }

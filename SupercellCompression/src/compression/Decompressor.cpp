@@ -12,7 +12,7 @@
 
 namespace sc
 {
-	void Decompressor::decompress(const std::string& filepath, std::string& outFilepath, bool& hasMetadata)
+	bool Decompressor::decompress(const std::string& filepath, std::string& outFilepath)
 	{
 		/* Input file opening */
 		ReadFileStream inStream(filepath.c_str());
@@ -25,12 +25,12 @@ namespace sc
 		/* Header parsing */
 		CompressionSignature signature;
 		std::vector<uint8_t> hash;
-		getHeader(inStream, signature, hash, hasMetadata);
+		bool hasMetadata = getHeader(inStream, signature, hash);
 
 		bool fileInCache = SwfCache::exist(filepath, hash, inStreamSize);
 		if (fileInCache)
 		{
-			return;
+			return hasMetadata;
 		}
 
 		WriteFileStream outStream(outFilepath);
@@ -46,13 +46,16 @@ namespace sc
 			SwfCache::addData(filepath, hash, inStreamSize);
 #endif
 		}
+
+		return hasMetadata;
 	}
 
-	void Decompressor::decompress(Bytestream& inStream, Bytestream& outStream, bool& hasMetadata) {
+	bool Decompressor::decompress(Bytestream& inStream, Bytestream& outStream) {
 		CompressionSignature signature;
 		std::vector<uint8_t> hash;
-		getHeader(inStream, signature, hash, hasMetadata);
+		bool hasMetadata = getHeader(inStream, signature, hash);
 		commonDecompress(inStream, outStream, signature);
+		return hasMetadata;
 	}
 
 	void Decompressor::commonDecompress(Bytestream& inStream, Bytestream& outStream) {
@@ -95,16 +98,17 @@ namespace sc
 		}
 	}
 
-	void Decompressor::getHeader(Bytestream& inStream, CompressionSignature& signature, std::vector<uint8_t>& hash, bool& hasMetadata) {
+	bool Decompressor::getHeader(Bytestream& inStream, CompressionSignature& signature, std::vector<uint8_t>& hash) {
 		uint16_t magic = inStream.readUInt16BE();
 		if (magic != 0x5343) { // Just a little trick to handle decompressed file
 			signature = CompressionSignature::NONE;
-			return;
+			return false;
 		}
 
 		// Version of .sc file
 		uint32_t version = inStream.readUInt32BE();
 
+		bool hasMetadata = false;
 		if (version == 4) {
 			hasMetadata = true;
 			version = inStream.readUInt32BE();
@@ -136,5 +140,7 @@ namespace sc
 
 			inStream.set(inStream.tell() - sizeof(compressMagic));
 		}
+
+		return hasMetadata;
 	}
 }
