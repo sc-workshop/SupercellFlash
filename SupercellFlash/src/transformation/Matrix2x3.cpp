@@ -20,7 +20,11 @@ namespace sc {
 		uint32_t pos = swf->stream.initTag();
 		uint8_t tag = TAG_MATRIX_2x3; // TODO: tag 36 support (https://github.com/danila-schelkov/sc-editor/blob/master/src/com/vorono4ka/swf/Matrix2x3.java#L61)
 
-		float multiplier = 1024.0f;
+#ifdef SC_EXPERIMENTAL
+		tag = TAG_MATRIX_2x3_2
+#endif
+
+		float multiplier = tag == TAG_MATRIX_2x3 ? 1024.0f : 65535.0f;
 
 		swf->stream.writeInt((int)(a * multiplier));
 		swf->stream.writeInt((int)(b * multiplier));

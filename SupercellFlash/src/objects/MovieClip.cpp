@@ -1,5 +1,6 @@
 #include "SupercellFlash/SupercellSWF.h"
 
+#include "error/NegativeTagLengthException.h"
 #include "SupercellFlash/objects/MovieClip.h"
 
 namespace sc
@@ -56,7 +57,7 @@ namespace sc
 				break;
 
 			if (frameTagLength < 0)
-				throw std::runtime_error("Negative frame tag length in .sc file");
+				throw NegativeTagLengthException(frameTag);
 
 			switch (frameTag)
 			{

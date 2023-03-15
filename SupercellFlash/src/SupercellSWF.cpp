@@ -1,4 +1,5 @@
 #include "SupercellFlash/SupercellSWF.h"
+#include "error/NegativeTagLengthException.h"
 
 #include <filesystem>
 
@@ -86,8 +87,6 @@ namespace sc
 			texture.save(this, true, isLowres);
 		}
 
-		stream.writeUnsignedShort(0);
-		stream.writeUnsignedShort(0); // FIXME: uh... what?
 		stream.writeTag(0);
 
 		stream.save(filepath, signature);
@@ -150,13 +149,12 @@ namespace sc
 		{
 			uint8_t tag = stream.readUnsignedByte();
 			int32_t tagLength = stream.readInt();
-			printf("Tag: %d, Length: %d\n", tag, tagLength);
 
 			if (tag == TAG_END)
 				break;
 
 			if (tagLength < 0)
-				throw std::runtime_error("Negative tag length. Tag " + tag);
+				throw NegativeTagLengthException(tag);
 
 			switch (tag)
 			{

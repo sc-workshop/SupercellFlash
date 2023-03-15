@@ -1,5 +1,6 @@
 #include "SupercellFlash/objects/Shape.h"
 #include "SupercellFlash/objects/ShapeDrawBitmapCommand.h"
+#include "error/NegativeTagLengthException.h"
 
 #include "SupercellFlash/SupercellSWF.h"
 #include "SupercellFlash/Tags.h"
@@ -23,7 +24,7 @@ namespace sc
 			int32_t commandTagLength = swf->stream.readInt();
 
 			if (commandTagLength < 0)
-				throw std::runtime_error("Negative draw command tag length in .sc file");
+				throw NegativeTagLengthException(commandTag);
 
 			if (commandTag == TAG_END)
 				break;
