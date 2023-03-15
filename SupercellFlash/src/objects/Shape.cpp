@@ -1,8 +1,8 @@
-#include "SupercellFlash/flash/objects/Shape.h"
-#include "SupercellFlash/flash/objects/ShapeDrawBitmapCommand.h"
+#include "SupercellFlash/objects/Shape.h"
+#include "SupercellFlash/objects/ShapeDrawBitmapCommand.h"
 
-#include "SupercellFlash/flash/SupercellSWF.h"
-#include "SupercellFlash/flash/Tags.h"
+#include "SupercellFlash/SupercellSWF.h"
+#include "SupercellFlash/Tags.h"
 
 namespace sc
 {

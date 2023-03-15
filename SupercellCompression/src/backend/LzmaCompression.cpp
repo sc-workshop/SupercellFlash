@@ -43,8 +43,8 @@ namespace sc
 	{
 		int hasBound = (unpackedSize != (UInt32)(Int32)-1);
 
-		uint8_t* inBuffer = new uint8_t[LZMA_DECOMPRESS_BUF_SIZE]();
-		uint8_t* outBuffer = new uint8_t[LZMA_DECOMPRESS_BUF_SIZE]();
+		uint8_t inBuffer[LZMA_DECOMPRESS_BUF_SIZE];
+		uint8_t outBuffer[LZMA_DECOMPRESS_BUF_SIZE];
 
 		LzmaDec_Init(state);
 

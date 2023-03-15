@@ -1,6 +1,6 @@
-#include "SupercellFlash/flash/SupercellSWF.h"
+#include "SupercellFlash/SupercellSWF.h"
 
-#include "SupercellFlash/flash/objects/MovieClip.h"
+#include "SupercellFlash/objects/MovieClip.h"
 
 namespace sc
 {
@@ -53,7 +53,7 @@ namespace sc
 			int32_t frameTagLength = swf->stream.readInt();
 
 			if (frameTag == 0)
-				return;
+				break;
 
 			if (frameTagLength < 0)
 				throw std::runtime_error("Negative frame tag length in .sc file");

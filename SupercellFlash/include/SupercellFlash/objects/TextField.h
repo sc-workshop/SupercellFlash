@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SupercellFlash/flash/objects/DisplayObject.h"
+#include "SupercellFlash/objects/DisplayObject.h"
 
 namespace sc
 {
@@ -33,9 +33,12 @@ namespace sc
 
 		uint32_t outlineColor() { return m_outlineColor; }
 		bool useDeviceFont() { return m_useDeviceFont; }
-		bool autoAdjustFontBounds() { return m_autoAdjustFontBounds; }
+		bool autoAdjustFontSize() { return m_autoAdjustFontSize; }
 
 		float bendAngle() { return m_bendAngle; }
+
+		bool unknownFlag() const { return m_unknownFlag; }
+		int16_t unknownShort() const { return m_unknownShort; }
 
 		/* Setters */
 	public:
@@ -58,13 +61,18 @@ namespace sc
 
 		void outlineColor(int16_t color) { m_outlineColor = color; }
 		void useDeviceFont(bool status) { m_useDeviceFont = status; }
-		void autoAdjustFontBounds(bool status) { m_autoAdjustFontBounds = status; }
+		void autoAdjustFontSize(bool status) { m_autoAdjustFontSize = status; }
 
 		void bendAngle(float bend) { m_bendAngle = bend; }
+
+		void unknownFlag(bool status) { m_unknownFlag = status; }
+		void unknownShort(int16_t value) { m_unknownShort = value; }
 
 	public:
 		void load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
+
+		bool isTextField() const override { return true; }
 
 	private:
 		std::string m_text = "";
@@ -86,7 +94,7 @@ namespace sc
 
 		int32_t m_outlineColor = 0xFFFFFF;
 		bool m_useDeviceFont = false;
-		bool m_autoAdjustFontBounds = false;
+		bool m_autoAdjustFontSize = false;
 
 		float m_bendAngle = 0.0f;
 

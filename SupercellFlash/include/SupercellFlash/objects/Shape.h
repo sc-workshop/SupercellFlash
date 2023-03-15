@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SupercellFlash/flash/objects/DisplayObject.h"
-#include "SupercellFlash/flash/objects/ShapeDrawBitmapCommand.h"
+#include "SupercellFlash/objects/DisplayObject.h"
+#include "SupercellFlash/objects/ShapeDrawBitmapCommand.h"
 
 #include <vector>
 #include <cstdint>
@@ -20,5 +20,7 @@ namespace sc
 	public:
 		void load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
+
+		bool isShape() const override { return true; }
 	};
 }

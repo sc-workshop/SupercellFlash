@@ -1,6 +1,6 @@
-#include "SupercellFlash/flash/objects/ShapeDrawBitmapCommand.h"
+#include "SupercellFlash/objects/ShapeDrawBitmapCommand.h"
 
-#include "SupercellFlash/flash/SupercellSWF.h"
+#include "SupercellFlash/SupercellSWF.h"
 
 namespace sc
 {

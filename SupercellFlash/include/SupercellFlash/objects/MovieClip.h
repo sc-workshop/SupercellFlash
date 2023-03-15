@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SupercellFlash/flash/objects/DisplayObject.h"
-#include "SupercellFlash/flash/objects/MovieClipFrame.h"
+#include "SupercellFlash/objects/DisplayObject.h"
+#include "SupercellFlash/objects/MovieClipFrame.h"
 
 namespace sc
 {
@@ -56,6 +56,8 @@ namespace sc
 	public:
 		void load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
+
+		bool isMovieClip() const override { return true; }
 
 	private:
 		uint8_t m_frameRate = 24;

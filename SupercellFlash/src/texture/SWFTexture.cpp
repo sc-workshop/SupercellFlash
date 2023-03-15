@@ -1,9 +1,9 @@
-#include "SupercellFlash/flash/SupercellSWF.h"
-#include "SupercellFlash/flash/objects/SWFTexture.h"
+#include "SupercellFlash/SupercellSWF.h"
+#include "SupercellFlash/objects/SWFTexture.h"
 #include <math.h>
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
-#include "flash/texture/stb_image_resize.h" // TODDO: Make load from stb image
+#include "stb_image_resize.h" // TODDO: Make load from stb image
 
 #define SWFTEXTURE_BLOCK_SIZE 32
 

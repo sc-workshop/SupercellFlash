@@ -1,4 +1,4 @@
-#include <SupercellFlash/flash/SupercellSWF.h>
+#include <SupercellFlash/SupercellSWF.h>
 
 #include <string>
 #include <iostream>

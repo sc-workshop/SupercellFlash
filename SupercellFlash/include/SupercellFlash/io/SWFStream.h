@@ -27,10 +27,12 @@ namespace sc {
 			closed = false;
 			clear();
 
-			ReadFileStream input(filepath);
-			BufferStream output(&buffer);
-
-			Decompressor::decompress(input, output);
+			std::string output;
+			Decompressor::decompress(filepath, output);
+			ReadFileStream file(output);
+			buffer = std::vector<uint8_t>(file.size());
+			file.read(buffer.data(), file.size());
+			file.close();
 		}
 
 		void save(const std::string filepath, CompressionSignature signature) {

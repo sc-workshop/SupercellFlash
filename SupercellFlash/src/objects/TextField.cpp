@@ -1,5 +1,5 @@
-#include "SupercellFlash/flash/SupercellSWF.h"
-#include "SupercellFlash/flash/objects/TextField.h"
+#include "SupercellFlash/SupercellSWF.h"
+#include "SupercellFlash/objects/TextField.h"
 
 namespace sc
 {
@@ -48,7 +48,7 @@ namespace sc
 			m_bendAngle = swf->stream.readShort() * 91.019f;
 
 		if (tag > TAG_TEXT_FIELD_7)
-			m_autoAdjustFontBounds = swf->stream.readBool();
+			m_autoAdjustFontSize = swf->stream.readBool();
 	}
 
 	void TextField::save(SupercellSWF* swf)
@@ -109,10 +109,10 @@ namespace sc
 						tag = TAG_TEXT_FIELD_6;
 						swf->stream.writeShort((int16_t)(m_bendAngle / 91.019f));
 
-						if (m_autoAdjustFontBounds)
+						if (m_autoAdjustFontSize)
 						{
 							tag = TAG_TEXT_FIELD_8;
-							swf->stream.writeBool(m_autoAdjustFontBounds);
+							swf->stream.writeBool(m_autoAdjustFontSize);
 						}
 					}
 				}

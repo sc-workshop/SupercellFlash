@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SupercellFlash/flash/objects/DisplayObject.h"
-#include "SupercellFlash/flash/Tags.h"
+#include "SupercellFlash/objects/DisplayObject.h"
+#include "SupercellFlash/Tags.h"
 #include <cstdint>
 
 namespace sc
@@ -20,6 +20,8 @@ namespace sc
 
 		void load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
+
+		bool isMovieClipModifier() const override { return true; }
 
 	public:
 		Type type() { return m_type; }; // Getter

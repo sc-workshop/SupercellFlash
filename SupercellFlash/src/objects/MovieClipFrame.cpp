@@ -1,6 +1,6 @@
-#include "SupercellFlash/flash/objects/MovieClipFrame.h"
+#include "SupercellFlash/objects/MovieClipFrame.h"
 
-#include "SupercellFlash/flash/SupercellSWF.h"
+#include "SupercellFlash/SupercellSWF.h"
 
 namespace sc
 {

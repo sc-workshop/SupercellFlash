@@ -1,6 +1,6 @@
-#include "SupercellFlash/flash/objects/MovieClipModifier.h"
+#include "SupercellFlash/objects/MovieClipModifier.h"
 
-#include "SupercellFlash/flash/SupercellSWF.h"
+#include "SupercellFlash/SupercellSWF.h"
 
 namespace sc {
 	void MovieClipModifier::load(SupercellSWF* swf, uint8_t tag)

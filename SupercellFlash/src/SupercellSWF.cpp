@@ -1,6 +1,8 @@
-#include "SupercellFlash/flash/SupercellSWF.h"
+#include "SupercellFlash/SupercellSWF.h"
 
 #include <filesystem>
+
+#include <iostream>
 
 namespace sc
 {
@@ -115,16 +117,16 @@ namespace sc
 			stream.skip(5); // unused
 
 			uint16_t exportsCount = stream.readUnsignedShort();
-			//exports = std::vector<Export>(exportsCount); // TODO exports
+			exports = std::vector < ExportName > (exportsCount);
 
 			for (uint16_t i = 0; i < exportsCount; i++)
 			{
-				stream.readUnsignedShort();
+				exports[i].id = stream.readUnsignedShort();
 			}
 
 			for (uint16_t i = 0; i < exportsCount; i++)
 			{
-				stream.readAscii();
+				exports[i].name = stream.readAscii();
 			}
 		}
 
@@ -148,9 +150,10 @@ namespace sc
 		{
 			uint8_t tag = stream.readUnsignedByte();
 			int32_t tagLength = stream.readInt();
+			printf("Tag: %d, Length: %d\n", tag, tagLength);
 
 			if (tag == TAG_END)
-				return useExternalTexture;
+				break;
 
 			if (tagLength < 0)
 				throw std::runtime_error("Negative tag length. Tag " + tag);
@@ -267,7 +270,7 @@ namespace sc
 			}
 		}
 
-		throw std::runtime_error("Failed to reach END TAG");
+		return useExternalTexture;
 	}
 
 	void SupercellSWF::saveInternal()
@@ -275,7 +278,7 @@ namespace sc
 		if (matrixBanks.size() == 0)
 			matrixBanks = std::vector<MatrixBank>(0);
 
-		uint16_t exportsCount = 0;//static_cast<uint16_t>(exports.size()); // TODO
+		uint16_t exportsCount = static_cast<uint16_t>(exports.size());
 		uint16_t shapeCount = static_cast<uint16_t>(shapes.size());
 		uint16_t movieClipsCount = static_cast<uint16_t>(movieClips.size());
 		uint16_t texturesCount = static_cast<uint16_t>(textures.size());
@@ -295,7 +298,7 @@ namespace sc
 
 		stream.writeUnsignedShort(exportsCount);
 
-		/*for (uint16_t i = 0; exportsCount > i; i++)
+		for (uint16_t i = 0; exportsCount > i; i++)
 		{
 			stream.writeUnsignedShort(exports[i].id);
 		}
@@ -303,7 +306,7 @@ namespace sc
 		for (uint16_t i = 0; exportsCount > i; i++)
 		{
 			stream.writeAscii(exports[i].name);
-		}*/
+		}
 
 		saveTags(shapeCount, movieClipsCount, texturesCount, textFieldsCount);
 	}

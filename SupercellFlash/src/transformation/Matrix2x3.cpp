@@ -1,6 +1,6 @@
-#include "SupercellFlash/flash/transformation/Matrix2x3.h"
+#include "SupercellFlash/transformation/Matrix2x3.h"
 
-#include "SupercellFlash/flash/SupercellSWF.h"
+#include "SupercellFlash/SupercellSWF.h"
 
 namespace sc {
 	void Matrix2x3::load(SupercellSWF* swf, uint8_t tag) {

@@ -7,17 +7,19 @@
 #include <stdexcept>
 #include <algorithm>
 
-#include "../io/SWFStream.h"
+#include "io/SWFStream.h"
 
-#include "SupercellFlash/flash/objects/Shape.h"
-#include "SupercellFlash/flash/objects/MovieClip.h"
-#include "SupercellFlash/flash/objects/SWFTexture.h"
-#include "SupercellFlash/flash/objects/TextField.h"
-#include "SupercellFlash/flash/objects/MovieClipModifier.h"
+#include "SupercellFlash/objects/Shape.h"
+#include "SupercellFlash/objects/MovieClip.h"
+#include "SupercellFlash/objects/SWFTexture.h"
+#include "SupercellFlash/objects/TextField.h"
+#include "SupercellFlash/objects/MovieClipModifier.h"
+#include "SupercellFlash/objects/ExportName.h"
 
-#include "SupercellFlash/flash/transformation/MatrixBank.h"
+#include "SupercellFlash/transformation/MatrixBank.h"
 
-#include "SupercellFlash/flash/Tags.h"
+#include "SupercellFlash/Tags.h"
+
 
 #define MULTIRES_DEFAULT_SUFFIX "_highres"
 #define LOWRES_DEFAULT_SUFFIX "_lowres"
@@ -41,10 +43,7 @@ namespace sc
 		std::vector<MovieClip> movieClips;
 		std::vector<TextField> textFields;
 		std::vector<MovieClipModifier> movieClipModifiers;
-
-		// Common class members
-	public:
-		CompressionSignature compression = CompressionSignature::NONE;
+		std::vector<ExportName> exports;
 
 		// Class functions
 	public:
@@ -85,9 +84,6 @@ namespace sc
 			uint16_t texturesCount,
 			uint16_t textFieldsCount
 		);
-
-		void openFile(const std::string& filePath);
-		void writeFile(const std::string& filePath, CompressionSignature signature);
 
 		void initMatrixBank(uint16_t matricesCount, uint16_t colorTransformsCount);
 

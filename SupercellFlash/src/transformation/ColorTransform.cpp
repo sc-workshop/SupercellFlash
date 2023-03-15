@@ -1,6 +1,6 @@
-#include "SupercellFlash/flash/transformation/ColorTransform.h"
+#include "SupercellFlash/transformation/ColorTransform.h"
 
-#include "SupercellFlash/flash/SupercellSWF.h"
+#include "SupercellFlash/SupercellSWF.h"
 
 namespace sc
 {

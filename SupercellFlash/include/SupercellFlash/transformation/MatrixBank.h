@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SupercellFlash/flash/transformation/Matrix2x3.h"
-#include "SupercellFlash/flash/transformation/ColorTransform.h"
+#include "SupercellFlash/transformation/Matrix2x3.h"
+#include "SupercellFlash/transformation/ColorTransform.h"
 
 namespace sc
 {
