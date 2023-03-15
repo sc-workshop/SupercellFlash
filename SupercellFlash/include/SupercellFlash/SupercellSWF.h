@@ -20,7 +20,6 @@
 
 #include "SupercellFlash/Tags.h"
 
-
 #define MULTIRES_DEFAULT_SUFFIX "_highres"
 #define LOWRES_DEFAULT_SUFFIX "_lowres"
 

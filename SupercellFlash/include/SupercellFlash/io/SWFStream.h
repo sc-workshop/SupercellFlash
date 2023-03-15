@@ -1,11 +1,7 @@
 #pragma once
 
-#include <SupercellBytestream/BufferStream.h>
-#include <SupercellBytestream/FileStream.h>
-
-#include <SupercellCompression/Compressor.h>
-#include <SupercellCompression/Decompressor.h>
-#include <SupercellCompression/Signature.h>
+#include <SupercellBytestream.h>
+#include <SupercellCompression.h>
 
 #include <stdexcept>
 #include <cstdarg>
