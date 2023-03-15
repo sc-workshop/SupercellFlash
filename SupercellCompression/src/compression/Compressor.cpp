@@ -10,10 +10,21 @@
 
 #include <filesystem>
 
+
+
+#ifdef SC_MULTITHEARD
+#include <thread>
+const uint32_t theards = std::thread::hardware_concurrency();
+#else
+const uint32_t theards = 1;
+#endif // SC_MULTITHEARD
+
 namespace fs = std::filesystem;
 
 namespace sc
 {
+	uint16_t Compressor::theardsCount = theards;
+
 	void Compressor::compress(const std::string& inputFilepath, const std::string& outFilepath, CompressionSignature signature, std::vector<uint8_t>* metadata)
 	{
 		ReadFileStream inputStream(inputFilepath);
@@ -78,15 +89,15 @@ namespace sc
 		switch (signature)
 		{
 		case CompressionSignature::LZMA:
-			LZMA::compress(inStream, outStream);
+			LZMA::compress(inStream, outStream, theardsCount);
 			break;
 
 		case CompressionSignature::LZHAM:
-			LZHAM::compress(inStream, outStream);
+			LZHAM::compress(inStream, outStream, theardsCount);
 			break;
 
 		case CompressionSignature::ZSTD:
-			ZSTD::compress(inStream, outStream);
+			ZSTD::compress(inStream, outStream, theardsCount);
 			break;
 
 		default:

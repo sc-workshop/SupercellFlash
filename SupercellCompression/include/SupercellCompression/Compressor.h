@@ -11,6 +11,8 @@ namespace sc
 	class Compressor
 	{
 	public:
+		static uint16_t theardsCount;
+
 		/*
 		* Compress .sc file.
 		*/

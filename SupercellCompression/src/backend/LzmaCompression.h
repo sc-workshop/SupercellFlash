@@ -12,7 +12,7 @@ namespace sc
 	{
 	public:
 		static void decompress(BytestreamBase& inStream, BytestreamBase& outStream);
-		static void compress(BytestreamBase& inStream, BytestreamBase& outStream);
+		static void compress(BytestreamBase& inStream, BytestreamBase& outStream, int16_t theards);
 
 	private:
 		static void decompressStream(CLzmaDec* state, SizeT unpackSize, BytestreamBase& inStream, BytestreamBase& outStream);

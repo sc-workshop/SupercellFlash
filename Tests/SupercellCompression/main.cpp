@@ -106,6 +106,7 @@ int main(int argc, char* argv[])
 		sc::CompressionSignature signature = sc::CompressionSignature::LZMA;
 
 		std::string signatureArg = getCmdOption(argc, argv, "-m=");
+		std::string theardArg = getCmdOption(argc, argv, "-t=");
 
 		if (signatureArg == "ZSTD") {
 			signature = sc::CompressionSignature::ZSTD;
@@ -114,6 +115,10 @@ int main(int argc, char* argv[])
 			signature = sc::CompressionSignature::LZHAM;
 		}
 
+		if (theardArg.size() > 0) {
+			sc::Compressor::theardsCount = std::stoi(theardArg);
+		}
+		
 		sc::Compressor::compress(inFilepath, outFilepath, signature, nullptr);
 	}
 	else {

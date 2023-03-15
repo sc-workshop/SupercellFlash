@@ -19,7 +19,7 @@ constexpr size_t LZHAM_COMP_OUTPUT_BUFFER_SIZE = 65536*4;
 
 namespace sc
 {
-	void LZHAM::compress(BytestreamBase& inStream, BytestreamBase& outStream)
+	void LZHAM::compress(BytestreamBase& inStream, BytestreamBase& outStream, int16_t theards)
 	{
 		uint32_t fileSize = inStream.size();
 
@@ -42,7 +42,7 @@ namespace sc
 		memset(&params, 0, sizeof(params));
 		params.m_struct_size = sizeof(lzham_compress_params);
 		params.m_dict_size_log2 = DICT_SIZE;
-		// params.m_max_helper_threads = 2;
+		params.m_max_helper_threads = static_cast<uint16_t>(theards > 0 && theards < LZHAM_MAX_HELPER_THREADS ? theards : -1);
 
 		lzham_compress_state_ptr lzhamState = lzham_compress_init(&params);
 

@@ -111,7 +111,7 @@ namespace sc
 		LzmaDec_Free(&state, &g_Alloc);
 	}
 
-	void LZMA::compress(BytestreamBase& inStream, BytestreamBase& outStream)
+	void LZMA::compress(BytestreamBase& inStream, BytestreamBase& outStream, int16_t theards)
 	{
 		CLzmaEncHandle enc;
 		SRes res;
@@ -125,6 +125,10 @@ namespace sc
 		props.pb = 2;
 		props.lc = 3;
 		props.lp = 0;
+#ifdef SC_MULTITHEARD
+		props.numThreads = theards > 0 ? theards : 1;
+#endif // !SC_MULTITHEARD
+
 		props.dictSize = LZMA_COMPRESS_DICT_SIZE;
 
 		if (inStream.size() > SMALL_FILE_SIZE)

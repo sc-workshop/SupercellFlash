@@ -1,10 +1,7 @@
 #include "ZstdCompression.h"
 
 #include "error/DecompressException.h"
-#
-
 #include <zstd.h>
-#include <thread>
 
 namespace sc {
 	void ZSTD::decompress(BytestreamBase& inStream, BytestreamBase& outStream) {
@@ -71,7 +68,7 @@ namespace sc {
 		free(outBuffer);
 	}
 
-	void ZSTD::compress(BytestreamBase& inStream, BytestreamBase& outStream)
+	void ZSTD::compress(BytestreamBase& inStream, BytestreamBase& outStream, int16_t theards)
 	{
 		size_t const buffInSize = ZSTD_CStreamInSize();
 		size_t const buffOutSize = ZSTD_CStreamOutSize();
@@ -93,6 +90,8 @@ namespace sc {
 
 		ZSTD_CCtx_setParameter(cctx, ZSTD_c_contentSizeFlag, 1);
 		ZSTD_CCtx_setPledgedSrcSize(cctx, inStream.size());
+		
+		ZSTD_CCtx_setParameter(cctx, ZSTD_c_nbWorkers, theards > 0 ? theards : 1);
 
 		size_t const remainBytes = buffInSize;
 		while(true) {

@@ -21,6 +21,9 @@ project "SupercellCompressionTests"
         "SupercellCompression"
     }
 	
+	filter "system:windows"
+		defines "SC_MULTITHEARD"
+
 	filter "configurations:Debug"
 		defines "SC_DEBUG"
 		runtime "Debug"

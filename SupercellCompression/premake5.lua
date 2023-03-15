@@ -33,6 +33,9 @@ project "SupercellCompression"
 		"LZHAM",
 		"Zstandard"
     } 
+	
+	filter "system:windows"
+		defines "SC_MULTITHEARD"
 
     filter "configurations:Debug"
         runtime "Debug"
