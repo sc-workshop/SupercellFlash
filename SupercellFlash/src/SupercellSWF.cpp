@@ -1,5 +1,6 @@
 #include "SupercellFlash/SupercellSWF.h"
 #include "error/NegativeTagLengthException.h"
+#include "SupercellBytestream/error/StreamException.h"
 
 #include <filesystem>
 
@@ -21,7 +22,7 @@ namespace sc
 
 		m_useExternalTexture = loadInternal(false);
 
-		stream.close();
+		stream.clear();
 
 		if (m_useExternalTexture)
 		{
@@ -44,7 +45,7 @@ namespace sc
 			}
 			else
 			{
-				throw std::runtime_error("Cannot find external *_tex.sc file");
+				throw StreamException(StreamError::EXIST_ERROR, "Cannot find external *_tex.sc file");
 			}
 		}
 	}
@@ -52,12 +53,12 @@ namespace sc
 	void SupercellSWF::loadTexture(const std::string& filePath) {
 		stream.open(filePath);
 		loadInternal(true);
-		stream.close();
+		stream.clear();
 	}
 
 	void SupercellSWF::save(const std::string& filepath, CompressionSignature signature)
 	{
-		stream = SWFStream();
+		stream.clear();
 		saveInternal();
 		stream.save(filepath, signature);
 
@@ -81,7 +82,7 @@ namespace sc
 	}
 
 	void SupercellSWF::saveTexture(const std::string& filepath, bool isLowres, CompressionSignature signature) {
-		stream = SWFStream();
+		stream.clear();
 
 		for (SWFTexture texture : textures) {
 			texture.save(this, true, isLowres);

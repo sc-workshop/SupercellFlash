@@ -120,10 +120,6 @@ namespace sc
 			swf->stream.writeAscii(instances[i].name); // Bind name
 		}
 
-		for (uint16_t i = 0; frameCount > i; i++) {
-			frames[i].save(swf); // Frames
-		}
-
 		if (m_scalingGrid)
 		{
 			swf->stream.writeUnsignedByte(TAG_SCALING_GRID);
@@ -141,6 +137,12 @@ namespace sc
 			swf->stream.writeInt(1);
 			swf->stream.writeUnsignedByte(m_matrixBankIndex);
 		}
+
+		for (uint16_t i = 0; frameCount > i; i++) {
+			frames[i].save(swf); // Frames
+		}
+
+		swf->stream.writeTag(0);
 
 		swf->stream.finalizeTag(tag, pos);
 	}

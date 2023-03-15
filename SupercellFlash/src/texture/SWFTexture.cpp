@@ -39,27 +39,6 @@ namespace sc
 
 	void SWFTexture::load(sc::SupercellSWF* swf, uint8_t tag, bool useExternalTexture)
 	{
-		/* Tag processing */
-
-		m_magFilter = Filter::LINEAR;
-		m_minFilter = Filter::NEAREST;
-		if (tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_3 || tag == TAG_TEXTURE_7) {
-			m_magFilter = Filter::LINEAR;
-			m_minFilter = Filter::LINEAR_MIPMAP_NEAREST;
-		}
-		else if (tag == TAG_TEXTURE_8) {
-			m_magFilter = Filter::LINEAR;
-			m_minFilter = Filter::LINEAR;
-		}
-
-		m_linear = true;
-		if (tag == TAG_TEXTURE_5 || tag == TAG_TEXTURE_6 || tag == TAG_TEXTURE_7)
-			m_linear = false;
-
-		m_downscaling = false;
-		if (tag == TAG_TEXTURE || tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_6 || tag == TAG_TEXTURE_7)
-			m_downscaling = true;
-
 		/* Binary data processing */
 
 		uint8_t pixelFormatIndex = swf->stream.readUnsignedByte();
@@ -70,6 +49,28 @@ namespace sc
 
 		if (!useExternalTexture)
 		{
+			/* Tag processing */
+
+			m_magFilter = Filter::LINEAR;
+			m_minFilter = Filter::NEAREST;
+			if (tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_3 || tag == TAG_TEXTURE_7) {
+				m_magFilter = Filter::LINEAR;
+				m_minFilter = Filter::LINEAR_MIPMAP_NEAREST;
+			}
+			else if (tag == TAG_TEXTURE_8) {
+				m_magFilter = Filter::LINEAR;
+				m_minFilter = Filter::LINEAR;
+			}
+
+			m_linear = true;
+			if (tag == TAG_TEXTURE_5 || tag == TAG_TEXTURE_6 || tag == TAG_TEXTURE_7)
+				m_linear = false;
+
+			m_downscaling = false;
+			if (tag == TAG_TEXTURE || tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_6 || tag == TAG_TEXTURE_7)
+				m_downscaling = true;
+
+
 			uint8_t pixelByteSize = pixelByteSizeTable.at(pixelFormatIndex);
 			uint32_t dataSize = ((m_width * m_height) * pixelByteSize);
 

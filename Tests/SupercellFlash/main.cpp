@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 		}
 
 		/* Save test */
-		/*std::chrono::time_point savingStart = high_resolution_clock::now();
+		std::chrono::time_point savingStart = high_resolution_clock::now();
 		swf.save(filename + "_new.sc", sc::CompressionSignature::LZMA);
 
 		endTime = high_resolution_clock::now();
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 		else {
 			seconds secTime = duration_cast<seconds>(msTime);
 			std::cout << secTime.count() << " seconds." << std::endl;
-		}*/
+		}
 	}
 
 	return 0;

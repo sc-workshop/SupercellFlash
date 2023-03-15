@@ -15,7 +15,6 @@ namespace sc {
 
 	class SWFStream {
 		BufferStream m_stream = BufferStream(&buffer);
-		bool closed = true;
 
 	public:
 		std::vector<uint8_t> buffer;
@@ -24,7 +23,6 @@ namespace sc {
 		~SWFStream() {}
 
 		void open(const std::string filepath) {
-			closed = false;
 			clear();
 
 			std::string output;
@@ -43,13 +41,12 @@ namespace sc {
 #else
 			Compressor::compress(input, output, signature, nullptr);
 #endif
-
 			clear();
-			closed = true;
 		}
 
 		void clear() {
 			buffer.resize(0);
+			m_stream.set(0);
 		}
 
 		uint8_t* data() {
@@ -62,10 +59,6 @@ namespace sc {
 
 		uint32_t tell() {
 			return m_stream.tell();
-		}
-
-		void close() {
-			clear();
 		}
 
 		void skip(uint32_t size) {
@@ -145,7 +138,7 @@ namespace sc {
 
 		void writeTag(uint8_t tag) {
 			writeUnsignedByte(tag);
-			writeShort(0);
+			writeInt(0);
 		}
 
 		uint32_t initTag() {
