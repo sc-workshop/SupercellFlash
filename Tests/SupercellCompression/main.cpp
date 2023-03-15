@@ -53,13 +53,27 @@ bool optionInCmd(int argc, char* argv[], const std::string& option) {
 
 void printUsage() {
 	printf("Usage: [mode] InputFilePath OutputFilePath options\n");
+
+	printf("\n");
+
 	printf("Modes:\n");
 	printf("c - compress file.\n");
 	printf("d - decompress file.\n");
+
+	printf("\n");
+
 	printf("Options:\n");
 	printf("-m - compression mode: LZMA, LZHAM, ZSTD. Default: LZMA\n");
-	printf("--cache - enable cache: uses a temporary folder for unpacking files.\n");
-	printf("Example: c file.sc file_compressed.sc -m=ZSTD\n");
+	printf("-t - theard count(compress only). Default: All CPU cores\n");
+
+	printf("\n");
+
+	printf("Flags:\n");
+	printf("--common - process file as common file (like compressed .csv)\n");
+
+	printf("\n");
+
+	printf("Example: c file.sc file_compressed.sc -m=ZSTD -t=2\n");
 }
 
 int main(int argc, char* argv[])
@@ -69,6 +83,8 @@ int main(int argc, char* argv[])
 		printUsage();
 		std::cout << std::endl;
 	}
+
+	// Files
 
 	if (!argv[1]) {
 		std::cout << "[ERROR] Mode is not specified." << std::endl;
@@ -88,6 +104,12 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
+	// Flags
+
+	bool isCommon = optionInCmd(argc, argv, "--common");
+
+	// Timer 
+
 	using std::chrono::high_resolution_clock;
 	using std::chrono::duration_cast;
 	using std::chrono::duration;
@@ -96,11 +118,18 @@ int main(int argc, char* argv[])
 
 	std::chrono::time_point startTime = high_resolution_clock::now();
 
+	// Modes
+
 	if (mode == "d") {
 		sc::ReadFileStream inStream(inFilepath);
 		sc::WriteFileStream outStream(outFilepath);
 
-		sc::Decompressor::decompress(inStream, outStream);
+		if (isCommon) {
+			sc::Decompressor::commonDecompress(inStream, outStream);
+		}
+		else {
+			sc::Decompressor::decompress(inStream, outStream);
+		}
 	}
 	else if (mode == "c") {
 		sc::CompressionSignature signature = sc::CompressionSignature::LZMA;
@@ -115,16 +144,26 @@ int main(int argc, char* argv[])
 			signature = sc::CompressionSignature::LZHAM;
 		}
 
+		sc::ReadFileStream inStream(inFilepath);
+		sc::WriteFileStream outStream(outFilepath);
+
 		if (theardArg.size() > 0) {
 			sc::Compressor::theardsCount = std::stoi(theardArg);
 		}
 		
-		sc::Compressor::compress(inFilepath, outFilepath, signature, nullptr);
+		if (isCommon) {
+			sc::Compressor::commonCompress(inStream, outStream, signature);
+		}
+		else {
+			sc::Compressor::compress(inStream, outStream, signature, nullptr);
+		}
 	}
 	else {
 		printf("[ERROR] Unknown mode.");
 		return 0;
 	}
+
+	// Result
 
 	std::chrono::time_point endTime = high_resolution_clock::now();
 	std::cout << "[INFO] Operation took: ";
