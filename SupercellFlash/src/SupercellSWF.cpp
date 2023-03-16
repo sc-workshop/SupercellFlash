@@ -18,42 +18,33 @@ namespace sc
 
 	void SupercellSWF::load(const std::string& filePath)
 	{
-		stream.open(filePath);
-
-		m_useExternalTexture = loadInternal(false);
-
-		stream.clear();
+		m_useExternalTexture = loadInternal(filePath, false);
 
 		if (m_useExternalTexture)
 		{
 			std::filesystem::path path(filePath);
+
 			std::filesystem::path multiResFilePath = std::filesystem::path(path.root_path()).concat(path.stem().string()).concat(m_multiResFileSuffix + "_tex.sc");
 			std::filesystem::path lowResFilePath = std::filesystem::path(path.root_path()).concat(path.stem().string()).concat(m_lowResFileSuffix + "_tex.sc");
 			std::filesystem::path externalFilePath = std::filesystem::path(path.root_path()).concat(path.stem().string()).concat("_tex.sc");
 
 			if (m_useMultiResTexture && std::filesystem::exists(multiResFilePath))
 			{
-				loadTexture(multiResFilePath.string());
+				loadInternal(multiResFilePath.string(), true);
 			}
 			else if (m_useLowResTexture && std::filesystem::exists(lowResFilePath))
 			{
-				loadTexture(lowResFilePath.string());
+				loadInternal(lowResFilePath.string(), true);
 			}
 			else if (std::filesystem::exists(externalFilePath))
 			{
-				loadTexture(externalFilePath.string());
+				loadInternal(externalFilePath.string(), true);
 			}
 			else
 			{
 				throw StreamException(StreamError::EXIST_ERROR, "Cannot find external *_tex.sc file");
 			}
 		}
-	}
-
-	void SupercellSWF::loadTexture(const std::string& filePath) {
-		stream.open(filePath);
-		loadInternal(true);
-		stream.clear();
 	}
 
 	void SupercellSWF::save(const std::string& filepath, CompressionSignature signature)
@@ -68,33 +59,32 @@ namespace sc
 			std::filesystem::path lowResFilePath = std::filesystem::path(path.root_path()).concat(path.stem().string()).concat(m_lowResFileSuffix + "_tex.sc");
 			std::filesystem::path externalFilePath = std::filesystem::path(path.root_path()).concat(path.stem().string()).concat("_tex.sc");
 
-			if (m_useMultiResTexture) {
-				saveTexture(multiResFilePath.string(), false, signature);
+			for (SWFTexture texture : textures) {
+				if (texture.data.size() == 0) {
+					stream.clear();
+					return;
+				}
+				texture.save(this, true, false);
 			}
-			else {
-				saveTexture(externalFilePath.string(), false, signature);
-			}
+			stream.writeTag(0);
+
+			stream.save(m_useMultiResTexture ? multiResFilePath.string() : externalFilePath.string(), signature);
 
 			if (m_useLowResTexture || m_useMultiResTexture) {
-				saveTexture(lowResFilePath.string(), true, signature);
+				for (SWFTexture texture : textures) {
+					texture.save(this, true, true);
+				}
+				stream.writeTag(0);
+
+				stream.save(lowResFilePath.string(), signature);
 			}
 		}
 	}
 
-	void SupercellSWF::saveTexture(const std::string& filepath, bool isLowres, CompressionSignature signature) {
-		stream.clear();
-
-		for (SWFTexture texture : textures) {
-			texture.save(this, true, isLowres);
-		}
-
-		stream.writeTag(0);
-
-		stream.save(filepath, signature);
-	}
-
-	bool SupercellSWF::loadInternal(bool isTexture)
+	bool SupercellSWF::loadInternal(std::string filepath, bool isTexture)
 	{
+		stream.open(filepath);
+
 		// Reading .sc file
 		if (!isTexture)
 		{
@@ -130,7 +120,9 @@ namespace sc
 			}
 		}
 
-		return loadTags();
+		bool isHasTextureLoadTag = loadTags();
+		stream.clear();
+		return isHasTextureLoadTag;
 	}
 
 	bool SupercellSWF::loadTags()

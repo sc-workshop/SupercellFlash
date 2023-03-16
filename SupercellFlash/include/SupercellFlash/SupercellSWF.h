@@ -47,10 +47,9 @@ namespace sc
 		// Class functions
 	public:
 		void load(const std::string& filePath);
-		void loadTexture(const std::string& filePath);
+		bool loadInternal(std::string filepath, bool isTexture);
 
 		void save(const std::string& filepath, CompressionSignature signature);
-		void saveTexture(const std::string& filepath, bool isLowres, CompressionSignature signature);
 
 		// Getters for class members
 	public:
@@ -73,7 +72,6 @@ namespace sc
 		void lowResFileSuffix(std::string postfix) { m_lowResFileSuffix = postfix; }
 
 	private:
-		bool loadInternal(bool isTexture);
 		bool loadTags();
 
 		void saveInternal();
