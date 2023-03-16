@@ -44,7 +44,7 @@ namespace sc
 		/* Getters */
 	public:
 		uint8_t frameRate() { return m_frameRate; }
-		ScalingGrid scalingGrid() { return *m_scalingGrid; }
+		ScalingGrid* scalingGrid() { return m_scalingGrid; }
 		uint8_t matrixBankIndex() { return m_matrixBankIndex; }
 
 		/* Setters */
