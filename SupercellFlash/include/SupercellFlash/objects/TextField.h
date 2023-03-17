@@ -59,7 +59,7 @@ namespace sc
 		void isMultiline(bool status) { m_isMultiline = status; }
 		void isOutlined(bool status) { m_isOutlined = status; }
 
-		void outlineColor(int16_t color) { m_outlineColor = color; }
+		void outlineColor(int32_t color) { m_outlineColor = color; }
 		void useDeviceFont(bool status) { m_useDeviceFont = status; }
 		void autoAdjustFontSize(bool status) { m_autoAdjustFontSize = status; }
 
