@@ -35,8 +35,8 @@ namespace sc {
 			unpackedSize = inStream.size() - inStream.tell();
 		}
 
-		ZSTD_inBuffer zInBuffer = { 0 };
-		ZSTD_outBuffer zOutBuffer = { 0 };
+		ZSTD_inBuffer zInBuffer;
+		ZSTD_outBuffer zOutBuffer;
 		size_t chunkSize = 0;
 		size_t totalBytes = 0;
 

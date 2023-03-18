@@ -75,7 +75,7 @@ namespace sc
 				outPos += outProcessed;
 				unpackedSize -= outProcessed;
 
-				if (outStream.write(&outBuffer, outPos) != outPos)
+				if (outStream.write(&outBuffer, outPos) != outPos || res != SZ_OK)
 					throw DecompressException("Corrupted data in LZMA decompress");
 
 				outPos = 0;

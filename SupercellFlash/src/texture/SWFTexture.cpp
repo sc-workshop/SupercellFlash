@@ -188,17 +188,13 @@ namespace sc
 						uint32_t target = (pixel_y * width + pixel_x) * pixelSize;
 						if (toLinear) { // blocks to image
 							uint32_t block_target = pixelIndex * pixelSize;
-							for (uint8_t i = 0; pixelSize > i; i++) {
-								image[target + i] = texture.data[block_target + i];
-							}
+							memcpy(image.data() + target, texture.data.data() + block_target, pixelSize);
 						}
 						else { // image to blocks
 							uint16_t block_pixel_x = pixelIndex % width;
 							uint16_t block_pixel_y = static_cast<uint32_t>(pixelIndex / width);
 							uint32_t block_target = (block_pixel_y * width + block_pixel_x) * pixelSize;
-							for (uint8_t i = 0; pixelSize > i; i++) {
-								image[block_target + i] = texture.data[target + i]; // TODO: replace to memcpy
-							}
+							memcpy(image.data() + target, texture.data.data() + target, pixelSize);
 						}
 
 						pixelIndex++;
@@ -215,7 +211,6 @@ namespace sc
 
 		bool toLinear = m_linear == false && status == true;
 
-		uint8_t pixelSize = pixelByteSize();
 		data = SWFTexture::processLinearData(*this, toLinear);
 		m_linear = status;
 	};

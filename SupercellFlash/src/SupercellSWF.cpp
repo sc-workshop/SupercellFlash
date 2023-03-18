@@ -344,7 +344,6 @@ namespace sc
 			uint16_t colorsCount = static_cast<uint16_t>(matrixBanks[i].colorTransforms.size());
 
 			for (uint16_t m = 0; matricesCount > m; m++) {
-				sc::Matrix2x3 matrix = matrixBanks[i].matrices[m];
 				matrixBanks[i].matrices[m].save(this);
 			}
 

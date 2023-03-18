@@ -1,4 +1,5 @@
 #include "md5.h"
+#include <cstring>
 #include <memory>
 
 /* Constants for md5::transform routine. */
