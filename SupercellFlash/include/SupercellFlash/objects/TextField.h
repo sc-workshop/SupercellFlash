@@ -30,6 +30,7 @@ namespace sc
 		bool isItalic() { return m_isItalic; }
 		bool isMultiline() { return m_isMultiline; }
 		bool isOutlined() { return m_isOutlined; }
+		bool isDynamic() { return m_isDynamic; }
 
 		uint32_t outlineColor() { return m_outlineColor; }
 		bool useDeviceFont() { return m_useDeviceFont; }
@@ -58,6 +59,7 @@ namespace sc
 		void isItalic(bool status) { m_isItalic = status; }
 		void isMultiline(bool status) { m_isMultiline = status; }
 		void isOutlined(bool status) { m_isOutlined = status; }
+		void isDynamic(bool status) { m_isDynamic = status; }
 
 		void outlineColor(int32_t color) { m_outlineColor = color; }
 		void useDeviceFont(bool status) { m_useDeviceFont = status; }
@@ -91,6 +93,7 @@ namespace sc
 		bool m_isItalic = false;
 		bool m_isMultiline = false;
 		bool m_isOutlined = false;
+		bool m_isDynamic = false;
 
 		int32_t m_outlineColor = 0xFFFFFF;
 		bool m_useDeviceFont = false;

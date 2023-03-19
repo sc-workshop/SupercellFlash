@@ -13,7 +13,7 @@ namespace sc
 		m_isBold = swf->stream.readBool();
 		m_isItalic = swf->stream.readBool();
 		m_isMultiline = swf->stream.readBool();
-		swf->stream.readBool(); // unused
+		m_isDynamic = swf->stream.readBool();
 
 		m_fontAlign = swf->stream.readUnsignedByte();
 		m_fontSize = swf->stream.readUnsignedByte();
