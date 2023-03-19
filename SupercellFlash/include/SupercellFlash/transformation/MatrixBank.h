@@ -3,6 +3,7 @@
 #include "SupercellFlash/transformation/Matrix2x3.h"
 #include "SupercellFlash/transformation/ColorTransform.h"
 #include <vector>
+#include <math.h>
 
 #define floatEqual(a,b) (fabs(a - b) <= ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * 0.05))
 
