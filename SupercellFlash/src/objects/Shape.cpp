@@ -1,6 +1,6 @@
 #include "SupercellFlash/objects/Shape.h"
 #include "SupercellFlash/objects/ShapeDrawBitmapCommand.h"
-#include "error/NegativeTagLengthException.h"
+#include "SupercellFlash/error/NegativeTagLengthException.h"
 
 #include "SupercellFlash/SupercellSWF.h"
 #include "SupercellFlash/Tags.h"

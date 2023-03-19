@@ -1,7 +1,7 @@
 #include "LzmaCompression.h"
 
-#include "error/DecompressException.h"
-#include "error/CompressException.h"
+#include "SupercellCompression/error/DecompressException.h"
+#include "SupercellCompression/error/CompressException.h"
 
 static const size_t LZMA_DECOMPRESS_BUF_SIZE = 1 << 16;
 static const size_t LZMA_COMPRESS_BUF_SIZE = 1 << 24;

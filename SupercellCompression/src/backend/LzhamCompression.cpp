@@ -1,7 +1,7 @@
 #include "LzhamCompression.h"
 
-#include "error/CompressException.h"
-#include "error/DecompressException.h"
+#include "SupercellCompression/error/CompressException.h"
+#include "SupercellCompression/error/DecompressException.h"
 
 #include <lzham_static_lib.h>
 

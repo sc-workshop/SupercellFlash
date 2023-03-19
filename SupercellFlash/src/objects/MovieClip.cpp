@@ -1,6 +1,6 @@
 #include "SupercellFlash/SupercellSWF.h"
 
-#include "error/NegativeTagLengthException.h"
+#include "SupercellFlash/error/NegativeTagLengthException.h"
 #include "SupercellFlash/objects/MovieClip.h"
 
 namespace sc

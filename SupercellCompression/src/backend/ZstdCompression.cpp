@@ -1,6 +1,7 @@
 #include "ZstdCompression.h"
 
-#include "error/DecompressException.h"
+#include "SupercellCompression/error/DecompressException.h"
+#include "SupercellCompression/error/CompressException.h"
 #include <zstd.h>
 
 namespace sc {
@@ -77,12 +78,12 @@ namespace sc {
 		void* buffOut = malloc(buffOutSize);
 
 		if (!buffIn || !buffOut) {
-			throw DecompressException("Failed to allocate buffer in ZSTD decompress");
+			throw CompressException("Failed to allocate buffer in ZSTD decompress");
 		}
 
 		ZSTD_CCtx* const cctx = ZSTD_createCCtx();
 		if (cctx == NULL) {
-			throw DecompressException("Failed to create ZSTD compress context");
+			throw CompressException("Failed to create ZSTD compress context");
 		}
 
 		ZSTD_CCtx_setParameter(cctx, ZSTD_c_compressionLevel, 16);
@@ -108,7 +109,7 @@ namespace sc {
 				finished = lastChunk ? (remaining == 0) : (input.pos == input.size);
 			};
 			if (input.pos != input.size) {
-				throw DecompressException("Corrupted data in ZSTD compression");
+				throw CompressException("Corrupted data in ZSTD compression");
 			}
 
 			if (lastChunk) {
