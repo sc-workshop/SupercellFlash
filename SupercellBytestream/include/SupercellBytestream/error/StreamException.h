@@ -6,8 +6,7 @@
 
 enum class StreamError {
 	UNKNOWN = -1,
-	EXIST_ERROR = 1,
-	CLOSED_ERROR,
+	CLOSED_ERROR = 1,
 	WRITE_ERROR,
 	READ_ERROR,
 };

@@ -1,5 +1,5 @@
 #include "SupercellFlash/SupercellSWF.h"
-#include "error/NegativeTagLengthException.h"
+#include "SupercellFlash/error/NegativeTagLengthException.h"
 #include "SupercellBytestream/error/StreamException.h"
 
 #include <filesystem>

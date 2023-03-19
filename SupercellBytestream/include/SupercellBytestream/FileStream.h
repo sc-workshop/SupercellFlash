@@ -2,6 +2,7 @@
 
 #include "SupercellBytestream/base/Bytestream.h"
 #include "SupercellBytestream/error/StreamException.h"
+#include "SupercellBytestream/error/FileExistException.h"
 
 #include <filesystem>
 
@@ -85,7 +86,7 @@ namespace sc {
 				fileInitialize();
 			}
 			else {
-				throw StreamException(StreamError::EXIST_ERROR, "File not found: " + filepath);
+				throw FileExistException(filepath);
 			}
 		}
 
