@@ -90,11 +90,11 @@ namespace sc {
 
 		ZSTD_CCtx_setParameter(cctx, ZSTD_c_contentSizeFlag, 1);
 		ZSTD_CCtx_setPledgedSrcSize(cctx, inStream.size());
-		
+
 		ZSTD_CCtx_setParameter(cctx, ZSTD_c_nbWorkers, theards > 0 ? theards : 1);
 
 		size_t const remainBytes = buffInSize;
-		while(true) {
+		while (true) {
 			size_t byteCount = inStream.read(buffIn, remainBytes);
 
 			int const lastChunk = (byteCount < remainBytes);

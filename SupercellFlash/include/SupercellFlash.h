@@ -11,5 +11,5 @@
 #include "SupercellFlash/objects/TextField.h"
 
 #include "SupercellFlash/transformation/ColorTransform.h"
-#include "SupercellFlash/transformation/Matrix2x3.h"	
+#include "SupercellFlash/transformation/Matrix2x3.h"
 #include "SupercellFlash/transformation/MatrixBank.h"

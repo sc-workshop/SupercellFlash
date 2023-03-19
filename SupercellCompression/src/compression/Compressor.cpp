@@ -10,8 +10,6 @@
 
 #include <filesystem>
 
-
-
 #ifdef SC_MULTITHEARD
 #include <thread>
 const uint32_t theards = std::thread::hardware_concurrency();
@@ -45,7 +43,7 @@ namespace sc
 		{
 			outStream.writeUInt32BE(4);
 		}
-		
+
 		if (signature == CompressionSignature::LZMA ||
 			signature == CompressionSignature::LZHAM)
 		{
@@ -73,7 +71,7 @@ namespace sc
 
 		outStream.writeUInt32BE(16);
 		outStream.write(&hash, 16);
-		
+
 		commonCompress(inStream, outStream, signature);
 
 		if (metadata) {

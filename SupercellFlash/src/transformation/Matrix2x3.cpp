@@ -24,7 +24,7 @@ namespace sc {
 		tag = TAG_MATRIX_2x3_2
 #endif
 
-		float multiplier = tag == TAG_MATRIX_2x3 ? 1024.0f : 65535.0f;
+			float multiplier = tag == TAG_MATRIX_2x3 ? 1024.0f : 65535.0f;
 
 		swf->stream.writeInt((int)(a * multiplier));
 		swf->stream.writeInt((int)(b * multiplier));

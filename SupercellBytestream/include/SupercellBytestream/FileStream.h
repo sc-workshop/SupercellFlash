@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "SupercellBytestream/base/Bytestream.h"
 #include "SupercellBytestream/error/StreamException.h"
@@ -56,7 +56,6 @@ namespace sc {
 		void close() override {
 			fclose(file);
 		};
-
 	};
 
 	class WriteFileStream : public FileStream {

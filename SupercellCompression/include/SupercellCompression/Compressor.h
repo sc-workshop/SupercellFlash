@@ -5,7 +5,6 @@
 #include "SupercellCompression/Signature.h"
 #include "SupercellBytestream/base/Bytestream.h"
 
-
 namespace sc
 {
 	class Compressor

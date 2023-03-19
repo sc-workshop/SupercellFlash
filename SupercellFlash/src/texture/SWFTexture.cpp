@@ -70,7 +70,6 @@ namespace sc
 			if (tag == TAG_TEXTURE || tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_6 || tag == TAG_TEXTURE_7)
 				m_downscaling = true;
 
-
 			uint8_t pixelByteSize = pixelByteSizeTable.at(pixelFormatIndex);
 			uint32_t dataSize = ((m_width * m_height) * pixelByteSize);
 

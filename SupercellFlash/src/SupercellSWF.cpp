@@ -107,7 +107,7 @@ namespace sc
 			stream.skip(5); // unused
 
 			uint16_t exportsCount = stream.readUnsignedShort();
-			exports = std::vector < ExportName > (exportsCount);
+			exports = std::vector < ExportName >(exportsCount);
 
 			for (uint16_t i = 0; i < exportsCount; i++)
 			{

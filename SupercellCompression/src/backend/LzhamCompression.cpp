@@ -9,7 +9,7 @@ uint32_t LZHAM_MAGIC = 0x5A4C4353;
 uint8_t DICT_SIZE = 18;
 
 constexpr size_t LZHAM_COMP_INPUT_BUFFER_SIZE = 65536 * 4;
-constexpr size_t LZHAM_COMP_OUTPUT_BUFFER_SIZE = 65536*4;
+constexpr size_t LZHAM_COMP_OUTPUT_BUFFER_SIZE = 65536 * 4;
 
 #define LZHAM_DECOMP_INPUT_BUFFER_SIZE 65536*4
 #define LZHAM_DECOMP_OUTPUT_BUFFER_SIZE 65536*4
@@ -59,7 +59,7 @@ namespace sc
 		outStream.write(&DICT_SIZE, sizeof(DICT_SIZE));
 		outStream.write(&fileSize, sizeof(fileSize));
 
-		while(true)
+		while (true)
 		{
 			if (inBufferOffset == inBufferPos)
 			{
@@ -86,7 +86,7 @@ namespace sc
 
 			if (inBytesCount)
 			{
-				inBufferOffset += (uint8_t)inBytesCount;
+				inBufferOffset += (uint32_t)inBytesCount;
 			}
 
 			if (outBytesCount)
@@ -159,7 +159,7 @@ namespace sc
 		}
 
 		lzham_decompress_status_t lzham_status;
-		while(true)
+		while (true)
 		{
 			if (decompressBufferOffset == decompressBufferSize)
 			{

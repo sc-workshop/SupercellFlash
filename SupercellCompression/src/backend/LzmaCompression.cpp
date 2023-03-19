@@ -49,7 +49,7 @@ namespace sc
 		LzmaDec_Init(state);
 
 		size_t inPos = 0, inSize = 0, outPos = 0;
-		while(true)
+		while (true)
 		{
 			if (inPos == inSize)
 			{
