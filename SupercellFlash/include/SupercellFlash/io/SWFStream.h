@@ -120,10 +120,10 @@ namespace sc {
 		}
 
 		void writeAscii(std::string ascii) {
-			uint8_t size = static_cast<uint8_t>(ascii.size());
+			uint8_t size = ascii.size() == 0 ? 0xFF : static_cast<uint8_t>(ascii.size());
 
 			writeUnsignedByte(size);
-			if (size > 0) {
+			if (size > 0 && size < 255) {
 				m_stream.write(ascii.data(), size);
 			}
 		}
