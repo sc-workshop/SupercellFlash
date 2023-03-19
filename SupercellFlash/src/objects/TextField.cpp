@@ -65,7 +65,7 @@ namespace sc
 		swf->stream.writeBool(m_isBold);
 		swf->stream.writeBool(m_isItalic);
 		swf->stream.writeBool(m_isMultiline);
-		swf->stream.writeUnsignedByte(0); // unused
+		swf->stream.writeBool(m_isDynamic);
 
 		swf->stream.writeUnsignedByte(m_fontAlign);
 		swf->stream.writeUnsignedByte(m_fontSize);
