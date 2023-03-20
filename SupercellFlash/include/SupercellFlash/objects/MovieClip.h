@@ -64,7 +64,7 @@ namespace sc
 	private:
 		uint8_t m_frameRate = 24;
 
-		bool m_unknownFlag;
+		bool m_unknownFlag = false;
 		ScalingGrid* m_scalingGrid = nullptr;
 		uint8_t m_matrixBankIndex = 0;
 	};

@@ -98,7 +98,7 @@ namespace sc
 		swf->stream.writeUnsignedByte(m_frameRate);
 		swf->stream.writeUnsignedShort(frameCount);
 
-		uint8_t tag = m_unknownFlag ? TAG_MOVIE_CLIP_3 : TAG_MOVIE_CLIP_5; // idk how to add tag 35 support bcs we don't know difference between them
+		uint8_t tag = m_unknownFlag ? TAG_MOVIE_CLIP_5 : TAG_MOVIE_CLIP_3 ; // idk how to add tag 35 support bcs we don't know difference between them
 
 		swf->stream.writeInt(frameElementsCount);
 		for (int32_t i = 0; frameElementsCount > i; i++) {
