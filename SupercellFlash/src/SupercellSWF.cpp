@@ -327,6 +327,10 @@ namespace sc
 			stream.writeUnsignedByte(TAG_MOVIE_CLIP_MODIFIERS_COUNT);
 			stream.writeInt(sizeof(uint16_t));
 			stream.writeUnsignedShort(modifiersCount);
+
+			for (MovieClipModifier modifier : movieClipModifiers) {
+				modifier.save(this);
+			}
 		}
 
 		for (uint16_t i = 0; shapeCount > i; i++) {
@@ -342,6 +346,13 @@ namespace sc
 		for (uint8_t i = 0; matrixBanksCount > i; i++) {
 			uint16_t matricesCount = static_cast<uint16_t>(matrixBanks[i].matrices.size());
 			uint16_t colorsCount = static_cast<uint16_t>(matrixBanks[i].colorTransforms.size());
+
+			if (i != 0) {
+				uint32_t bankPos = stream.initTag();
+				stream.writeUnsignedShort(matricesCount);
+				stream.writeUnsignedShort(colorsCount);
+				stream.finalizeTag(TAG_MATRIX_BANK, bankPos);
+			}
 
 			for (uint16_t m = 0; matricesCount > m; m++) {
 				matrixBanks[i].matrices[m].save(this);

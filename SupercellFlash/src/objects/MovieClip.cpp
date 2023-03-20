@@ -9,6 +9,7 @@ namespace sc
 	{
 		m_id = swf->stream.readUnsignedShort();
 		m_frameRate = swf->stream.readUnsignedByte();
+		m_unknownFlag = tag == TAG_MOVIE_CLIP_5;
 
 		uint16_t framesCount = swf->stream.readUnsignedShort();
 		frames = std::vector<MovieClipFrame>(framesCount);
@@ -90,14 +91,14 @@ namespace sc
 		uint32_t pos = swf->stream.initTag();
 
 		int16_t instancesCount = static_cast<int16_t>(instances.size());
-		uint16_t frameCount = instancesCount != 0 ? static_cast<uint16_t>(frames.size()) : 0;
+		uint16_t frameCount = static_cast<uint16_t>(frames.size());
 		int32_t frameElementsCount = frameCount != 0 ? static_cast<int32_t>(frameElements.size()) : 0;
 
 		swf->stream.writeUnsignedShort(m_id);
 		swf->stream.writeUnsignedByte(m_frameRate);
 		swf->stream.writeUnsignedShort(frameCount);
 
-		uint8_t tag = TAG_MOVIE_CLIP_3; // idk how to add tag 35 support bcs we don't know difference between them
+		uint8_t tag = m_unknownFlag ? TAG_MOVIE_CLIP_3 : TAG_MOVIE_CLIP_5; // idk how to add tag 35 support bcs we don't know difference between them
 
 		swf->stream.writeInt(frameElementsCount);
 		for (int32_t i = 0; frameElementsCount > i; i++) {
@@ -120,6 +121,13 @@ namespace sc
 			swf->stream.writeAscii(instances[i].name); // Bind name
 		}
 
+		if (m_matrixBankIndex != 0)
+		{
+			swf->stream.writeUnsignedByte(TAG_MATRIX_BANK_INDEX);
+			swf->stream.writeInt(1);
+			swf->stream.writeUnsignedByte(m_matrixBankIndex);
+		}
+
 		for (uint16_t i = 0; frameCount > i; i++) {
 			frames[i].save(swf); // Frames
 		}
@@ -133,13 +141,6 @@ namespace sc
 			swf->stream.writeTwip(m_scalingGrid->y);
 			swf->stream.writeTwip(m_scalingGrid->width);
 			swf->stream.writeTwip(m_scalingGrid->height);
-		}
-
-		if (m_matrixBankIndex != 0)
-		{
-			swf->stream.writeUnsignedByte(TAG_MATRIX_BANK_INDEX);
-			swf->stream.writeInt(1);
-			swf->stream.writeUnsignedByte(m_matrixBankIndex);
 		}
 
 		swf->stream.writeTag(0);

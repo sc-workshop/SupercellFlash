@@ -13,7 +13,7 @@ namespace sc {
 	{
 		uint32_t pos = swf->stream.initTag();
 
-		uint8_t tag = (uint8_t)type();
+		uint8_t tag = (uint8_t)m_type;
 		swf->stream.writeUnsignedShort(m_id);
 
 		swf->stream.finalizeTag(tag, pos);

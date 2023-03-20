@@ -17,7 +17,7 @@ namespace sc
 		std::string text() { return m_text; }
 
 		std::string fontName() { return m_fontName; }
-		int32_t fontColor() { return m_fontColor; }
+		uint32_t fontColor() { return m_fontColor; }
 		uint8_t fontSize() { return m_fontSize; }
 		uint8_t fontAlign() { return m_fontAlign; }
 
@@ -80,7 +80,7 @@ namespace sc
 		std::string m_text = "";
 
 		std::string m_fontName = "";
-		int32_t m_fontColor = 0xFFFFFF;
+		uint32_t m_fontColor = 0xFFFFFFFF;
 		uint8_t m_fontSize = 0;
 		uint8_t m_fontAlign = 0;
 
@@ -95,13 +95,14 @@ namespace sc
 		bool m_isOutlined = false;
 		bool m_isDynamic = false;
 
-		int32_t m_outlineColor = 0xFFFFFF;
-		bool m_useDeviceFont = false;
+		uint32_t m_outlineColor = 0xFFFFFFFF;
+		bool m_useDeviceFont = true;
 		bool m_autoAdjustFontSize = false;
 
 		float m_bendAngle = 0.0f;
 
 		bool m_unknownFlag = false;
-		int16_t m_unknownShort = 0;
+		uint16_t m_unknownShort = 0xFFFF;
+		uint16_t m_unknownShort2 = 0xFFFF;
 	};
 }

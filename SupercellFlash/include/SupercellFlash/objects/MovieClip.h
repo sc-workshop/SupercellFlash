@@ -46,12 +46,14 @@ namespace sc
 		uint8_t frameRate() { return m_frameRate; }
 		ScalingGrid* scalingGrid() { return m_scalingGrid; }
 		uint8_t matrixBankIndex() { return m_matrixBankIndex; }
+		bool unknownFlag() { return m_unknownFlag; }
 
 		/* Setters */
 	public:
 		void frameRate(uint8_t rate) { m_frameRate = rate; }
 		void scalingGrid(ScalingGrid* grid) { m_scalingGrid = grid; }
 		void matrixBankIndex(uint8_t index) { m_matrixBankIndex = index; }
+		void unknownFlag(bool status) { m_unknownFlag = status; }
 
 	public:
 		void load(SupercellSWF* swf, uint8_t tag);
@@ -62,6 +64,7 @@ namespace sc
 	private:
 		uint8_t m_frameRate = 24;
 
+		bool m_unknownFlag;
 		ScalingGrid* m_scalingGrid = nullptr;
 		uint8_t m_matrixBankIndex = 0;
 	};

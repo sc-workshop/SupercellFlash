@@ -41,7 +41,7 @@ namespace sc
 		if (tag > TAG_TEXT_FIELD_5)
 		{
 			m_unknownShort = swf->stream.readShort();
-			swf->stream.readShort(); // unused
+			m_unknownShort2 = swf->stream.readShort(); // unused
 		}
 
 		if (tag > TAG_TEXT_FIELD_6)
@@ -79,46 +79,47 @@ namespace sc
 
 		swf->stream.writeAscii(m_text);
 
-		// I think we should add some additional fields for supporting all tags saving (TAG_TEXT_FIELD_7)
-		if (m_useDeviceFont)
-		{
+		if (!m_useDeviceFont)
 			tag = TAG_TEXT_FIELD_2;
-			swf->stream.writeBool(m_useDeviceFont);
 
-			if (m_unknownFlag)
-			{
-				tag = TAG_TEXT_FIELD_3;
-				swf->stream.finalizeTag(tag, pos);
-				return;
-			}
-
-			if ((uint32_t)m_outlineColor > 0)
-			{
-				tag = TAG_TEXT_FIELD_4;
-				swf->stream.writeInt(m_outlineColor);
-
-				if (m_unknownShort != 0)
-				{
-					tag = TAG_TEXT_FIELD_5;
-
-					swf->stream.writeShort(m_unknownShort);
-					swf->stream.writeShort(0);
-
-					if (m_bendAngle != 0)
-					{
-						tag = TAG_TEXT_FIELD_6;
-						swf->stream.writeShort((int16_t)(m_bendAngle / 91.019f));
-
-						if (m_autoAdjustFontSize)
-						{
-							tag = TAG_TEXT_FIELD_8;
-							swf->stream.writeBool(m_autoAdjustFontSize);
-						}
-					}
-				}
-			}
+		if (m_outlineColor != 0xFFFFFFFF) {
+			tag = TAG_TEXT_FIELD_4;
 		}
 
+		if (m_unknownShort != 0xFFFF || m_unknownShort2 != 0xFFFF) {
+			tag = TAG_TEXT_FIELD_6;
+		}
+
+		if (m_bendAngle != 0.0f) {
+			tag = TAG_TEXT_FIELD_7;
+		}
+
+		if (m_autoAdjustFontSize) {
+			tag = TAG_TEXT_FIELD_8;
+		}
+
+		if (tag == TAG_TEXT_FIELD) goto FINALIZE;
+
+		swf->stream.writeBool(m_useDeviceFont);
+
+		if (tag == TAG_TEXT_FIELD_2 || tag == TAG_TEXT_FIELD_3) goto FINALIZE;
+
+		swf->stream.writeInt(m_outlineColor);
+
+		if (tag == TAG_TEXT_FIELD_4 || tag == TAG_TEXT_FIELD_5) goto FINALIZE;
+
+		swf->stream.writeShort(m_unknownShort);
+		swf->stream.writeShort(m_unknownShort2);
+
+		if (tag == TAG_TEXT_FIELD_6) goto FINALIZE;
+
+		swf->stream.writeShort((int16_t)(m_bendAngle / 91.019f));
+
+		if (tag == TAG_TEXT_FIELD_7) goto FINALIZE;
+
+		swf->stream.writeBool(m_autoAdjustFontSize);
+
+FINALIZE:
 		swf->stream.finalizeTag(tag, pos);
 	}
 }
