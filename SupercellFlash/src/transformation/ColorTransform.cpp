@@ -4,7 +4,7 @@
 
 namespace sc
 {
-	void ColorTransform::load(SupercellSWF* swf)
+	ColorTransform* ColorTransform::load(SupercellSWF* swf)
 	{
 		redAdd = swf->stream.readUnsignedByte();
 		greenAdd = swf->stream.readUnsignedByte();
@@ -15,6 +15,8 @@ namespace sc
 		redMul = (float)swf->stream.readUnsignedByte() / 255.0f;
 		greenMul = (float)swf->stream.readUnsignedByte() / 255.0f;
 		blueMul = (float)swf->stream.readUnsignedByte() / 255.0f;
+
+		return this;
 	}
 
 	void ColorTransform::save(SupercellSWF* swf)

@@ -11,8 +11,23 @@ namespace sc
 {
 	struct MatrixBank
 	{
-		std::vector<Matrix2x3> matrices;
-		std::vector<ColorTransform> colorTransforms;
+		MatrixBank() {}
+		~MatrixBank() {
+			for (const Matrix2x3* matrix : matrices) {
+				if (matrix != NULL) {
+					delete matrix;
+				}
+			}
+
+			for (const ColorTransform* color : colorTransforms) {
+				if (color != NULL) {
+					delete color;
+				}
+			}
+		}
+
+		std::vector<Matrix2x3*> matrices;
+		std::vector<ColorTransform*> colorTransforms;
 
 		bool getMatrixIndex(Matrix2x3* matrix, uint16_t& index);
 		bool getColorTransformIndex(ColorTransform* color, uint16_t& index);

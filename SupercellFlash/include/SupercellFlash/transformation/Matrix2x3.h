@@ -16,7 +16,7 @@ namespace sc
 		float tx = 0.0f;
 		float ty = 0.0f;
 
-		void load(SupercellSWF* swf, uint8_t tag);
+		Matrix2x3* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
 	};
 }

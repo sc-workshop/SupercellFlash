@@ -241,12 +241,12 @@ namespace sc
 
 			case TAG_MATRIX_2x3:
 			case TAG_MATRIX_2x3_2:
-				matrixBanks[matrixBanksLoaded].matrices[matricesLoaded].load(this, tag);
+				matrixBanks[matrixBanksLoaded].matrices[matricesLoaded] = (new Matrix2x3())->load(this, tag);
 				matricesLoaded++;
 				break;
 
 			case TAG_COLOR_TRANSFORM:
-				matrixBanks[matrixBanksLoaded].colorTransforms[colorTransformsLoaded].load(this);
+				matrixBanks[matrixBanksLoaded].colorTransforms[colorTransformsLoaded] = (new ColorTransform())->load(this);
 				colorTransformsLoaded++;
 				break;
 
@@ -363,11 +363,11 @@ namespace sc
 			}
 
 			for (uint16_t m = 0; matricesCount > m; m++) {
-				matrixBanks[i].matrices[m].save(this);
+				matrixBanks[i].matrices[m]->save(this);
 			}
 
 			for (uint16_t c = 0; colorsCount > c; c++) {
-				matrixBanks[i].colorTransforms[c].save(this);
+				matrixBanks[i].colorTransforms[c]->save(this);
 			}
 		}
 
@@ -381,8 +381,9 @@ namespace sc
 	void SupercellSWF::initMatrixBank(uint16_t matricesCount, uint16_t colorTransformsCount)
 	{
 		MatrixBank bank;
-		bank.matrices = std::vector<Matrix2x3>(matricesCount);
-		bank.colorTransforms = std::vector<ColorTransform>(colorTransformsCount);
+		bank.matrices = std::vector<Matrix2x3*>(matricesCount);
+		bank.colorTransforms = std::vector<ColorTransform*>(colorTransformsCount);
+
 		matrixBanks.push_back(bank);
 	}
 }

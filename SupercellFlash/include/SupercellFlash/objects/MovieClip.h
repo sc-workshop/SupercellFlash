@@ -10,14 +10,14 @@ namespace sc
 	struct MovieClipFrameElement
 	{
 		uint16_t instanceIndex;
-		uint16_t matrixIndex;
-		uint16_t colorTransformIndex;
+		uint16_t matrixIndex = 0xFFFF;
+		uint16_t colorTransformIndex = 0xFFFF;
 	};
 
 	struct DisplayObjectInstance
 	{
 		uint16_t id;
-		uint8_t blend;
+		uint8_t blend = 0;
 		std::string name;
 	};
 

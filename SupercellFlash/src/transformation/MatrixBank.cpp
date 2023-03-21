@@ -13,14 +13,14 @@ namespace sc {
 		}
 
 		for (uint16_t i = 0; matrices.size() > i; i++) {
-			Matrix2x3 m = matrices[i];
+			Matrix2x3* m = matrices[i];
 
-			if (floatEqual(matrix->tx, m.tx) &&
-				floatEqual(matrix->ty, m.ty) &&
-				floatEqual(matrix->a, m.a) &&
-				floatEqual(matrix->d, m.d) &&
-				floatEqual(matrix->b, m.b) &&
-				floatEqual(matrix->c, m.c)) {
+			if (floatEqual(matrix->tx, m->tx) &&
+				floatEqual(matrix->ty, m->ty) &&
+				floatEqual(matrix->a, m->a) &&
+				floatEqual(matrix->d, m->d) &&
+				floatEqual(matrix->b, m->b) &&
+				floatEqual(matrix->c, m->c)) {
 				index = i;
 				return true;
 			}
@@ -42,14 +42,14 @@ namespace sc {
 		}
 
 		for (uint16_t i = 0; colorTransforms.size() > i; i++) {
-			ColorTransform c = colorTransforms[i];
+			ColorTransform* c = colorTransforms[i];
 
-			if (floatEqual(c.alpha, color->alpha) &&
-				floatEqual(c.blueAdd, color->blueAdd) &&
-				floatEqual(c.greenAdd, color->greenAdd) &&
-				floatEqual(c.greenMul, color->greenMul) &&
-				floatEqual(c.redAdd, color->redAdd) &&
-				floatEqual(c.redMul, color->redMul)) {
+			if (floatEqual(c->alpha, color->alpha) &&
+				floatEqual(c->blueAdd, color->blueAdd) &&
+				floatEqual(c->greenAdd, color->greenAdd) &&
+				floatEqual(c->greenMul, color->greenMul) &&
+				floatEqual(c->redAdd, color->redAdd) &&
+				floatEqual(c->redMul, color->redMul)) {
 				index = i;
 				return true;
 			}

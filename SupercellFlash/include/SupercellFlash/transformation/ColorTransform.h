@@ -18,7 +18,7 @@ namespace sc
 
 		float alpha = 1.0f;
 
-		void load(SupercellSWF* swf);
+		ColorTransform* load(SupercellSWF* swf);
 		void save(SupercellSWF* swf);
 	};
 }

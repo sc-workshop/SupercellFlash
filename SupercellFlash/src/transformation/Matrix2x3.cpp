@@ -3,7 +3,7 @@
 #include "SupercellFlash/SupercellSWF.h"
 
 namespace sc {
-	void Matrix2x3::load(SupercellSWF* swf, uint8_t tag) {
+	Matrix2x3* Matrix2x3::load(SupercellSWF* swf, uint8_t tag) {
 		float divider = tag == TAG_MATRIX_2x3 ? 1024.0f : 65535.0f;
 
 		a = (float)swf->stream.readInt() / divider;
@@ -13,6 +13,8 @@ namespace sc {
 
 		tx = swf->stream.readTwip();
 		ty = swf->stream.readTwip();
+
+		return this;
 	}
 
 	void Matrix2x3::save(SupercellSWF* swf)
