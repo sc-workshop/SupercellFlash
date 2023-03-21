@@ -40,6 +40,7 @@ namespace sc
 
 		bool unknownFlag() const { return m_unknownFlag; }
 		int16_t unknownShort() const { return m_unknownShort; }
+		int16_t unknownShort2() const { return m_unknownShort2; }
 
 		/* Setters */
 	public:
@@ -69,6 +70,7 @@ namespace sc
 
 		void unknownFlag(bool status) { m_unknownFlag = status; }
 		void unknownShort(int16_t value) { m_unknownShort = value; }
+		void unknownShort2(int16_t value) { m_unknownShort2 = value; }
 
 	public:
 		void load(SupercellSWF* swf, uint8_t tag);
