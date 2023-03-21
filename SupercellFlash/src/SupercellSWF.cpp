@@ -309,14 +309,15 @@ namespace sc
 		uint16_t textFieldsCount
 	)
 	{
-		if (m_useLowResTexture)
-			stream.writeTag(TAG_USE_LOW_RES_TEXTURE);
+		if (m_useExternalTexture) {
+			if (m_useLowResTexture)
+				stream.writeTag(TAG_USE_LOW_RES_TEXTURE);
 
-		if (m_useMultiResTexture)
-			stream.writeTag(TAG_USE_MULTI_RES_TEXTURE);
+			if (m_useMultiResTexture)
+				stream.writeTag(TAG_USE_MULTI_RES_TEXTURE);
 
-		if (m_useExternalTexture)
 			stream.writeTag(TAG_USE_EXTERNAL_TEXTURE);
+		}
 
 		for (SWFTexture texture : textures) {
 			texture.save(this, !m_useExternalTexture, false);
