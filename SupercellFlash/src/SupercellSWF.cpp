@@ -28,9 +28,9 @@ namespace sc
 			fs::path basename = path.stem();
 			path.remove_filename();
 
-			fs::path multiResFilePath = path / basename.concat(m_multiResFileSuffix + "_tex.sc");
-			fs::path lowResFilePath = path / basename.concat(m_lowResFileSuffix + "_tex.sc");
-			fs::path externalFilePath = path / basename.concat(path.stem().string()).concat("_tex.sc");
+			fs::path multiResFilePath = path / fs::path(basename).concat(m_multiResFileSuffix + "_tex.sc");
+			fs::path lowResFilePath = path / fs::path(basename).concat(m_lowResFileSuffix + "_tex.sc");
+			fs::path externalFilePath = path / fs::path(basename).concat(path.stem().string()).concat("_tex.sc");
 
 			if (m_useMultiResTexture && std::filesystem::exists(multiResFilePath))
 			{
@@ -62,9 +62,9 @@ namespace sc
 			fs::path basename = path.stem();
 			path.remove_filename();
 
-			fs::path multiResFilePath = path / basename.concat(m_multiResFileSuffix + "_tex.sc");
-			fs::path lowResFilePath = path / basename.concat(m_lowResFileSuffix + "_tex.sc");
-			fs::path externalFilePath = path / basename.concat(path.stem().string()).concat("_tex.sc");
+			fs::path multiResFilePath = path / fs::path(basename).concat(m_multiResFileSuffix + "_tex.sc");
+			fs::path lowResFilePath = path / fs::path(basename).concat(m_lowResFileSuffix + "_tex.sc");
+			fs::path externalFilePath = path / fs::path(basename).concat(path.stem().string()).concat("_tex.sc");
 
 			for (SWFTexture texture : textures) {
 				if (texture.data.size() == 0) {
