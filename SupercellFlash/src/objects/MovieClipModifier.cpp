@@ -3,10 +3,12 @@
 #include "SupercellFlash/SupercellSWF.h"
 
 namespace sc {
-	void MovieClipModifier::load(SupercellSWF* swf, uint8_t tag)
+	MovieClipModifier* MovieClipModifier::load(SupercellSWF* swf, uint8_t tag)
 	{
 		m_id = swf->stream.readUnsignedShort();
 		m_type = (Type)tag;
+
+		return this;
 	}
 
 	void MovieClipModifier::save(SupercellSWF* swf)

@@ -37,7 +37,7 @@ namespace sc
 			1
 		});
 
-	void SWFTexture::load(sc::SupercellSWF* swf, uint8_t tag, bool useExternalTexture)
+	SWFTexture* SWFTexture::load(sc::SupercellSWF* swf, uint8_t tag, bool useExternalTexture)
 	{
 		/* Binary data processing */
 
@@ -77,6 +77,8 @@ namespace sc
 
 			swf->stream.read(data.data(), dataSize);
 		}
+
+		return this;
 	};
 
 	void SWFTexture::save(SupercellSWF* swf, bool isExternal, bool isLowres) {

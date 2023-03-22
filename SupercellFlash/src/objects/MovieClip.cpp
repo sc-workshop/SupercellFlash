@@ -5,47 +5,54 @@
 
 namespace sc
 {
-	void MovieClip::load(SupercellSWF* swf, uint8_t tag)
+	MovieClip::MovieClip() { }
+	MovieClip::~MovieClip() {
+
+	}
+
+	MovieClip* MovieClip::load(SupercellSWF* swf, uint8_t tag)
 	{
 		m_id = swf->stream.readUnsignedShort();
 		m_frameRate = swf->stream.readUnsignedByte();
 		m_unknownFlag = tag == TAG_MOVIE_CLIP_5;
 
 		uint16_t framesCount = swf->stream.readUnsignedShort();
-		frames = std::vector<MovieClipFrame>(framesCount);
+		frames = std::vector<MovieClipFrame*>(framesCount);
 
 		if (tag == TAG_MOVIE_CLIP || tag == TAG_MOVIE_CLIP_4)
 			throw std::runtime_error("TAG_MOVIE_CLIP and TAG_MOVIE_CLIP_4 is unsupported");
 
 		int32_t frameElementsCount = swf->stream.readInt();
-		frameElements = std::vector<MovieClipFrameElement>(frameElementsCount);
+		frameElements = std::vector<MovieClipFrameElement*>(frameElementsCount);
 
 		for (int32_t i = 0; i < frameElementsCount; i++)
 		{
-			frameElements[i].instanceIndex = swf->stream.readUnsignedShort();
-			frameElements[i].matrixIndex = swf->stream.readUnsignedShort();
-			frameElements[i].colorTransformIndex = swf->stream.readUnsignedShort();
+			frameElements[i] = new MovieClipFrameElement();
+			frameElements[i]->instanceIndex = swf->stream.readUnsignedShort();
+			frameElements[i]->matrixIndex = swf->stream.readUnsignedShort();
+			frameElements[i]->colorTransformIndex = swf->stream.readUnsignedShort();
 		}
 
 		uint16_t instancesCount = swf->stream.readUnsignedShort();
-		instances = std::vector<DisplayObjectInstance>(instancesCount);
+		instances = std::vector<DisplayObjectInstance*>(instancesCount);
 
 		for (int16_t i = 0; i < instancesCount; i++)
 		{
-			instances[i].id = swf->stream.readUnsignedShort();
+			instances[i] = new DisplayObjectInstance();
+			instances[i]->id = swf->stream.readUnsignedShort();
 		}
 
 		if (tag == TAG_MOVIE_CLIP_3 || tag == TAG_MOVIE_CLIP_5)
 		{
 			for (int16_t i = 0; i < instancesCount; i++)
 			{
-				instances[i].blend = swf->stream.readUnsignedByte();
+				instances[i]->blend = swf->stream.readUnsignedByte();
 			}
 		}
 
 		for (int16_t i = 0; i < instancesCount; i++)
 		{
-			instances[i].name = swf->stream.readAscii();
+			instances[i]->name = swf->stream.readAscii();
 		}
 
 		uint16_t framesLoaded = 0;
@@ -63,7 +70,7 @@ namespace sc
 			switch (frameTag)
 			{
 			case TAG_MOVIE_CLIP_FRAME_2:
-				frames[framesLoaded].load(swf);
+				frames[framesLoaded] = (new MovieClipFrame)->load(swf);
 				framesLoaded++;
 				break;
 
@@ -84,6 +91,8 @@ namespace sc
 				break;
 			}
 		}
+
+		return this;
 	}
 
 	void MovieClip::save(SupercellSWF* swf)
@@ -102,23 +111,23 @@ namespace sc
 
 		swf->stream.writeInt(frameElementsCount);
 		for (int32_t i = 0; frameElementsCount > i; i++) {
-			swf->stream.writeUnsignedShort(frameElements[i].instanceIndex);
-			swf->stream.writeUnsignedShort(frameElements[i].matrixIndex);
-			swf->stream.writeUnsignedShort(frameElements[i].colorTransformIndex);
+			swf->stream.writeUnsignedShort(frameElements[i]->instanceIndex);
+			swf->stream.writeUnsignedShort(frameElements[i]->matrixIndex);
+			swf->stream.writeUnsignedShort(frameElements[i]->colorTransformIndex);
 		}
 
 		swf->stream.writeShort(instancesCount);
 
 		for (int16_t i = 0; instancesCount > i; i++) {
-			swf->stream.writeUnsignedShort(instances[i].id); // Ids
+			swf->stream.writeUnsignedShort(instances[i]->id); // Ids
 		}
 
 		for (int16_t i = 0; instancesCount > i; i++) {
-			swf->stream.writeUnsignedByte(instances[i].blend); //Blend modes. TODO: move to enum
+			swf->stream.writeUnsignedByte(instances[i]->blend); //Blend modes. TODO: move to enum
 		}
 
 		for (int16_t i = 0; instancesCount > i; i++) {
-			swf->stream.writeAscii(instances[i].name); // Bind name
+			swf->stream.writeAscii(instances[i]->name); // Bind name
 		}
 
 		if (m_matrixBankIndex != 0)
@@ -129,7 +138,7 @@ namespace sc
 		}
 
 		for (uint16_t i = 0; frameCount > i; i++) {
-			frames[i].save(swf); // Frames
+			frames[i]->save(swf); // Frames
 		}
 
 		if (m_scalingGrid)

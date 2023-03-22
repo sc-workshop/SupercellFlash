@@ -7,12 +7,21 @@
 
 namespace sc
 {
-	void Shape::load(SupercellSWF* swf, uint8_t tag)
+	Shape::Shape() { };
+	Shape::~Shape() {
+		for (const ShapeDrawBitmapCommand* command : commands) {
+			if (command != NULL) {
+				delete command;
+			}
+		}
+		commands.clear();
+	}
+	Shape* Shape::load(SupercellSWF* swf, uint8_t tag)
 	{
 		m_id = swf->stream.readUnsignedShort();
 
 		uint16_t m_commandsCount = swf->stream.readUnsignedShort();
-		commands = std::vector<ShapeDrawBitmapCommand>(m_commandsCount);
+		commands = std::vector<ShapeDrawBitmapCommand*>(m_commandsCount);
 
 		if (tag == TAG_SHAPE_2)
 			swf->stream.readUnsignedShort(); // total vertices count
@@ -34,7 +43,7 @@ namespace sc
 			case TAG_SHAPE_DRAW_BITMAP_COMMAND:
 			case TAG_SHAPE_DRAW_BITMAP_COMMAND_2:
 			case TAG_SHAPE_DRAW_BITMAP_COMMAND_3:
-				commands[commandsLoaded].load(swf, commandTag);
+				commands[commandsLoaded] = (new ShapeDrawBitmapCommand())->load(swf, commandTag);
 				commandsLoaded++;
 				break;
 
@@ -43,6 +52,8 @@ namespace sc
 				break;
 			}
 		}
+
+		return this;
 	}
 
 	void Shape::save(SupercellSWF* swf)
@@ -58,7 +69,7 @@ namespace sc
 
 		uint16_t totalVerticesCount = 0;
 		for (uint16_t i = 0; commandsCount > i; i++) {
-			totalVerticesCount += static_cast<uint16_t>(commands[i].vertices.size());
+			totalVerticesCount += static_cast<uint16_t>(commands[i]->vertices.size());
 		}
 
 		if (TAG_SHAPE_2 == 18)
@@ -66,7 +77,7 @@ namespace sc
 
 		if (totalVerticesCount != 0) {
 			for (uint16_t i = 0; commandsCount > i; i++) {
-				commands[i].save(swf, tag);
+				commands[i]->save(swf, tag);
 			}
 		}
 

@@ -19,17 +19,17 @@ namespace sc
 	class ShapeDrawBitmapCommand
 	{
 	public:
-		ShapeDrawBitmapCommand() { }
-		virtual ~ShapeDrawBitmapCommand() { }
+		ShapeDrawBitmapCommand();
+		~ShapeDrawBitmapCommand();
 
 		/* Functions */
 	public:
-		void load(SupercellSWF* swf, uint8_t tag);
+		ShapeDrawBitmapCommand* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf, uint8_t shapeTag);
 
 		/* Vertices */
 	public:
-		std::vector<ShapeDrawBitmapCommandVertex> vertices;
+		std::vector<ShapeDrawBitmapCommandVertex*> vertices;
 
 		/* Getters */
 	public:

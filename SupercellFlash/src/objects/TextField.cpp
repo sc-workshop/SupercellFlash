@@ -3,7 +3,7 @@
 
 namespace sc
 {
-	void TextField::load(SupercellSWF* swf, uint8_t tag)
+	TextField* TextField::load(SupercellSWF* swf, uint8_t tag)
 	{
 		m_id = swf->stream.readUnsignedShort();
 
@@ -28,7 +28,7 @@ namespace sc
 		m_text = swf->stream.readAscii();
 
 		if (tag == TAG_TEXT_FIELD)
-			return;
+			return this;
 
 		m_useDeviceFont = swf->stream.readBool();
 
@@ -49,6 +49,8 @@ namespace sc
 
 		if (tag > TAG_TEXT_FIELD_7)
 			m_autoAdjustFontSize = swf->stream.readBool();
+
+		return this;
 	}
 
 	void TextField::save(SupercellSWF* swf)

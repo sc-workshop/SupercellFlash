@@ -11,14 +11,14 @@ namespace sc
 	class Shape : public DisplayObject
 	{
 	public:
-		Shape() { }
-		virtual ~Shape() { }
+		Shape();
+		~Shape();
 
 	public:
-		std::vector<ShapeDrawBitmapCommand> commands;
+		std::vector<ShapeDrawBitmapCommand*> commands;
 
 	public:
-		void load(SupercellSWF* swf, uint8_t tag);
+		Shape* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
 
 		bool isShape() const override { return true; }

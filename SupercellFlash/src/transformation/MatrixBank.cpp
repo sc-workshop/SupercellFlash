@@ -1,6 +1,24 @@
 #include "SupercellFlash/transformation/MatrixBank.h"
 
 namespace sc {
+	MatrixBank::MatrixBank() {};
+	MatrixBank::~MatrixBank() {
+		for (const Matrix2x3* matrix : matrices) {
+			if (matrix != NULL) {
+				delete matrix;
+			}
+		}
+
+		for (const ColorTransform* color : colorTransforms) {
+			if (color != NULL) {
+				delete color;
+			}
+		}
+
+		matrices.clear();
+		colorTransforms.clear();
+	}
+
 	bool MatrixBank::getMatrixIndex(Matrix2x3* matrix, uint16_t& index) {
 		if (floatEqual(matrix->a, 1.0f) &&
 			floatEqual(matrix->b, 0) &&

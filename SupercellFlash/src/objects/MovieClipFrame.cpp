@@ -4,10 +4,12 @@
 
 namespace sc
 {
-	void MovieClipFrame::load(SupercellSWF* swf)
+	MovieClipFrame* MovieClipFrame::load(SupercellSWF* swf)
 	{
 		elementsCount = swf->stream.readUnsignedShort();
 		label = swf->stream.readAscii();
+
+		return this;
 	}
 
 	void MovieClipFrame::save(SupercellSWF* swf)

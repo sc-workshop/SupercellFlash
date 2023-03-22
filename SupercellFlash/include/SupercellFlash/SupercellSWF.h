@@ -35,14 +35,14 @@ namespace sc
 
 		// Vectors with objects
 	public:
-		std::vector<MatrixBank> matrixBanks;
+		std::vector<MatrixBank*> matrixBanks;
 
-		std::vector<SWFTexture> textures;
-		std::vector<Shape> shapes;
-		std::vector<MovieClip> movieClips;
-		std::vector<TextField> textFields;
-		std::vector<MovieClipModifier> movieClipModifiers;
-		std::vector<ExportName> exports;
+		std::vector<SWFTexture*> textures;
+		std::vector<Shape*> shapes;
+		std::vector<MovieClip*> movieClips;
+		std::vector<TextField*> textFields;
+		std::vector<MovieClipModifier*> movieClipModifiers;
+		std::vector<ExportName*> exports;
 
 		// Class functions
 	public:

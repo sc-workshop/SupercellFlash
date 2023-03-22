@@ -8,7 +8,7 @@ namespace sc
 	{
 		/* Functions */
 	public:
-		void load(SupercellSWF* swf, uint8_t tag, bool useExternalTexture);
+		SWFTexture* load(SupercellSWF* swf, uint8_t tag, bool useExternalTexture);
 		void save(SupercellSWF* swf, bool isExternal, bool isLowres);
 
 		/* Enums */

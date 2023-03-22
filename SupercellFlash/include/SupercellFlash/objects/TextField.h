@@ -73,7 +73,7 @@ namespace sc
 		void unknownShort2(int16_t value) { m_unknownShort2 = value; }
 
 	public:
-		void load(SupercellSWF* swf, uint8_t tag);
+		TextField* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
 
 		bool isTextField() const override { return true; }

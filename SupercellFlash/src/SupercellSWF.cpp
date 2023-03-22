@@ -16,6 +16,54 @@ namespace sc
 
 	SupercellSWF::~SupercellSWF()
 	{
+		for (const MatrixBank* bank : matrixBanks) {
+			if (bank != NULL) {
+				delete bank;
+			}
+		}
+		matrixBanks.clear();
+
+		for (const SWFTexture* texture : textures) {
+			if (texture != NULL) {
+				delete texture;
+			}
+		}
+		textures.clear();
+
+		for (const Shape* shape : shapes) {
+			if (shape != NULL) {
+				delete shape;
+			}
+		}
+		shapes.clear();
+
+		for (const MovieClip* movie : movieClips) {
+			if (movie != NULL) {
+				delete movie;
+			}
+		}
+		movieClips.clear();
+
+		for (const TextField* field : textFields) {
+			if (field != NULL) {
+				delete field;
+			}
+		}
+		textFields.clear();
+
+		for (const MovieClipModifier* modifier : movieClipModifiers) {
+			if (modifier != NULL) {
+				delete modifier;
+			}
+		}
+		movieClipModifiers.clear();
+
+		for (const ExportName* exportName : exports) {
+			if (exportName != NULL) {
+				delete exportName;
+			}
+		}
+		exports.clear();
 	}
 
 	void SupercellSWF::load(const std::string& filePath)
@@ -66,20 +114,20 @@ namespace sc
 			fs::path lowResFilePath = path / fs::path(basename).concat(m_lowResFileSuffix + "_tex.sc");
 			fs::path externalFilePath = path / fs::path(basename).concat(path.stem().string()).concat("_tex.sc");
 
-			for (SWFTexture texture : textures) {
-				if (texture.data.size() == 0) {
+			for (SWFTexture* texture : textures) {
+				if (texture->data.size() == 0) {
 					stream.clear();
 					return;
 				}
-				texture.save(this, true, false);
+				texture->save(this, true, false);
 			}
 			stream.writeTag(0);
 
 			stream.save(m_useMultiResTexture ? multiResFilePath.string() : externalFilePath.string(), signature);
 
 			if (m_useLowResTexture || m_useMultiResTexture) {
-				for (SWFTexture texture : textures) {
-					texture.save(this, true, true);
+				for (SWFTexture* texture : textures) {
+					texture->save(this, true, true);
 				}
 				stream.writeTag(0);
 
@@ -96,16 +144,16 @@ namespace sc
 		if (!isTexture)
 		{
 			uint16_t shapesCount = stream.readUnsignedShort();
-			shapes = std::vector<Shape>(shapesCount);
+			shapes = std::vector<Shape*>(shapesCount);
 
 			uint16_t movieClipsCount = stream.readUnsignedShort();
-			movieClips = std::vector<MovieClip>(movieClipsCount);
+			movieClips = std::vector<MovieClip*>(movieClipsCount);
 
 			uint16_t texturesCount = stream.readUnsignedShort();
-			textures = std::vector<SWFTexture>(texturesCount);
+			textures = std::vector<SWFTexture*>(texturesCount);
 
 			uint16_t textFieldsCount = stream.readUnsignedShort();
-			textFields = std::vector<TextField>(textFieldsCount);
+			textFields = std::vector<TextField*>(textFieldsCount);
 
 			uint16_t matricesCount = stream.readUnsignedShort();
 			uint16_t colorTransformsCount = stream.readUnsignedShort();
@@ -114,16 +162,18 @@ namespace sc
 			stream.skip(5); // unused
 
 			uint16_t exportsCount = stream.readUnsignedShort();
-			exports = std::vector < ExportName >(exportsCount);
+			exports = std::vector < ExportName* >(exportsCount);
 
 			for (uint16_t i = 0; i < exportsCount; i++)
 			{
-				exports[i].id = stream.readUnsignedShort();
+				exports[i] = new ExportName();
+
+				exports[i]->id = stream.readUnsignedShort();
 			}
 
 			for (uint16_t i = 0; i < exportsCount; i++)
 			{
-				exports[i].name = stream.readAscii();
+				exports[i]->name = stream.readAscii();
 			}
 		}
 
@@ -186,20 +236,20 @@ namespace sc
 				if (textures.size() < texturesLoaded) {
 					throw std::runtime_error("Trying to load too many textures");
 				}
-				textures[texturesLoaded].load(this, tag, useExternalTexture);
+				textures[texturesLoaded] = (new SWFTexture())->load(this, tag, useExternalTexture);
 				texturesLoaded++;
 				break;
 
 			case TAG_MOVIE_CLIP_MODIFIERS_COUNT: {
 				uint16_t movieClipModifiersCount = stream.readUnsignedShort();
-				movieClipModifiers = std::vector<MovieClipModifier>(movieClipModifiersCount);
+				movieClipModifiers = std::vector<MovieClipModifier*>(movieClipModifiersCount);
 				break;
 			}
 
 			case TAG_MOVIE_CLIP_MODIFIER:
 			case TAG_MOVIE_CLIP_MODIFIER_2:
 			case TAG_MOVIE_CLIP_MODIFIER_3:
-				movieClipModifiers[movieClipModifiersLoaded].load(this, tag);
+				movieClipModifiers[movieClipModifiersLoaded] = (new MovieClipModifier())->load(this, tag);
 				movieClipModifiersLoaded++;
 				break;
 
@@ -208,7 +258,7 @@ namespace sc
 				if (shapes.size() < shapesLoaded) {
 					throw std::runtime_error("Trying to load too many Shapes");
 				}
-				shapes[shapesLoaded].load(this, tag);
+				shapes[shapesLoaded] = (new Shape())->load(this, tag);
 				shapesLoaded++;
 				break;
 
@@ -224,7 +274,7 @@ namespace sc
 					throw std::runtime_error("Trying to load too many TextFields");
 				}
 
-				textFields[textFieldsLoaded].load(this, tag);
+				textFields[textFieldsLoaded] = (new TextField())->load(this, tag);
 				textFieldsLoaded++;
 				break;
 
@@ -241,12 +291,12 @@ namespace sc
 
 			case TAG_MATRIX_2x3:
 			case TAG_MATRIX_2x3_2:
-				matrixBanks[matrixBanksLoaded].matrices[matricesLoaded] = (new Matrix2x3())->load(this, tag);
+				matrixBanks[matrixBanksLoaded]->matrices[matricesLoaded] = (new Matrix2x3())->load(this, tag);
 				matricesLoaded++;
 				break;
 
 			case TAG_COLOR_TRANSFORM:
-				matrixBanks[matrixBanksLoaded].colorTransforms[colorTransformsLoaded] = (new ColorTransform())->load(this);
+				matrixBanks[matrixBanksLoaded]->colorTransforms[colorTransformsLoaded] = (new ColorTransform())->load(this);
 				colorTransformsLoaded++;
 				break;
 
@@ -258,7 +308,7 @@ namespace sc
 				if (movieClips.size() < movieClipsLoaded) {
 					throw std::runtime_error("Trying to load too many MovieClips");
 				}
-				movieClips[movieClipsLoaded].load(this, tag);
+				movieClips[movieClipsLoaded] = (new MovieClip())->load(this, tag);
 				movieClipsLoaded++;
 				break;
 
@@ -274,7 +324,7 @@ namespace sc
 	void SupercellSWF::saveInternal()
 	{
 		if (matrixBanks.size() == 0)
-			matrixBanks = std::vector<MatrixBank>(0);
+			matrixBanks.push_back(new MatrixBank());
 
 		uint16_t exportsCount = static_cast<uint16_t>(exports.size());
 		uint16_t shapeCount = static_cast<uint16_t>(shapes.size());
@@ -287,8 +337,8 @@ namespace sc
 		stream.writeUnsignedShort(texturesCount);
 		stream.writeUnsignedShort(textFieldsCount);
 
-		stream.writeUnsignedShort(static_cast<uint16_t>(matrixBanks[0].matrices.size()));
-		stream.writeUnsignedShort(static_cast<uint16_t>(matrixBanks[0].colorTransforms.size()));
+		stream.writeUnsignedShort(static_cast<uint16_t>(matrixBanks[0]->matrices.size()));
+		stream.writeUnsignedShort(static_cast<uint16_t>(matrixBanks[0]->colorTransforms.size()));
 
 		// unused 5 bytes
 		stream.writeUnsignedByte(0);
@@ -298,12 +348,12 @@ namespace sc
 
 		for (uint16_t i = 0; exportsCount > i; i++)
 		{
-			stream.writeUnsignedShort(exports[i].id);
+			stream.writeUnsignedShort(exports[i]->id);
 		}
 
 		for (uint16_t i = 0; exportsCount > i; i++)
 		{
-			stream.writeAscii(exports[i].name);
+			stream.writeAscii(exports[i]->name);
 		}
 
 		saveTags(shapeCount, movieClipsCount, texturesCount, textFieldsCount);
@@ -326,8 +376,8 @@ namespace sc
 			stream.writeTag(TAG_USE_EXTERNAL_TEXTURE);
 		}
 
-		for (SWFTexture texture : textures) {
-			texture.save(this, !m_useExternalTexture, false);
+		for (SWFTexture* texture : textures) {
+			texture->save(this, !m_useExternalTexture, false);
 		}
 
 		if (movieClipModifiers.size() > 0) {
@@ -336,24 +386,24 @@ namespace sc
 			stream.writeInt(sizeof(uint16_t));
 			stream.writeUnsignedShort(modifiersCount);
 
-			for (MovieClipModifier modifier : movieClipModifiers) {
-				modifier.save(this);
+			for (MovieClipModifier* modifier : movieClipModifiers) {
+				modifier->save(this);
 			}
 		}
 
 		for (uint16_t i = 0; shapeCount > i; i++) {
-			shapes[i].save(this);
+			shapes[i]->save(this);
 		}
 
 		for (uint16_t i = 0; textFieldsCount > i; i++) {
-			textFields[i].save(this);
+			textFields[i]->save(this);
 		}
 
 		uint8_t matrixBanksCount = static_cast<uint8_t>(matrixBanks.size());
 
 		for (uint8_t i = 0; matrixBanksCount > i; i++) {
-			uint16_t matricesCount = static_cast<uint16_t>(matrixBanks[i].matrices.size());
-			uint16_t colorsCount = static_cast<uint16_t>(matrixBanks[i].colorTransforms.size());
+			uint16_t matricesCount = static_cast<uint16_t>(matrixBanks[i]->matrices.size());
+			uint16_t colorsCount = static_cast<uint16_t>(matrixBanks[i]->colorTransforms.size());
 
 			if (i != 0) {
 				uint32_t bankPos = stream.initTag();
@@ -363,16 +413,16 @@ namespace sc
 			}
 
 			for (uint16_t m = 0; matricesCount > m; m++) {
-				matrixBanks[i].matrices[m]->save(this);
+				matrixBanks[i]->matrices[m]->save(this);
 			}
 
 			for (uint16_t c = 0; colorsCount > c; c++) {
-				matrixBanks[i].colorTransforms[c]->save(this);
+				matrixBanks[i]->colorTransforms[c]->save(this);
 			}
 		}
 
 		for (uint16_t i = 0; movieClipsCount > i; i++) {
-			movieClips[i].save(this);
+			movieClips[i]->save(this);
 		}
 
 		stream.writeTag(TAG_END); // EoF
@@ -380,9 +430,9 @@ namespace sc
 
 	void SupercellSWF::initMatrixBank(uint16_t matricesCount, uint16_t colorTransformsCount)
 	{
-		MatrixBank bank;
-		bank.matrices = std::vector<Matrix2x3*>(matricesCount);
-		bank.colorTransforms = std::vector<ColorTransform*>(colorTransformsCount);
+		MatrixBank* bank = new MatrixBank();
+		bank->matrices = std::vector<Matrix2x3*>(matricesCount);
+		bank->colorTransforms = std::vector<ColorTransform*>(colorTransformsCount);
 
 		matrixBanks.push_back(bank);
 	}

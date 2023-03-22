@@ -32,14 +32,14 @@ namespace sc
 	class MovieClip : public DisplayObject
 	{
 	public:
-		MovieClip() { }
-		virtual ~MovieClip() { }
+		MovieClip();
+		~MovieClip();
 
 		/*Vectors*/
 	public:
-		std::vector<MovieClipFrameElement> frameElements;
-		std::vector<DisplayObjectInstance> instances;
-		std::vector<MovieClipFrame> frames;
+		std::vector<MovieClipFrameElement*> frameElements;
+		std::vector<DisplayObjectInstance*> instances;
+		std::vector<MovieClipFrame*> frames;
 
 		/* Getters */
 	public:
@@ -56,7 +56,7 @@ namespace sc
 		void unknownFlag(bool status) { m_unknownFlag = status; }
 
 	public:
-		void load(SupercellSWF* swf, uint8_t tag);
+		MovieClip* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
 
 		bool isMovieClip() const override { return true; }

@@ -18,7 +18,7 @@ namespace sc
 			Unmasked,
 		};
 
-		void load(SupercellSWF* swf, uint8_t tag);
+		MovieClipModifier* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
 
 		bool isMovieClipModifier() const override { return true; }

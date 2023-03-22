@@ -12,7 +12,7 @@ namespace sc
 		uint16_t elementsCount;
 		std::string label;
 
-		void load(SupercellSWF* swf);
+		MovieClipFrame* load(SupercellSWF* swf);
 		void save(SupercellSWF* movieClipStream);
 	};
 }
