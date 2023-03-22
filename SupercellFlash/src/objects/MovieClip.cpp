@@ -7,7 +7,26 @@ namespace sc
 {
 	MovieClip::MovieClip() { }
 	MovieClip::~MovieClip() {
+		for (const DisplayObjectInstance* instance : instances) {
+			if (instance != NULL) {
+				delete instance;
+			}
+		}
+		instances.clear();
 
+		for (const MovieClipFrameElement* element : frameElements) {
+			if (element != NULL) {
+				delete element;
+			}
+		}
+		frameElements.clear();
+
+		for (const MovieClipFrame* frame : frames) {
+			if (frame != NULL) {
+				delete frame;
+			}
+		}
+		frames.clear();
 	}
 
 	MovieClip* MovieClip::load(SupercellSWF* swf, uint8_t tag)
