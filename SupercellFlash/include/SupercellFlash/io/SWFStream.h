@@ -32,11 +32,14 @@ namespace sc {
 		void save(const std::string filepath, CompressionSignature signature) {
 			BufferStream input(&buffer);
 			WriteFileStream output(filepath);
-#ifdef SC_DEBUG
-			output.write(buffer.data(), buffer.size());
-#else
-			Compressor::compress(input, output, signature, nullptr);
-#endif
+
+			if (signature != CompressionSignature::NONE) {
+				output.write(buffer.data(), buffer.size());
+			}
+			else {
+				Compressor::compress(input, output, signature, nullptr);
+			}
+			
 			clear();
 		}
 
