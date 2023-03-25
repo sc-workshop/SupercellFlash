@@ -33,7 +33,7 @@ namespace sc {
 			BufferStream input(&buffer);
 			WriteFileStream output(filepath);
 
-			if (signature != CompressionSignature::NONE) {
+			if (signature == CompressionSignature::NONE) {
 				output.write(buffer.data(), buffer.size());
 			}
 			else {
