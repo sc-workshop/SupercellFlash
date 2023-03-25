@@ -113,9 +113,8 @@ namespace sc
 		}
 
 		/* Image data processing */
-
-		if (data.size() <= 0) {
-			throw std::runtime_error("SWFTexture image data is empty");
+		if (data.size() != (m_width * m_height) * pixelByteSize()) {
+			throw std::runtime_error("SWFTexture image data has wrong number of bytes! ");
 		}
 
 		swf->stream.writeUnsignedByte(pixelIndex());
@@ -195,7 +194,7 @@ namespace sc
 							uint16_t block_pixel_x = pixelIndex % width;
 							uint16_t block_pixel_y = static_cast<uint32_t>(pixelIndex / width);
 							uint32_t block_target = (block_pixel_y * width + block_pixel_x) * pixelSize;
-							memcpy(image.data() + target, texture.data.data() + target, pixelSize);
+							memcpy(image.data() + block_target, texture.data.data() + target, pixelSize);
 						}
 
 						pixelIndex++;
@@ -212,7 +211,10 @@ namespace sc
 
 		bool toLinear = m_linear == false && status == true;
 
-		data = SWFTexture::processLinearData(*this, toLinear);
+		if (data.size() != 0) {
+			data = SWFTexture::processLinearData(*this, toLinear);
+		}
+		
 		m_linear = status;
 	};
 }
