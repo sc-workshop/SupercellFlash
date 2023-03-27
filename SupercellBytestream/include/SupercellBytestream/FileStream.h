@@ -11,7 +11,7 @@ namespace fs = std::filesystem;
 namespace sc {
 	class FileStream : public Bytestream {
 	protected:
-		FILE* file;
+		FILE* file = NULL;
 		uint32_t fileSize = 0;
 
 		void fileInitialize() {

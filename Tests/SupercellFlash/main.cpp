@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
 		/* Save test */
 		std::chrono::time_point savingStart = high_resolution_clock::now();
-		swf.save(filename + "_new.sc", sc::CompressionSignature::LZMA);
+		swf.save(filename + "_new.sc", sc::CompressionSignature::NONE);
 
 		endTime = high_resolution_clock::now();
 		std::cout << "Saving took: ";

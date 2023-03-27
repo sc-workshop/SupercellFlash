@@ -12,6 +12,14 @@ namespace sc
 		TextField() { }
 		virtual ~TextField() { }
 
+		enum class Align : uint8_t
+		{
+			Left,
+			Center,
+			Right,
+			Justify
+		};
+
 		/* Getters */
 	public:
 		std::string text() { return m_text; }
@@ -19,7 +27,7 @@ namespace sc
 		std::string fontName() { return m_fontName; }
 		uint32_t fontColor() { return m_fontColor; }
 		uint8_t fontSize() { return m_fontSize; }
-		uint8_t fontAlign() { return m_fontAlign; }
+		Align fontAlign() { return m_fontAlign; }
 
 		int16_t left() { return m_left; }
 		int16_t top() { return m_top; }
@@ -49,7 +57,7 @@ namespace sc
 		void fontName(const std::string& newfontName) { m_fontName = newfontName; }
 		void fontColor(int32_t color) { m_fontColor = color; }
 		void fontSize(uint8_t size) { m_fontSize = size; }
-		void fontAlign(uint8_t align) { m_fontAlign = align; }
+		void fontAlign(Align align) { m_fontAlign = align; }
 
 		void left(int16_t left) { m_left = left; }
 		void top(int16_t top) { m_top = top; }
@@ -84,7 +92,9 @@ namespace sc
 		std::string m_fontName = "";
 		uint32_t m_fontColor = 0xFFFFFFFF;
 		uint8_t m_fontSize = 0;
-		uint8_t m_fontAlign = 0;
+		Align m_fontAlign = Align::Left;
+
+		uint8_t m_fontSets = 0; // TODO: move all this seperate booleans
 
 		int16_t m_left = 0;
 		int16_t m_top = 0;

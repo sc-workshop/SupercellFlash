@@ -15,7 +15,19 @@ namespace sc
 		m_isMultiline = swf->stream.readBool();
 		m_isDynamic = swf->stream.readBool();
 
-		m_fontAlign = swf->stream.readUnsignedByte();
+		uint8_t fontSets = swf->stream.readUnsignedByte();
+		if ((fontSets & 1) != 0) {
+			m_fontAlign = Align::Right;
+		}
+		if ((fontSets & 2) != 0) {
+			m_fontAlign = Align::Center;
+		}
+		if ((fontSets & 4) != 0) {
+			m_fontAlign = Align::Justify;
+		}
+
+		m_fontSets = fontSets; // just for some time
+
 		m_fontSize = swf->stream.readUnsignedByte();
 
 		m_left = swf->stream.readShort();
@@ -69,7 +81,47 @@ namespace sc
 		swf->stream.writeBool(m_isMultiline);
 		swf->stream.writeBool(m_isDynamic);
 
-		swf->stream.writeUnsignedByte(m_fontAlign);
+		uint8_t fontSets = 0;
+
+		switch (m_fontAlign)
+		{
+		case sc::TextField::Align::Right:
+			fontSets |= (1 << 0);
+			break;
+		case sc::TextField::Align::Center:
+			fontSets |= (1 << 1);
+			break;
+		case sc::TextField::Align::Justify:
+			fontSets |= (1 << 2);
+			break;
+		case sc::TextField::Align::Left:
+		default:
+			break;
+		}
+
+		bool bool3 = (m_fontSets & 8) != 0;
+		bool bool4 = (m_fontSets & 16) != 0;
+		bool bool5 = (m_fontSets & 32) != 0;
+		bool bool6 = (m_fontSets & 64) != 0;
+		bool bool7 = (m_fontSets & 128) != 0;
+
+		if (bool3) {
+			fontSets |= (1 << 3);
+		}
+		if (bool4) {
+			fontSets |= (1 << 4);
+		}
+		if (bool5) {
+			fontSets |= (1 << 5);
+		}
+		if (bool6) {
+			fontSets |= (1 << 6);
+		}
+		if (bool7) {
+			fontSets |= (1 << 7);
+		}
+
+		swf->stream.writeUnsignedByte(fontSets);
 		swf->stream.writeUnsignedByte(m_fontSize);
 
 		swf->stream.writeShort(m_left);
