@@ -31,10 +31,17 @@ namespace sc {
 			throw DecompressException("Failed to initialize ZSTD stream in decompress");
 		}
 
-		uint64_t unpackedSize = ZSTD_getDecompressedSize(inStream.data(), inStream.size());
+		size_t bufferSize = inStream.size() - inStream.tell();
+		void* buffer = malloc(bufferSize);
+		if (buffer == NULL) {
+			throw DecompressException("Failed to alloc memory to get decompressed size");
+		}
+		inStream.read(buffer, bufferSize);
+		uint64_t unpackedSize = ZSTD_getDecompressedSize(buffer, inStream.size());
 		if (unpackedSize == 0) {
 			unpackedSize = inStream.size() - inStream.tell();
 		}
+		free(buffer);
 
 		ZSTD_inBuffer zInBuffer;
 		ZSTD_outBuffer zOutBuffer;

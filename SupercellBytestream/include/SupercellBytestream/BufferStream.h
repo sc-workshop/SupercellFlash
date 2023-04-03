@@ -46,16 +46,15 @@ namespace sc {
 			return static_cast<uint32_t>(position);
 		};
 
-		int set(uint32_t pos) override
+		void seek(uint32_t pos) override
 		{
 			if (size() >= pos)
 			{
 				position = pos;
-				return 0;
 			}
 			else
 			{
-				return 1;
+				position = size();
 			}
 		};
 
@@ -64,7 +63,7 @@ namespace sc {
 			return static_cast<uint32_t>(m_buffer->size());
 		};
 
-		void* data() override
+		void* data()
 		{
 			return m_buffer->data();
 		}

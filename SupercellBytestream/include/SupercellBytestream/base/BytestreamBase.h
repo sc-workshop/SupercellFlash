@@ -18,10 +18,9 @@ namespace sc
 		virtual ~BytestreamBase() {};
 
 		virtual uint32_t tell() = 0;
-		virtual int set(uint32_t pos) = 0;
+		virtual void seek(uint32_t pos) = 0;
 
 		virtual uint32_t size() = 0;
-		virtual void* data() = 0;
 
 		virtual void close() = 0;
 
@@ -33,9 +32,9 @@ namespace sc
 		void skip(uint32_t length)
 		{
 			if (length + tell() > size())
-				set(size());
+				seek(size());
 			else
-				set(tell() + length);
+				seek(tell() + length);
 		}
 
 		size_t read(void* data, size_t dataSize) {

@@ -62,9 +62,9 @@ namespace sc
 		uint8_t hash[16];
 
 		uint8_t* buffer = new uint8_t[inStream.size()]();
-		inStream.set(0);
+		inStream.seek(0);
 		inStream.read(buffer, inStream.size());
-		inStream.set(0);
+		inStream.seek(0);
 
 		hashCtx.update(buffer, inStream.size());
 		hashCtx.final(hash);
@@ -83,7 +83,7 @@ namespace sc
 
 	void Compressor::commonCompress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature)
 	{
-		inStream.set(0);
+		inStream.seek(0);
 		switch (signature)
 		{
 		case CompressionSignature::LZMA:

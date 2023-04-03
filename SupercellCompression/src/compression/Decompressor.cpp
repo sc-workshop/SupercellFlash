@@ -59,10 +59,10 @@ namespace sc
 	}
 
 	void Decompressor::commonDecompress(Bytestream& inStream, Bytestream& outStream) {
-		inStream.set(0);
+		inStream.seek(0);
 		uint32_t magic = inStream.readUInt32();
 		inStream.read(&magic, sizeof(magic));
-		inStream.set(0);
+		inStream.seek(0);
 
 		if (magic == 0x3A676953) {
 			inStream.skip(64);
@@ -91,7 +91,7 @@ namespace sc
 
 		default:
 			std::vector<uint8_t> dataBuffer(inStream.size());
-			inStream.set(0);
+			inStream.seek(0);
 			inStream.read(dataBuffer.data(), dataBuffer.size());
 			outStream.write(dataBuffer.data(), dataBuffer.size());
 			break;
@@ -138,7 +138,7 @@ namespace sc
 				signature = CompressionSignature::LZMA;
 			}
 
-			inStream.set(inStream.tell() - sizeof(compressMagic));
+			inStream.seek(inStream.tell() - sizeof(compressMagic));
 		}
 
 		return hasMetadata;

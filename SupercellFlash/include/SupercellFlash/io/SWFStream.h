@@ -41,19 +41,21 @@ namespace sc {
 			}
 			
 			clear();
+			input.close();
+			output.close();
 		}
 
 		void clear() {
 			buffer.resize(0);
-			m_stream.set(0);
+			m_stream.seek(0);
 		}
 
 		uint8_t* data() {
 			return buffer.data();
 		}
 
-		void set(uint32_t pos) {
-			m_stream.set(pos);
+		void seek(uint32_t pos) {
+			m_stream.seek(pos);
 		}
 
 		uint32_t tell() {
@@ -61,7 +63,7 @@ namespace sc {
 		}
 
 		void skip(uint32_t size) {
-			m_stream.set(m_stream.tell() + size);
+			m_stream.seek(m_stream.tell() + size);
 		}
 
 		/* Read */
