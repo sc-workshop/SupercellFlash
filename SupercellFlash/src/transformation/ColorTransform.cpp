@@ -36,4 +36,18 @@ namespace sc
 
 		swf->stream.finalizeTag(tag, pos);
 	}
+
+	bool ColorTransform::equal(const ColorTransform& color) {
+		if (floatEqual(color.alpha, alpha) &&
+			floatEqual(color.blueAdd, blueAdd) &&
+			floatEqual(color.blueMul, blueMul) &&
+			floatEqual(color.greenAdd, greenAdd) &&
+			floatEqual(color.greenMul, greenMul) &&
+			floatEqual(color.redAdd, redAdd) &&
+			floatEqual(color.redMul, redMul)) {
+			return true;
+		}
+
+		return false;
+	}
 }

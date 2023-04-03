@@ -18,5 +18,7 @@ namespace sc
 
 		Matrix2x3* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
+
+		bool equal(const Matrix2x3& matrix);
 	};
 }
