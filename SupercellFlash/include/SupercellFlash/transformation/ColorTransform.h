@@ -21,6 +21,6 @@ namespace sc
 		ColorTransform* load(SupercellSWF* swf);
 		void save(SupercellSWF* swf);
 
-		bool equal(const ColorTransform& color);
+		bool operator==(const ColorTransform& color);
 	};
 }

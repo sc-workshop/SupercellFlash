@@ -208,16 +208,16 @@ namespace sc
 
 			switch (tag)
 			{
-			case TAG_USE_LOW_RES_TEXTURE:
-				m_useLowResTexture = true;
+			case TAG_USE_MULTI_RES_TEXTURE:
+				m_useMultiResTexture = true;
+				break;
+
+			case TAG_DISABLE_LOW_RES_TEXTURE:
+				m_useLowResTexture = false;
 				break;
 
 			case TAG_USE_EXTERNAL_TEXTURE:
 				useExternalTexture = true;
-				break;
-
-			case TAG_USE_MULTI_RES_TEXTURE:
-				m_useMultiResTexture = true;
 				break;
 
 			case TAG_TEXTURE_FILE_SUFFIXES:
@@ -367,8 +367,8 @@ namespace sc
 	)
 	{
 		if (m_useExternalTexture) {
-			if (m_useLowResTexture)
-				stream.writeTag(TAG_USE_LOW_RES_TEXTURE);
+			if (!m_useLowResTexture)
+				stream.writeTag(TAG_DISABLE_LOW_RES_TEXTURE);
 
 			if (m_useMultiResTexture)
 				stream.writeTag(TAG_USE_MULTI_RES_TEXTURE);

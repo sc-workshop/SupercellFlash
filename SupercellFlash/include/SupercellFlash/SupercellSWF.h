@@ -86,9 +86,9 @@ namespace sc
 
 	private:
 		bool m_useExternalTexture = false;
-
 		bool m_useMultiResTexture = false;
-		bool m_useLowResTexture = false;
+
+		bool m_useLowResTexture = true;
 
 		std::string m_multiResFileSuffix = MULTIRES_DEFAULT_SUFFIX;
 		std::string m_lowResFileSuffix = LOWRES_DEFAULT_SUFFIX;

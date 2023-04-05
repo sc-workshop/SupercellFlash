@@ -134,7 +134,7 @@ namespace sc
 
 			stbir_resize_uint8(data.data(), m_width, m_height, 0,
 				lowres_data.data(), lowres_width, lowres_height, 0,
-				pixelByteSize());
+				pixelByteSize()); // TODO: improve this
 
 			swf->stream.writeUnsignedShort(lowres_width);
 			swf->stream.writeUnsignedShort(lowres_height);

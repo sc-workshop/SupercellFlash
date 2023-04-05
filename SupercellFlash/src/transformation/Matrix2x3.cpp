@@ -39,7 +39,7 @@ namespace sc {
 		swf->stream.finalizeTag(tag, pos);
 	}
 
-	bool Matrix2x3::equal(const Matrix2x3& matrix) {
+	bool Matrix2x3::operator==(const Matrix2x3& matrix) {
 		if (floatEqual(a, matrix.a) &&
 			floatEqual(b, matrix.b) &&
 			floatEqual(c, matrix.c) &&
