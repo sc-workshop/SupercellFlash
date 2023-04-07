@@ -31,6 +31,7 @@ namespace sc {
 			throw DecompressException("Failed to initialize ZSTD stream in decompress");
 		}
 
+		uint32_t pos = inStream.tell();
 		size_t bufferSize = inStream.size() - inStream.tell();
 		void* buffer = malloc(bufferSize);
 		if (buffer == NULL) {
@@ -39,9 +40,11 @@ namespace sc {
 		inStream.read(buffer, bufferSize);
 		uint64_t unpackedSize = ZSTD_getDecompressedSize(buffer, inStream.size());
 		if (unpackedSize == 0) {
-			unpackedSize = inStream.size() - inStream.tell();
+			throw DecompressException("Failed to get decompressed data size");
 		}
+
 		free(buffer);
+		inStream.seek(pos);
 
 		ZSTD_inBuffer zInBuffer;
 		ZSTD_outBuffer zOutBuffer;

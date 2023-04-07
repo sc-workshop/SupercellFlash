@@ -46,7 +46,7 @@ namespace sc {
 		fs::path tempPath = SwfCache::tempPath();
 		fs::path filename = fs::path(filepath).filename();
 
-		return (tempPath / filename).string();
+		return (tempPath / filename).make_preferred().string();
 	}
 
 	// Check if file exists in swf TEMP folder
