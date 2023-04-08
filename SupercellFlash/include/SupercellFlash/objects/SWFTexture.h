@@ -15,32 +15,33 @@ namespace sc
 	public:
 		enum class Filter : uint8_t
 		{
-			LINEAR,
-			NEAREST,
+			LINEAR_NEAREST,
+			NEAREST_NEAREST,
 			LINEAR_MIPMAP_NEAREST
 		};
 
 		enum class PixelFormat : uint8_t
 		{
-			RGBA8,
-			RGBA4,
+			RGBA8 = 0,
+			RGBA4 = 2,
 			RGB5_A1,
 			RGB565,
-			LUMINANCE8_ALPHA8,
-			LUMINANCE8
+			LUMINANCE8_ALPHA8 = 6,
+			LUMINANCE8 = 10,
+			// PVR = 15
 		};
 
 		/* Static */
 	public:
 		static std::vector<PixelFormat> pixelFormatTable;
 		static std::vector<uint8_t> pixelByteSizeTable;
+		static std::vector<uint8_t> channelsCountTable;
 
 		/* Getters */
 	public:
 		PixelFormat pixelFormat() { return m_pixelFormat; }
 
-		Filter magFilter() { return m_magFilter; }
-		Filter minFilter() { return m_minFilter; }
+		Filter textureFilter() { return m_textureFilter; }
 
 		uint16_t width() { return m_width; }
 		uint16_t height() { return m_height; }
@@ -50,10 +51,9 @@ namespace sc
 
 		/* Setters */
 	public:
-		void pixelFormat(PixelFormat type) { m_pixelFormat = type; }
+		void pixelFormat(PixelFormat type);
 
-		void magFilter(Filter filter) { m_magFilter = filter; }
-		void minFilter(Filter filter) { m_minFilter = filter; }
+		void textureFilder(Filter filter) { m_textureFilter = filter; }
 
 		void width(uint16_t width) { m_width = width; }
 		void height(uint16_t height) { m_height = height; }
@@ -68,16 +68,14 @@ namespace sc
 
 		/* Some helper functions */
 	public:
-		uint8_t pixelIndex();
-		uint8_t pixelByteSize();
-
-		static std::vector<uint8_t> processLinearData(SWFTexture& texture, bool toLinear);
+		static std::vector<uint8_t> getLinearData(SWFTexture& texture, bool toLinear);
+		static std::vector<uint8_t> getPixelFormatData(SWFTexture& texture, PixelFormat dst);
+		static std::vector<uint8_t> getPixelFormatData(uint8_t* data, uint16_t width , uint16_t height, PixelFormat srcType, PixelFormat dstType);
 
 	private:
 		PixelFormat m_pixelFormat = PixelFormat::RGBA8;
 
-		Filter m_magFilter = Filter::LINEAR;
-		Filter m_minFilter = Filter::NEAREST;
+		Filter m_textureFilter = Filter::LINEAR_NEAREST;
 
 		uint16_t m_width = 0;
 		uint16_t m_height = 0;
