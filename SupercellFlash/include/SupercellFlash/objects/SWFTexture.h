@@ -53,7 +53,7 @@ namespace sc
 	public:
 		void pixelFormat(PixelFormat type);
 
-		void textureFilder(Filter filter) { m_textureFilter = filter; }
+		void textureFilter(Filter filter) { m_textureFilter = filter; }
 
 		void width(uint16_t width) { m_width = width; }
 		void height(uint16_t height) { m_height = height; }
