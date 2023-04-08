@@ -38,10 +38,7 @@ namespace sc {
 			throw DecompressException("Failed to alloc memory to get decompressed size");
 		}
 		inStream.read(buffer, bufferSize);
-		uint64_t unpackedSize = ZSTD_getDecompressedSize(buffer, inStream.size());
-		if (unpackedSize == 0) {
-			throw DecompressException("Failed to get decompressed data size");
-		}
+		uint64_t unpackedSize = ZSTD_getDecompressedSize(buffer, inStream.size()) || UINT16_MAX;
 
 		free(buffer);
 		inStream.seek(pos);

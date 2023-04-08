@@ -372,7 +372,10 @@ namespace sc
 			return;
 		}
 
-		data = SWFTexture::getPixelFormatData(*this, type);
+		if (data.size() != 0) {
+			data = SWFTexture::getPixelFormatData(*this, type);
+		}
+		
 		m_pixelFormat = type;
 	}
 }
