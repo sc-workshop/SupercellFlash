@@ -168,12 +168,12 @@ namespace sc
 			{
 				exports[i] = new ExportName();
 
-				exports[i]->id = stream.readUnsignedShort();
+				exports[i]->id(stream.readUnsignedShort());
 			}
 
 			for (uint16_t i = 0; i < exportsCount; i++)
 			{
-				exports[i]->name = stream.readAscii();
+				exports[i]->name(stream.readAscii());
 			}
 		}
 
@@ -348,12 +348,12 @@ namespace sc
 
 		for (uint16_t i = 0; exportsCount > i; i++)
 		{
-			stream.writeUnsignedShort(exports[i]->id);
+			stream.writeUnsignedShort(exports[i]->id());
 		}
 
 		for (uint16_t i = 0; exportsCount > i; i++)
 		{
-			stream.writeAscii(exports[i]->name);
+			stream.writeAscii(exports[i]->name());
 		}
 
 		saveTags(shapeCount, movieClipsCount, texturesCount, textFieldsCount);
