@@ -6,8 +6,8 @@ namespace sc
 {
 	MovieClipFrame* MovieClipFrame::load(SupercellSWF* swf)
 	{
-		elementsCount = swf->stream.readUnsignedShort();
-		label = swf->stream.readAscii();
+		m_elementsCount = swf->stream.readUnsignedShort();
+		m_label = swf->stream.readAscii();
 
 		return this;
 	}
@@ -17,8 +17,8 @@ namespace sc
 		uint32_t pos = swf->stream.initTag();
 
 		uint8_t tag = TAG_MOVIE_CLIP_FRAME_2;
-		swf->stream.writeUnsignedShort(elementsCount);
-		swf->stream.writeAscii(label);
+		swf->stream.writeUnsignedShort(m_elementsCount);
+		swf->stream.writeAscii(m_label);
 
 		swf->stream.finalizeTag(tag, pos);
 	}
