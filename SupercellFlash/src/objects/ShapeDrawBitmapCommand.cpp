@@ -25,14 +25,14 @@ namespace sc
 		{
 			vertices[i] = new ShapeDrawBitmapCommandVertex();
 
-			vertices[i]->x = swf->stream.readTwip();
-			vertices[i]->y = swf->stream.readTwip();
+			vertices[i]->x(swf->stream.readTwip());
+			vertices[i]->y(swf->stream.readTwip());
 		}
 
 		for (uint8_t i = 0; i < pointsCount; i++)
 		{
-			vertices[i]->u = (float)swf->stream.readUnsignedShort() / 65535.0f;
-			vertices[i]->v = (float)swf->stream.readUnsignedShort() / 65535.0f;
+			vertices[i]->u((float)swf->stream.readUnsignedShort() / 65535.0f);
+			vertices[i]->v((float)swf->stream.readUnsignedShort() / 65535.0f);
 		}
 
 		return this;
@@ -54,13 +54,13 @@ namespace sc
 			swf->stream.writeUnsignedByte(verticesCount);
 
 		for (uint8_t i = 0; verticesCount > i; i++) {
-			swf->stream.writeTwip(vertices[i]->x);
-			swf->stream.writeTwip(vertices[i]->y);
+			swf->stream.writeTwip(vertices[i]->x());
+			swf->stream.writeTwip(vertices[i]->y());
 		}
 
 		for (uint8_t i = 0; verticesCount > i; i++) {
-			swf->stream.writeUnsignedShort((uint16_t)(vertices[i]->u * 65535.0f));
-			swf->stream.writeUnsignedShort((uint16_t)(vertices[i]->v * 65535.0f));
+			swf->stream.writeUnsignedShort((uint16_t)(vertices[i]->u() * 65535.0f));
+			swf->stream.writeUnsignedShort((uint16_t)(vertices[i]->v() * 65535.0f));
 		}
 
 		swf->stream.finalizeTag(tag, pos);

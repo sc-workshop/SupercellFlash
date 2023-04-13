@@ -9,11 +9,26 @@ namespace sc
 
 	struct ShapeDrawBitmapCommandVertex
 	{
-		float x;
-		float y;
+		/* Getters */
+	public:
+		float x() { return m_x; }
+		float y() { return m_y; }
+		float u() { return m_u; }
+		float v() { return m_v; }
 
-		float u;
-		float v;
+		/* Setters */
+	public:
+		void x(float number) { m_x = number; }
+		void y(float number) { m_y = number; }
+		void u(float number) { if (number >= 0.0f && number <= 1.0f) { m_u = number; }; }
+		void v(float number) { if (number >= 0.0f && number <= 1.0f) { m_v = number; }; }
+		
+	private:
+		float m_x;
+		float m_y;
+
+		float m_u;
+		float m_v;
 	};
 
 	class ShapeDrawBitmapCommand
