@@ -40,7 +40,7 @@ namespace sc {
 		inStream.read(buffer, bufferSize);
 		uint64_t unpackedSize = ZSTD_getDecompressedSize(buffer, inStream.size());
 		if (unpackedSize == 0) {
-			unpackedSize == UINT32_MAX;
+			unpackedSize = UINT32_MAX;
 		}
 
 		free(buffer);
