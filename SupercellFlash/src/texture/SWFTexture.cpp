@@ -112,7 +112,7 @@ namespace sc
 					tag = TAG_TEXTURE_4;
 				}
 				break;
-			case sc::SWFTexture::Filter::NEAREST_NEAREST:
+			case sc::SWFTexture::Filter::LINEAR_MIPMAP_NEAREST:
 				if (!m_linear && m_downscaling) {
 					tag = TAG_TEXTURE_7;
 				}
@@ -120,7 +120,8 @@ namespace sc
 					tag = m_downscaling ? TAG_TEXTURE_2 : TAG_TEXTURE_3;
 				}
 				break;
-			case sc::SWFTexture::Filter::LINEAR_MIPMAP_NEAREST:
+			case sc::SWFTexture::Filter::NEAREST_NEAREST:
+				linear(false);
 				tag = TAG_TEXTURE_8;
 				break;
 			default:
