@@ -154,36 +154,7 @@ namespace sc
 			swf->stream.writeUnsignedShort(lowres_height);
 
 			if (isExternal) {
-				std::vector<uint8_t> lowres_data((lowres_width * lowres_height) * pixelSize);
-
-				switch (m_pixelFormat)
-				{
-					// Normal pixel formats
-				case sc::SWFTexture::PixelFormat::RGBA8:
-				case sc::SWFTexture::PixelFormat::LUMINANCE8_ALPHA8:
-				case sc::SWFTexture::PixelFormat::LUMINANCE8:
-					stbir_resize_uint8(data.data(), m_width, m_height, 0,
-						lowres_data.data(), lowres_width, lowres_height, 0,
-						channelsCountTable[(uint8_t)m_pixelFormat]);
-					break;
-
-					// Other encoded formats
-				case sc::SWFTexture::PixelFormat::RGBA4:
-				case sc::SWFTexture::PixelFormat::RGB5_A1:
-				case sc::SWFTexture::PixelFormat::RGB565:
-				default:
-				{
-					const std::vector<uint8_t> decodedData = getPixelFormatData(*this, PixelFormat::RGBA8);
-					std::vector<uint8_t> encodedData((lowres_width * lowres_height) * 4);
-
-					stbir_resize_uint8(decodedData.data(), m_width, m_height, 0,
-						lowres_data.data(), lowres_width, lowres_height, 0,
-						4);
-
-					lowres_data = getPixelFormatData(encodedData.data(), lowres_width, lowres_height, PixelFormat::RGBA8, m_pixelFormat);
-				}
-				break;
-				}
+				std::vector<uint8_t> lowres_data = rescaleTexture(*this, lowres_width, lowres_height);
 
 				swf->stream.write(lowres_data.data(), lowres_data.size());
 			}
@@ -245,7 +216,6 @@ namespace sc
 		uint8_t* data,
 		uint16_t width, uint16_t height,
 		PixelFormat srcType, PixelFormat dstType) {
-		///
 
 		const uint8_t pixelSize = pixelByteSizeTable.at((uint8_t)srcType);
 		const uint8_t dstPixelSize = pixelByteSizeTable.at((uint8_t)dstType);
@@ -320,7 +290,7 @@ namespace sc
 				break;
 			case sc::SWFTexture::PixelFormat::RGBA4:
 			{
-				const uint16_t encodedPixel = pixelData[3] >> 4 | pixelData[2] >> 4 << 4 | pixelData[1] >> 4 << 8 | pixelData[0] >> 4 << 12;
+				const uint16_t encodedPixel = (pixelData[3] >> 4) | ((pixelData[2] >> 4) << 4) | ((pixelData[1] >> 4) << 8) | ((pixelData[0] >> 4) << 12);
 				memcpy(dstData.data() + dstTarget, &encodedPixel, 2);
 			}
 			break;
@@ -355,6 +325,42 @@ namespace sc
 		return getPixelFormatData(texture.data.data(), texture.width(), texture.height(), texture.pixelFormat(), dstFormat);
 	}
 
+	std::vector<uint8_t> SWFTexture::rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height) {
+		PixelFormat pixelFormat = texture.pixelFormat();
+		uint8_t pixelSize = pixelByteSizeTable[(uint8_t)texture.pixelFormat()];
+
+		std::vector<uint8_t> lowres_data((width * height) * pixelSize);
+
+		switch (pixelFormat)
+		{
+			// Normal pixel formats
+		case sc::SWFTexture::PixelFormat::RGBA8:
+		case sc::SWFTexture::PixelFormat::LUMINANCE8_ALPHA8:
+		case sc::SWFTexture::PixelFormat::LUMINANCE8:
+			stbir_resize_uint8(texture.data.data(), texture.width(), texture.height(), 0,
+				lowres_data.data(), width, height, 0,
+				pixelSize);
+			break;
+
+			// Other encoded formats
+		case sc::SWFTexture::PixelFormat::RGBA4:
+		case sc::SWFTexture::PixelFormat::RGB5_A1:
+		case sc::SWFTexture::PixelFormat::RGB565:
+		default:
+		{
+			const std::vector<uint8_t> decodedData = getPixelFormatData(texture, PixelFormat::RGBA8);
+			std::vector<uint8_t> encodedData((width * height) * 4);
+
+			stbir_resize_uint8(decodedData.data(), texture.width(), texture.height(), 0,
+				lowres_data.data(), width, height, 0,
+				4);
+
+			lowres_data = getPixelFormatData(encodedData.data(), width, height, PixelFormat::RGBA8, pixelFormat);
+		}
+		break;
+		}
+	}
+
 	void SWFTexture::linear(bool status) {
 		if (m_linear == status)
 			return;
@@ -379,4 +385,21 @@ namespace sc
 		
 		m_pixelFormat = type;
 	}
+
+	void SWFTexture::width(uint16_t width) {
+		m_width = width;
+
+		if (data.size() != 0) {
+			data = rescaleTexture(*this, width, m_height);
+		}
+	}
+
+	void SWFTexture::height(uint16_t height) {
+		m_height = height;
+
+		if (data.size() != 0) {
+			data = rescaleTexture(*this, m_width, height);
+		}
+	}
+
 }

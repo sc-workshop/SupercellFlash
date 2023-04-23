@@ -55,8 +55,8 @@ namespace sc
 
 		void textureFilter(Filter filter) { m_textureFilter = filter; }
 
-		void width(uint16_t width) { m_width = width; }
-		void height(uint16_t height) { m_height = height; }
+		void width(uint16_t width);
+		void height(uint16_t height);
 
 		void downscaling(bool status) { m_downscaling = status; }
 		void linear(bool status);
@@ -71,6 +71,7 @@ namespace sc
 		static std::vector<uint8_t> getLinearData(SWFTexture& texture, bool toLinear);
 		static std::vector<uint8_t> getPixelFormatData(SWFTexture& texture, PixelFormat dst);
 		static std::vector<uint8_t> getPixelFormatData(uint8_t* data, uint16_t width , uint16_t height, PixelFormat srcType, PixelFormat dstType);
+		static std::vector<uint8_t> rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height);
 
 	private:
 		PixelFormat m_pixelFormat = PixelFormat::RGBA8;
