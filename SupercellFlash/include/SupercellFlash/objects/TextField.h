@@ -108,7 +108,7 @@ namespace sc
 		bool m_isDynamic = false;
 
 		uint32_t m_outlineColor = 0xFFFFFFFF;
-		bool m_useDeviceFont = true;
+		bool m_useDeviceFont = false;
 		bool m_autoAdjustFontSize = false;
 
 		float m_bendAngle = 0.0f;

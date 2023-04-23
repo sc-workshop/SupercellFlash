@@ -133,7 +133,7 @@ namespace sc
 
 		swf->stream.writeAscii(m_text);
 
-		if (!m_useDeviceFont)
+		if (m_useDeviceFont)
 			tag = TAG_TEXT_FIELD_2;
 
 		if (m_outlineColor != 0xFFFFFFFF) {
