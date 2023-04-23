@@ -329,7 +329,7 @@ namespace sc
 		PixelFormat pixelFormat = texture.pixelFormat();
 		uint8_t pixelSize = pixelByteSizeTable[(uint8_t)texture.pixelFormat()];
 
-		std::vector<uint8_t> lowres_data((width * height) * pixelSize);
+		std::vector<uint8_t> data((width * height) * pixelSize);
 
 		switch (pixelFormat)
 		{
@@ -338,7 +338,7 @@ namespace sc
 		case sc::SWFTexture::PixelFormat::LUMINANCE8_ALPHA8:
 		case sc::SWFTexture::PixelFormat::LUMINANCE8:
 			stbir_resize_uint8(texture.data.data(), texture.width(), texture.height(), 0,
-				lowres_data.data(), width, height, 0,
+				data.data(), width, height, 0,
 				pixelSize);
 			break;
 
@@ -352,13 +352,15 @@ namespace sc
 			std::vector<uint8_t> encodedData((width * height) * 4);
 
 			stbir_resize_uint8(decodedData.data(), texture.width(), texture.height(), 0,
-				lowres_data.data(), width, height, 0,
+				data.data(), width, height, 0,
 				4);
 
-			lowres_data = getPixelFormatData(encodedData.data(), width, height, PixelFormat::RGBA8, pixelFormat);
+			data = getPixelFormatData(encodedData.data(), width, height, PixelFormat::RGBA8, pixelFormat);
 		}
 		break;
 		}
+
+		return data;
 	}
 
 	void SWFTexture::linear(bool status) {
