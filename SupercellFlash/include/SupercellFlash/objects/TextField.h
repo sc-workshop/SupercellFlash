@@ -20,7 +20,6 @@ namespace sc
 			Justify
 		};
 
-		/* Getters */
 	public:
 		std::string text() { return m_text; }
 
@@ -50,7 +49,6 @@ namespace sc
 		int16_t unknownShort() const { return m_unknownShort; }
 		int16_t unknownShort2() const { return m_unknownShort2; }
 
-		/* Setters */
 	public:
 		void text(const std::string& newText) { m_text = newText; }
 
@@ -84,8 +82,6 @@ namespace sc
 		TextField* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
 
-		bool isTextField() const override { return true; }
-
 	private:
 		std::string m_text = "";
 
@@ -117,4 +113,6 @@ namespace sc
 		uint16_t m_unknownShort = 0xFFFF;
 		uint16_t m_unknownShort2 = 0xFFFF;
 	};
+
+	typedef shared_ptr<TextField> pTextField;
 }

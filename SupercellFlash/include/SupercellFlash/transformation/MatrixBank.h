@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SupercellFlash/transformation/Matrix2x3.h"
+#include "SupercellFlash/transformation/Matrix2D.h"
 #include "SupercellFlash/transformation/ColorTransform.h"
 #include <vector>
 #include <math.h>
@@ -8,17 +8,18 @@
 
 #define floatEqual(a,b) (fabs(a - b) <= ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * 0.05))
 
+using namespace std;
+
 namespace sc
 {
 	struct MatrixBank
 	{
-		MatrixBank();
-		~MatrixBank();
+		vector<pMatrix2D> matrices;
+		vector<pColorTransform> colorTransforms;
 
-		std::vector<Matrix2x3*> matrices;
-		std::vector<ColorTransform*> colorTransforms;
-
-		bool getMatrixIndex(Matrix2x3* matrix, uint16_t& index);
+		bool getMatrixIndex(Matrix2D* matrix, uint16_t& index);
 		bool getColorTransformIndex(ColorTransform* color, uint16_t& index);
 	};
+
+	typedef std::shared_ptr<MatrixBank> pMatrixBank;
 }

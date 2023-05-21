@@ -3,6 +3,8 @@
 #include "SupercellFlash/objects/DisplayObject.h"
 #include "SupercellFlash/objects/MovieClipFrame.h"
 
+using namespace std;
+
 namespace sc
 {
 	class SupercellSWF;
@@ -13,13 +15,15 @@ namespace sc
 		uint16_t matrixIndex = 0xFFFF;
 		uint16_t colorTransformIndex = 0xFFFF;
 	};
+	typedef shared_ptr<MovieClipFrameElement> pMovieClipFrameElement;
 
 	struct DisplayObjectInstance
 	{
 		uint16_t id;
 		uint8_t blend = 0;
-		std::string name;
+		string name;
 	};
+	typedef shared_ptr<DisplayObjectInstance> pDisplayObjectInstance;
 
 	struct ScalingGrid
 	{
@@ -28,30 +32,24 @@ namespace sc
 		float width;
 		float height;
 	};
+	typedef shared_ptr<ScalingGrid> pScalingGrid;
 
 	class MovieClip : public DisplayObject
 	{
 	public:
-		MovieClip();
-		~MovieClip();
+		vector<pMovieClipFrameElement> frameElements;
+		vector<pDisplayObjectInstance> instances;
+		vector<pMovieClipFrame> frames;
 
-		/*Vectors*/
-	public:
-		std::vector<MovieClipFrameElement*> frameElements;
-		std::vector<DisplayObjectInstance*> instances;
-		std::vector<MovieClipFrame*> frames;
-
-		/* Getters */
 	public:
 		uint8_t frameRate() { return m_frameRate; }
-		ScalingGrid* scalingGrid() { return m_scalingGrid; }
+		pScalingGrid scalingGrid() { return m_scalingGrid; }
 		uint8_t matrixBankIndex() { return m_matrixBankIndex; }
 		bool unknownFlag() { return m_unknownFlag; }
 
-		/* Setters */
 	public:
 		void frameRate(uint8_t rate) { m_frameRate = rate; }
-		void scalingGrid(ScalingGrid* grid) { m_scalingGrid = grid; }
+		void scalingGrid(pScalingGrid grid) { m_scalingGrid = grid; }
 		void matrixBankIndex(uint8_t index) { m_matrixBankIndex = index; }
 		void unknownFlag(bool status) { m_unknownFlag = status; }
 
@@ -59,13 +57,13 @@ namespace sc
 		MovieClip* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
 
-		bool isMovieClip() const override { return true; }
-
 	private:
 		uint8_t m_frameRate = 24;
 
 		bool m_unknownFlag = false;
-		ScalingGrid* m_scalingGrid = nullptr;
+		pScalingGrid m_scalingGrid = nullptr;
 		uint8_t m_matrixBankIndex = 0;
 	};
+
+	typedef shared_ptr<MovieClip> pMovieClip;
 }

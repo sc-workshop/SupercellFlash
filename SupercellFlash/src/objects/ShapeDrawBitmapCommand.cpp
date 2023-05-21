@@ -4,26 +4,16 @@
 
 namespace sc
 {
-	ShapeDrawBitmapCommand::ShapeDrawBitmapCommand() { }
-	ShapeDrawBitmapCommand::~ShapeDrawBitmapCommand() {
-		for (const ShapeDrawBitmapCommandVertex* vertex : vertices) {
-			if (vertex != NULL) {
-				delete vertex;
-			}
-		}
-		vertices.clear();
-	}
-
 	ShapeDrawBitmapCommand* ShapeDrawBitmapCommand::load(SupercellSWF* swf, uint8_t tag)
 	{
 		m_textureIndex = swf->stream.readUnsignedByte();
 
 		uint8_t pointsCount = tag == 4 ? 4 : swf->stream.readUnsignedByte();
-		vertices = std::vector<ShapeDrawBitmapCommandVertex*>(pointsCount);
+		vertices = std::vector<pShapeDrawBitmapCommandVertex>(pointsCount);
 
 		for (uint8_t i = 0; i < pointsCount; i++)
 		{
-			vertices[i] = new ShapeDrawBitmapCommandVertex();
+			vertices[i] = pShapeDrawBitmapCommandVertex(new ShapeDrawBitmapCommandVertex());
 
 			vertices[i]->x(swf->stream.readTwip());
 			vertices[i]->y(swf->stream.readTwip());
@@ -48,7 +38,7 @@ namespace sc
 
 		uint8_t tag = TAG_SHAPE;
 		if (shapeTag == TAG_SHAPE_2)
-			tag = TAG_SHAPE_DRAW_BITMAP_COMMAND_3; // TODO: tag 17 support
+			tag = TAG_SHAPE_DRAW_BITMAP_COMMAND_3;
 
 		if (tag != TAG_SHAPE_DRAW_BITMAP_COMMAND)
 			swf->stream.writeUnsignedByte(verticesCount);

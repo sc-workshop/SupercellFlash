@@ -3,17 +3,21 @@
 #include <string>
 #include <sstream>
 
+using namespace std;
+
 namespace sc {
-	struct NegativeTagLengthException : public std::exception {
-		uint16_t tag;
-		NegativeTagLengthException(uint16_t tag) : tag(tag) {}
-		~NegativeTagLengthException() { }
+	struct NegativeTagLengthException : public exception {
+		string message;
+
+		NegativeTagLengthException(uint16_t tag) {
+			stringstream s;
+			s << "Tag " << tag << " not initialized correctly and has a negative length." << endl;
+
+			message = s.str();
+		}
 
 		const char* what() {
-			std::stringstream s;
-			s << "Tag " << tag << " not initialized correctly and has a negative length." << std::endl;
-
-			return s.str().c_str();
+			return message.c_str();
 		}
 	};
 }

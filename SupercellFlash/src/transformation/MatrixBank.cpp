@@ -1,25 +1,13 @@
 #include "SupercellFlash/transformation/MatrixBank.h"
+#include "SupercellFlash/error/NullPointerException.h"
 
 namespace sc {
-	MatrixBank::MatrixBank() {};
-	MatrixBank::~MatrixBank() {
-		for (const Matrix2x3* matrix : matrices) {
-			if (matrix != NULL) {
-				delete matrix;
-			}
+	bool MatrixBank::getMatrixIndex(Matrix2D* matrix, uint16_t& index) {
+		if (matrix == nullptr) {
+			index = 0xFFFF;
+			return true;
 		}
 
-		for (const ColorTransform* color : colorTransforms) {
-			if (color != NULL) {
-				delete color;
-			}
-		}
-
-		matrices.clear();
-		colorTransforms.clear();
-	}
-
-	bool MatrixBank::getMatrixIndex(Matrix2x3* matrix, uint16_t& index) {
 		if (floatEqual(matrix->a, 1.0f) &&
 			floatEqual(matrix->b, 0) &&
 			floatEqual(matrix->c, 0) &&
@@ -31,7 +19,10 @@ namespace sc {
 		}
 
 		for (uint16_t i = 0; matrices.size() > i; i++) {
-			Matrix2x3* m = matrices[i];
+			pMatrix2D m = matrices[i];
+			if (m == nullptr) {
+				throw NullPointerException<Matrix2D>();
+			}
 
 			if (*matrix == *m) {
 				index = i;
@@ -43,6 +34,11 @@ namespace sc {
 	};
 
 	bool MatrixBank::getColorTransformIndex(ColorTransform* color, uint16_t& index) {
+		if (color == nullptr) {
+			index = 0xFFFF;
+			return true;
+		}
+
 		if (floatEqual(color->alpha, 1.0f) &&
 			floatEqual(color->blueAdd, 0) &&
 			floatEqual(color->blueMul, 1.0f) &&
@@ -55,7 +51,10 @@ namespace sc {
 		}
 
 		for (uint16_t i = 0; colorTransforms.size() > i; i++) {
-			ColorTransform* c = colorTransforms[i];
+			pColorTransform c = colorTransforms[i];
+			if (c == nullptr) {
+				throw NullPointerException<ColorTransform>();
+			}
 
 			if (*color == *c) {
 				index = i;

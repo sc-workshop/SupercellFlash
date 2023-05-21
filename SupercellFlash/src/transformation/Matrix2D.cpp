@@ -1,9 +1,9 @@
-#include "SupercellFlash/transformation/Matrix2x3.h"
+#include "SupercellFlash/transformation/Matrix2D.h"
 
 #include "SupercellFlash/SupercellSWF.h"
 
 namespace sc {
-	Matrix2x3* Matrix2x3::load(SupercellSWF* swf, uint8_t tag) {
+	Matrix2D* Matrix2D::load(SupercellSWF* swf, uint8_t tag) {
 		float divider = tag == TAG_MATRIX_2x3 ? 1024.0f : 65535.0f;
 
 		a = (float)swf->stream.readInt() / divider;
@@ -17,7 +17,7 @@ namespace sc {
 		return this;
 	}
 
-	void Matrix2x3::save(SupercellSWF* swf)
+	void Matrix2D::save(SupercellSWF* swf)
 	{
 		uint32_t pos = swf->stream.initTag();
 		uint8_t tag = TAG_MATRIX_2x3;
@@ -39,7 +39,7 @@ namespace sc {
 		swf->stream.finalizeTag(tag, pos);
 	}
 
-	bool Matrix2x3::operator==(const Matrix2x3& matrix) {
+	bool Matrix2D::operator==(const Matrix2D& matrix) {
 		if (floatEqual(a, matrix.a) &&
 			floatEqual(b, matrix.b) &&
 			floatEqual(c, matrix.c) &&

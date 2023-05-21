@@ -1,6 +1,8 @@
 #include "SupercellFlash/SupercellSWF.h"
 #include "SupercellFlash/objects/TextField.h"
 
+using namespace std;
+
 namespace sc
 {
 	TextField* TextField::load(SupercellSWF* swf, uint8_t tag)

@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
+
+using namespace std;
 
 namespace sc
 {
@@ -23,4 +26,6 @@ namespace sc
 
 		bool operator==(const ColorTransform& color);
 	};
+
+	typedef std::shared_ptr<ColorTransform> pColorTransform;
 }

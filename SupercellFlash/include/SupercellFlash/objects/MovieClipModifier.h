@@ -2,7 +2,11 @@
 
 #include "SupercellFlash/objects/DisplayObject.h"
 #include "SupercellFlash/Tags.h"
+
 #include <cstdint>
+#include <memory>
+
+using namespace std;
 
 namespace sc
 {
@@ -21,13 +25,13 @@ namespace sc
 		MovieClipModifier* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
 
-		bool isMovieClipModifier() const override { return true; }
-
 	public:
-		Type type() { return m_type; }; // Getter
-		void type(Type type) { m_type = type; } // Setter
+		Type type() { return m_type; };
+		void type(Type type) { m_type = type; }
 
 	private:
 		Type m_type = Type::Mask;
 	};
+
+	typedef std::shared_ptr<MovieClipModifier> pMovieClipModifier;
 }

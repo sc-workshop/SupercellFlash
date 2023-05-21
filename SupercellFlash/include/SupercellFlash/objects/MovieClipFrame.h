@@ -2,6 +2,9 @@
 
 #include <string>
 #include <cstdint>
+#include <memory>
+
+using namespace std;
 
 namespace sc
 {
@@ -10,11 +13,11 @@ namespace sc
 	struct MovieClipFrame
 	{
 	public:
-		std::string label() { return m_label; }
+		string label() { return m_label; }
 		uint16_t elementsCount() { return m_elementsCount; }
 
 	public:
-		void label(std::string name) { m_label = name; }
+		void label(string name) { m_label = name; }
 		void elementsCount(uint16_t count) { m_elementsCount = count; }
 
 	public:
@@ -22,7 +25,9 @@ namespace sc
 		void save(SupercellSWF* movieClipStream);
 
 	private:
-		uint16_t m_elementsCount;
-		std::string m_label;
+		uint16_t m_elementsCount = 0;
+		string m_label = "";
 	};
+
+	typedef std::shared_ptr<MovieClipFrame> pMovieClipFrame;
 }

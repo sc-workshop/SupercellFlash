@@ -1,5 +1,6 @@
 #include "SupercellFlash/objects/Shape.h"
 #include "SupercellFlash/objects/ShapeDrawBitmapCommand.h"
+#include "SupercellFlash/error/NullPointerException.h"
 #include "SupercellFlash/error/NegativeTagLengthException.h"
 
 #include "SupercellFlash/SupercellSWF.h"
@@ -7,21 +8,12 @@
 
 namespace sc
 {
-	Shape::Shape() { };
-	Shape::~Shape() {
-		for (const ShapeDrawBitmapCommand* command : commands) {
-			if (command != NULL) {
-				delete command;
-			}
-		}
-		commands.clear();
-	}
 	Shape* Shape::load(SupercellSWF* swf, uint8_t tag)
 	{
 		m_id = swf->stream.readUnsignedShort();
 
 		uint16_t m_commandsCount = swf->stream.readUnsignedShort();
-		commands = std::vector<ShapeDrawBitmapCommand*>(m_commandsCount);
+		commands = vector<pShapeDrawBitmapCommand>(m_commandsCount);
 
 		if (tag == TAG_SHAPE_2)
 			swf->stream.readUnsignedShort(); // total vertices count
@@ -43,7 +35,7 @@ namespace sc
 			case TAG_SHAPE_DRAW_BITMAP_COMMAND:
 			case TAG_SHAPE_DRAW_BITMAP_COMMAND_2:
 			case TAG_SHAPE_DRAW_BITMAP_COMMAND_3:
-				commands[commandsLoaded] = (new ShapeDrawBitmapCommand())->load(swf, commandTag);
+				commands[commandsLoaded] = pShapeDrawBitmapCommand((new ShapeDrawBitmapCommand())->load(swf, commandTag));
 				commandsLoaded++;
 				break;
 
@@ -66,6 +58,18 @@ namespace sc
 		swf->stream.writeUnsignedShort(commandsCount);
 
 		uint8_t tag = TAG_SHAPE_2; // TODO: remove maxrects?
+
+		for (const pShapeDrawBitmapCommand& command : commands) {
+			if (command == nullptr) {
+				throw NullPointerException<ShapeDrawBitmapCommand>();
+			}
+
+			for (const pShapeDrawBitmapCommandVertex& vert : command->vertices) {
+				if (vert == nullptr) {
+					throw NullPointerException<pShapeDrawBitmapCommandVertex>();
+				}
+			}
+		}
 
 		uint16_t totalVerticesCount = 0;
 		for (uint16_t i = 0; commandsCount > i; i++) {

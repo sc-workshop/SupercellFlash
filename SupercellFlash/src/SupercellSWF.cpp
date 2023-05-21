@@ -1,72 +1,18 @@
 #include "SupercellFlash/SupercellSWF.h"
 #include "SupercellFlash/error/NegativeTagLengthException.h"
+#include "SupercellFlash/error/ObjectLoadingException.h"
 #include "SupercellBytestream/error/StreamException.h"
+#include "SupercellFlash/error/NullPointerException.h"
 
 #include <filesystem>
 
 #include <iostream>
 
-namespace fs = std::filesystem;
+namespace fs = filesystem;
 
 namespace sc
 {
-	SupercellSWF::SupercellSWF()
-	{
-	}
-
-	SupercellSWF::~SupercellSWF()
-	{
-		for (const MatrixBank* bank : matrixBanks) {
-			if (bank != NULL) {
-				delete bank;
-			}
-		}
-		matrixBanks.clear();
-
-		for (const SWFTexture* texture : textures) {
-			if (texture != NULL) {
-				delete texture;
-			}
-		}
-		textures.clear();
-
-		for (const Shape* shape : shapes) {
-			if (shape != NULL) {
-				delete shape;
-			}
-		}
-		shapes.clear();
-
-		for (const MovieClip* movie : movieClips) {
-			if (movie != NULL) {
-				delete movie;
-			}
-		}
-		movieClips.clear();
-
-		for (const TextField* field : textFields) {
-			if (field != NULL) {
-				delete field;
-			}
-		}
-		textFields.clear();
-
-		for (const MovieClipModifier* modifier : movieClipModifiers) {
-			if (modifier != NULL) {
-				delete modifier;
-			}
-		}
-		movieClipModifiers.clear();
-
-		for (const ExportName* exportName : exports) {
-			if (exportName != NULL) {
-				delete exportName;
-			}
-		}
-		exports.clear();
-	}
-
-	void SupercellSWF::load(const std::string& filePath)
+	void SupercellSWF::load(const string& filePath)
 	{
 		m_useExternalTexture = loadInternal(filePath, false);
 
@@ -80,15 +26,15 @@ namespace sc
 			fs::path lowResFilePath = path / fs::path(basename).concat(m_lowResFileSuffix + "_tex.sc");
 			fs::path externalFilePath = path / fs::path(basename).concat(path.stem().string()).concat("_tex.sc");
 
-			if (m_useMultiResTexture && std::filesystem::exists(multiResFilePath))
+			if (m_useMultiResTexture && filesystem::exists(multiResFilePath))
 			{
 				loadInternal(multiResFilePath.string(), true);
 			}
-			else if (m_useLowResTexture && std::filesystem::exists(lowResFilePath))
+			else if (m_useLowResTexture && filesystem::exists(lowResFilePath))
 			{
 				loadInternal(lowResFilePath.string(), true);
 			}
-			else if (std::filesystem::exists(externalFilePath))
+			else if (filesystem::exists(externalFilePath))
 			{
 				loadInternal(externalFilePath.string(), true);
 			}
@@ -99,7 +45,7 @@ namespace sc
 		}
 	}
 
-	void SupercellSWF::save(const std::string& filepath, CompressionSignature signature)
+	void SupercellSWF::save(const string& filepath, CompressionSignature signature)
 	{
 		stream.clear();
 		saveInternal();
@@ -114,7 +60,7 @@ namespace sc
 			fs::path lowResFilePath = path / fs::path(basename).concat(m_lowResFileSuffix + "_tex.sc");
 			fs::path externalFilePath = path / fs::path(basename).concat(path.stem().string()).concat("_tex.sc");
 
-			for (SWFTexture* texture : textures) {
+			for (pSWFTexture texture : textures) {
 				if (texture->data.size() == 0) {
 					stream.clear();
 					return;
@@ -126,7 +72,7 @@ namespace sc
 			stream.save(m_useMultiResTexture ? multiResFilePath.string() : externalFilePath.string(), signature);
 
 			if (m_useLowResTexture || m_useMultiResTexture) {
-				for (SWFTexture* texture : textures) {
+				for (pSWFTexture texture : textures) {
 					texture->save(this, true, true);
 				}
 				stream.writeTag(0);
@@ -136,7 +82,7 @@ namespace sc
 		}
 	}
 
-	bool SupercellSWF::loadInternal(std::string filepath, bool isTexture)
+	bool SupercellSWF::loadInternal(string filepath, bool isTexture)
 	{
 		stream.open(filepath);
 
@@ -144,16 +90,16 @@ namespace sc
 		if (!isTexture)
 		{
 			uint16_t shapesCount = stream.readUnsignedShort();
-			shapes = std::vector<Shape*>(shapesCount);
+			shapes = vector<pShape>(shapesCount);
 
 			uint16_t movieClipsCount = stream.readUnsignedShort();
-			movieClips = std::vector<MovieClip*>(movieClipsCount);
+			movieClips = vector<pMovieClip>(movieClipsCount);
 
 			uint16_t texturesCount = stream.readUnsignedShort();
-			textures = std::vector<SWFTexture*>(texturesCount);
+			textures = vector<pSWFTexture>(texturesCount);
 
 			uint16_t textFieldsCount = stream.readUnsignedShort();
-			textFields = std::vector<TextField*>(textFieldsCount);
+			textFields = vector<pTextField>(textFieldsCount);
 
 			uint16_t matricesCount = stream.readUnsignedShort();
 			uint16_t colorTransformsCount = stream.readUnsignedShort();
@@ -162,11 +108,11 @@ namespace sc
 			stream.skip(5); // unused
 
 			uint16_t exportsCount = stream.readUnsignedShort();
-			exports = std::vector < ExportName* >(exportsCount);
+			exports = vector <pExportName>(exportsCount);
 
 			for (uint16_t i = 0; i < exportsCount; i++)
 			{
-				exports[i] = new ExportName();
+				exports[i] = pExportName(new ExportName());
 
 				exports[i]->id(stream.readUnsignedShort());
 			}
@@ -234,31 +180,32 @@ namespace sc
 			case TAG_TEXTURE_7:
 			case TAG_TEXTURE_8:
 				if (textures.size() < texturesLoaded) {
-					throw std::runtime_error("Trying to load too many textures");
+					throw ObjectLoadingException("Trying to load too many textures");
 				}
-				textures[texturesLoaded] = (new SWFTexture())->load(this, tag, useExternalTexture);
+
+				textures[texturesLoaded] = pSWFTexture((new SWFTexture())->load(this, tag, useExternalTexture));
 				texturesLoaded++;
 				break;
 
 			case TAG_MOVIE_CLIP_MODIFIERS_COUNT: {
 				uint16_t movieClipModifiersCount = stream.readUnsignedShort();
-				movieClipModifiers = std::vector<MovieClipModifier*>(movieClipModifiersCount);
+				movieClipModifiers = vector<pMovieClipModifier>(movieClipModifiersCount);
 				break;
 			}
 
 			case TAG_MOVIE_CLIP_MODIFIER:
 			case TAG_MOVIE_CLIP_MODIFIER_2:
 			case TAG_MOVIE_CLIP_MODIFIER_3:
-				movieClipModifiers[movieClipModifiersLoaded] = (new MovieClipModifier())->load(this, tag);
+				movieClipModifiers[movieClipModifiersLoaded] = pMovieClipModifier((new MovieClipModifier())->load(this, tag));
 				movieClipModifiersLoaded++;
 				break;
 
 			case TAG_SHAPE:
 			case TAG_SHAPE_2:
 				if (shapes.size() < shapesLoaded) {
-					throw std::runtime_error("Trying to load too many Shapes");
+					throw ObjectLoadingException("Trying to load too many Shapes");
 				}
-				shapes[shapesLoaded] = (new Shape())->load(this, tag);
+				shapes[shapesLoaded] = pShape((new Shape())->load(this, tag));
 				shapesLoaded++;
 				break;
 
@@ -271,10 +218,10 @@ namespace sc
 			case TAG_TEXT_FIELD_7:
 			case TAG_TEXT_FIELD_8:
 				if (textFields.size() < textFieldsLoaded) {
-					throw std::runtime_error("Trying to load too many TextFields");
+					throw ObjectLoadingException("Trying to load too many TextFields");
 				}
 
-				textFields[textFieldsLoaded] = (new TextField())->load(this, tag);
+				textFields[textFieldsLoaded] = pTextField((new TextField())->load(this, tag));
 				textFieldsLoaded++;
 				break;
 
@@ -291,12 +238,12 @@ namespace sc
 
 			case TAG_MATRIX_2x3:
 			case TAG_MATRIX_2x3_2:
-				matrixBanks[matrixBanksLoaded]->matrices[matricesLoaded] = (new Matrix2x3())->load(this, tag);
+				matrixBanks[matrixBanksLoaded]->matrices[matricesLoaded] = pMatrix2D((new Matrix2D())->load(this, tag));
 				matricesLoaded++;
 				break;
 
 			case TAG_COLOR_TRANSFORM:
-				matrixBanks[matrixBanksLoaded]->colorTransforms[colorTransformsLoaded] = (new ColorTransform())->load(this);
+				matrixBanks[matrixBanksLoaded]->colorTransforms[colorTransformsLoaded] = pColorTransform((new ColorTransform())->load(this));
 				colorTransformsLoaded++;
 				break;
 
@@ -306,9 +253,9 @@ namespace sc
 			case TAG_MOVIE_CLIP_4:
 			case TAG_MOVIE_CLIP_5:
 				if (movieClips.size() < movieClipsLoaded) {
-					throw std::runtime_error("Trying to load too many MovieClips");
+					throw ObjectLoadingException("Trying to load too many MovieClips");
 				}
-				movieClips[movieClipsLoaded] = (new MovieClip())->load(this, tag);
+				movieClips[movieClipsLoaded] = pMovieClip((new MovieClip())->load(this, tag));
 				movieClipsLoaded++;
 				break;
 
@@ -323,8 +270,9 @@ namespace sc
 
 	void SupercellSWF::saveInternal()
 	{
-		if (matrixBanks.size() == 0)
-			matrixBanks.push_back(new MatrixBank());
+		if (matrixBanks.size() == 0) {
+			matrixBanks.push_back(pMatrixBank(new MatrixBank()));
+		}	
 
 		uint16_t exportsCount = static_cast<uint16_t>(exports.size());
 		uint16_t shapeCount = static_cast<uint16_t>(shapes.size());
@@ -376,7 +324,10 @@ namespace sc
 			stream.writeTag(TAG_USE_EXTERNAL_TEXTURE);
 		}
 
-		for (SWFTexture* texture : textures) {
+		for (pSWFTexture texture : textures) {
+			if (texture == nullptr) {
+				throw NullPointerException<SWFTexture>();
+			}
 			texture->save(this, !m_useExternalTexture, false);
 		}
 
@@ -386,7 +337,11 @@ namespace sc
 			stream.writeInt(sizeof(uint16_t));
 			stream.writeUnsignedShort(modifiersCount);
 
-			for (MovieClipModifier* modifier : movieClipModifiers) {
+			for (pMovieClipModifier modifier : movieClipModifiers) {
+				if (modifier == nullptr) {
+					throw NullPointerException<MovieClipModifier>();
+				}
+
 				modifier->save(this);
 			}
 		}
@@ -431,9 +386,9 @@ namespace sc
 	void SupercellSWF::initMatrixBank(uint16_t matricesCount, uint16_t colorTransformsCount)
 	{
 		MatrixBank* bank = new MatrixBank();
-		bank->matrices = std::vector<Matrix2x3*>(matricesCount);
-		bank->colorTransforms = std::vector<ColorTransform*>(colorTransformsCount);
+		bank->matrices = vector<pMatrix2D>(matricesCount);
+		bank->colorTransforms = vector<pColorTransform>(colorTransformsCount);
 
-		matrixBanks.push_back(bank);
+		matrixBanks.push_back(pMatrixBank(bank));
 	}
 }

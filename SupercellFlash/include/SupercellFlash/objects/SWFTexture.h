@@ -1,17 +1,21 @@
 #pragma once
 
+#include <cstdint>
+#include <vector>
+#include <memory>
+
+using namespace std;
+
 namespace sc
 {
 	class SupercellSWF;
 
 	class SWFTexture
 	{
-		/* Functions */
 	public:
 		SWFTexture* load(SupercellSWF* swf, uint8_t tag, bool useExternalTexture);
 		void save(SupercellSWF* swf, bool isExternal, bool isLowres);
 
-		/* Enums */
 	public:
 		enum class Filter : uint8_t
 		{
@@ -31,13 +35,11 @@ namespace sc
 			// PVR = 15
 		};
 
-		/* Static */
 	public:
-		static std::vector<PixelFormat> pixelFormatTable;
-		static std::vector<uint8_t> pixelByteSizeTable;
-		static std::vector<uint8_t> channelsCountTable;
+		static vector<PixelFormat> pixelFormatTable;
+		static vector<uint8_t> pixelByteSizeTable;
+		static vector<uint8_t> channelsCountTable;
 
-		/* Getters */
 	public:
 		PixelFormat pixelFormat() { return m_pixelFormat; }
 
@@ -49,7 +51,6 @@ namespace sc
 		bool linear() { return m_linear; }
 		bool downscaling() { return m_downscaling; }
 
-		/* Setters */
 	public:
 		void pixelFormat(PixelFormat type);
 
@@ -61,17 +62,14 @@ namespace sc
 		void downscaling(bool status) { m_downscaling = status; }
 		void linear(bool status);
 
-		/* Vectors */
 	public:
-		/* Image data */
-		std::vector<uint8_t> data;
+		vector<uint8_t> data;
 
-		/* Some helper functions */
 	public:
-		static std::vector<uint8_t> getLinearData(SWFTexture& texture, bool toLinear);
-		static std::vector<uint8_t> getPixelFormatData(SWFTexture& texture, PixelFormat dst);
-		static std::vector<uint8_t> getPixelFormatData(uint8_t* data, uint16_t width , uint16_t height, PixelFormat srcType, PixelFormat dstType);
-		static std::vector<uint8_t> rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height);
+		static vector<uint8_t> getLinearData(SWFTexture& texture, bool toLinear);
+		static vector<uint8_t> getPixelFormatData(SWFTexture& texture, PixelFormat dst);
+		static vector<uint8_t> getPixelFormatData(uint8_t* data, uint16_t width , uint16_t height, PixelFormat srcType, PixelFormat dstType);
+		static vector<uint8_t> rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height);
 
 	private:
 		PixelFormat m_pixelFormat = PixelFormat::RGBA8;
@@ -84,4 +82,6 @@ namespace sc
 		bool m_linear = false;
 		bool m_downscaling = true;
 	};
+
+	typedef std::shared_ptr<SWFTexture> pSWFTexture;
 }

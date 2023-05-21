@@ -23,35 +23,31 @@
 #define MULTIRES_DEFAULT_SUFFIX "_highres"
 #define LOWRES_DEFAULT_SUFFIX "_lowres"
 
+using namespace std;
+
 namespace sc
 {
 	class SupercellSWF
 	{
 	public:
-		SupercellSWF();
-		~SupercellSWF();
+		std::vector<pExportName> exports;
+		vector<pMatrixBank> matrixBanks;
 
-		SWFStream stream;
+		std::vector<pSWFTexture> textures;
+		std::vector<pShape> shapes;
+		std::vector<pMovieClip> movieClips;
+		std::vector<pTextField> textFields;
+		std::vector<pMovieClipModifier> movieClipModifiers;
+		
 
-		// Vectors with objects
-	public:
-		std::vector<MatrixBank*> matrixBanks;
-
-		std::vector<SWFTexture*> textures;
-		std::vector<Shape*> shapes;
-		std::vector<MovieClip*> movieClips;
-		std::vector<TextField*> textFields;
-		std::vector<MovieClipModifier*> movieClipModifiers;
-		std::vector<ExportName*> exports;
-
-		// Class functions
 	public:
 		void load(const std::string& filePath);
 		bool loadInternal(std::string filepath, bool isTexture);
 
 		void save(const std::string& filepath, CompressionSignature signature);
 
-		// Getters for class members
+		SWFStream stream;
+
 	public:
 		bool useExternalTexture() { return m_useExternalTexture; }
 
@@ -61,7 +57,6 @@ namespace sc
 		std::string multiResFileSuffix() { return m_multiResFileSuffix; }
 		std::string lowResFileSuffix() { return m_lowResFileSuffix; }
 
-		// Setters for class members
 	public:
 		void useExternalTexture(bool status) { m_useExternalTexture = status; }
 

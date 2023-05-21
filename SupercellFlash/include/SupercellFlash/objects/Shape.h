@@ -5,22 +5,21 @@
 
 #include <vector>
 #include <cstdint>
+#include <memory>
+
+using namespace std;
 
 namespace sc
 {
 	class Shape : public DisplayObject
 	{
 	public:
-		Shape();
-		~Shape();
-
-	public:
-		std::vector<ShapeDrawBitmapCommand*> commands;
+		vector<pShapeDrawBitmapCommand> commands;
 
 	public:
 		Shape* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf);
-
-		bool isShape() const override { return true; }
 	};
+
+	typedef std::shared_ptr<Shape> pShape;
 }

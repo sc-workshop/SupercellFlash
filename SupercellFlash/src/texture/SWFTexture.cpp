@@ -3,13 +3,13 @@
 #include <math.h>
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
-#include "stb_image_resize.h" // TODDO: Make load from stb image
+#include "stb_image_resize.h"
 
 #define SWFTEXTURE_BLOCK_SIZE 32
 
 namespace sc
 {
-	std::vector<SWFTexture::PixelFormat> SWFTexture::pixelFormatTable({
+	vector<SWFTexture::PixelFormat> SWFTexture::pixelFormatTable({
 			SWFTexture::PixelFormat::RGBA8,
 			SWFTexture::PixelFormat::RGBA8,
 			SWFTexture::PixelFormat::RGBA4,
@@ -23,7 +23,7 @@ namespace sc
 			SWFTexture::PixelFormat::LUMINANCE8
 		});
 
-	std::vector<uint8_t> SWFTexture::pixelByteSizeTable({
+	vector<uint8_t> SWFTexture::pixelByteSizeTable({
 			4,
 			4,
 			2,
@@ -37,7 +37,7 @@ namespace sc
 			1
 		});
 
-	std::vector<uint8_t> SWFTexture::channelsCountTable({
+	vector<uint8_t> SWFTexture::channelsCountTable({
 			4,
 			4,
 			4,
@@ -84,7 +84,7 @@ namespace sc
 			uint8_t pixelByteSize = pixelByteSizeTable.at(pixelFormatIndex);
 			uint32_t dataSize = ((m_width * m_height) * pixelByteSize);
 
-			data = std::vector<uint8_t>(dataSize);
+			data = vector<uint8_t>(dataSize);
 
 			swf->stream.read(data.data(), dataSize);
 		}
@@ -93,8 +93,6 @@ namespace sc
 	};
 
 	void SWFTexture::save(SupercellSWF* swf, bool isExternal, bool isLowres) {
-		/* Writer init */
-
 		uint32_t pos = swf->stream.initTag();
 
 		/* Tag processing */
@@ -133,7 +131,7 @@ namespace sc
 
 		/* Image data processing */
 		if (data.size() != (m_width * m_height) * pixelSize) {
-			throw std::runtime_error("SWFTexture image data has wrong number of bytes! ");
+			throw runtime_error("SWFTexture image data has wrong number of bytes! ");
 		}
 
 		swf->stream.writeUnsignedByte((uint8_t)m_pixelFormat);
@@ -154,7 +152,7 @@ namespace sc
 			swf->stream.writeUnsignedShort(lowres_height);
 
 			if (isExternal) {
-				std::vector<uint8_t> lowres_data = rescaleTexture(*this, lowres_width, lowres_height);
+				vector<uint8_t> lowres_data = rescaleTexture(*this, lowres_width, lowres_height);
 
 				swf->stream.write(lowres_data.data(), lowres_data.size());
 			}
@@ -163,8 +161,8 @@ namespace sc
 		swf->stream.finalizeTag(tag, pos);
 	};
 
-	std::vector<uint8_t> SWFTexture::getLinearData(SWFTexture& texture, bool toLinear) {
-		std::vector<uint8_t> image(texture.data);
+	vector<uint8_t> SWFTexture::getLinearData(SWFTexture& texture, bool toLinear) {
+		vector<uint8_t> image(texture.data);
 		if (texture.linear() == toLinear) {
 			return image;
 		}
@@ -212,7 +210,7 @@ namespace sc
 		return image;
 	}
 
-	std::vector<uint8_t> SWFTexture::getPixelFormatData(
+	vector<uint8_t> SWFTexture::getPixelFormatData(
 		uint8_t* data,
 		uint16_t width, uint16_t height,
 		PixelFormat srcType, PixelFormat dstType) {
@@ -220,7 +218,7 @@ namespace sc
 		const uint8_t pixelSize = pixelByteSizeTable.at((uint8_t)srcType);
 		const uint8_t dstPixelSize = pixelByteSizeTable.at((uint8_t)dstType);
 
-		std::vector<uint8_t> dstData((width * height) * dstPixelSize);
+		vector<uint8_t> dstData((width * height) * dstPixelSize);
 
 		const uint32_t pixelCount = width * height;
 		for (uint32_t i = 0; pixelCount > i; i++) {
@@ -321,15 +319,15 @@ namespace sc
 		return dstData;
 	}
 
-	std::vector<uint8_t> SWFTexture::getPixelFormatData(SWFTexture& texture, PixelFormat dstFormat) {
+	vector<uint8_t> SWFTexture::getPixelFormatData(SWFTexture& texture, PixelFormat dstFormat) {
 		return getPixelFormatData(texture.data.data(), texture.width(), texture.height(), texture.pixelFormat(), dstFormat);
 	}
 
-	std::vector<uint8_t> SWFTexture::rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height) {
+	vector<uint8_t> SWFTexture::rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height) {
 		PixelFormat pixelFormat = texture.pixelFormat();
 		uint8_t pixelSize = pixelByteSizeTable[(uint8_t)texture.pixelFormat()];
 
-		std::vector<uint8_t> data((width * height) * pixelSize);
+		vector<uint8_t> data((width * height) * pixelSize);
 
 		switch (pixelFormat)
 		{
@@ -348,8 +346,8 @@ namespace sc
 		case sc::SWFTexture::PixelFormat::RGB565:
 		default:
 		{
-			const std::vector<uint8_t> decodedData = getPixelFormatData(texture, PixelFormat::RGBA8);
-			std::vector<uint8_t> encodedData((width * height) * 4);
+			const vector<uint8_t> decodedData = getPixelFormatData(texture, PixelFormat::RGBA8);
+			vector<uint8_t> encodedData((width * height) * 4);
 
 			stbir_resize_uint8(decodedData.data(), texture.width(), texture.height(), 0,
 				data.data(), width, height, 0,

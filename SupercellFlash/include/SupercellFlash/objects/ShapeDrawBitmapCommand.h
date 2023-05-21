@@ -2,6 +2,9 @@
 
 #include <cstdint>
 #include <vector>
+#include <memory>
+
+using namespace std;
 
 namespace sc
 {
@@ -9,14 +12,12 @@ namespace sc
 
 	struct ShapeDrawBitmapCommandVertex
 	{
-		/* Getters */
 	public:
 		float x() { return m_x; }
 		float y() { return m_y; }
 		float u() { return m_u; }
 		float v() { return m_v; }
 
-		/* Setters */
 	public:
 		void x(float number) { m_x = number; }
 		void y(float number) { m_y = number; }
@@ -30,31 +31,24 @@ namespace sc
 		float m_u;
 		float m_v;
 	};
+	typedef shared_ptr<ShapeDrawBitmapCommandVertex> pShapeDrawBitmapCommandVertex;
 
 	class ShapeDrawBitmapCommand
 	{
 	public:
-		ShapeDrawBitmapCommand();
-		~ShapeDrawBitmapCommand();
-
-		/* Functions */
-	public:
 		ShapeDrawBitmapCommand* load(SupercellSWF* swf, uint8_t tag);
 		void save(SupercellSWF* swf, uint8_t shapeTag);
 
-		/* Vertices */
 	public:
-		std::vector<ShapeDrawBitmapCommandVertex*> vertices;
+		vector<pShapeDrawBitmapCommandVertex> vertices;
 
-		/* Getters */
 	public:
 		uint8_t textureIndex() { return m_textureIndex; }
-
-		/* Setters */
-	public:
 		void textureIndex(uint8_t index) { m_textureIndex = index; }
 
 	private:
 		uint8_t m_textureIndex = 0;
 	};
+
+	typedef std::shared_ptr<ShapeDrawBitmapCommand> pShapeDrawBitmapCommand;
 }

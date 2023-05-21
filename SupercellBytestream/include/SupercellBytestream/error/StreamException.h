@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
-
 #include <sstream>
+
+using namespace std;
 
 enum class StreamError {
 	UNKNOWN = -1,
@@ -12,16 +13,16 @@ enum class StreamError {
 	READ_ERROR,
 };
 
-struct StreamException : public std::exception {
-	StreamError code;
-	std::string message;
-	StreamException(StreamError code, std::string message) : code(code), message(message) {};
+struct StreamException : public exception {
+	string message;
+	StreamException(StreamError code, string errMessage) {
+		stringstream s;
+		s << errMessage << endl;
+		s << "Exception code: " << (uint8_t)code << endl;
+		message = s.str();
+	};
 
 	const char* what() {
-		std::stringstream s;
-		s << message << std::endl;
-		s << "Exception code: " << (uint8_t)code << std::endl;
-
-		return s.str().c_str();
+		return message.c_str();
 	}
 };
