@@ -46,7 +46,7 @@ namespace sc
 		void load(const fs::path& filePath);
 		bool loadInternal(const fs::path& filepath, bool isTexture);
 
-		void save(const std::string& filepath, CompressionSignature signature);
+		void save(const fs::path& filepath, CompressionSignature signature);
 
 		SWFStream stream;
 

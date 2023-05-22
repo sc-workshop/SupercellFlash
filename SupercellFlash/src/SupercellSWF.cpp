@@ -39,7 +39,7 @@ namespace sc
 		}
 	}
 
-	void SupercellSWF::save(const string& filepath, CompressionSignature signature)
+	void SupercellSWF::save(const fs::path& filepath, CompressionSignature signature)
 	{
 		stream.clear();
 		saveInternal();
