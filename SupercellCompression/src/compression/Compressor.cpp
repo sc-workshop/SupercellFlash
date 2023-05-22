@@ -23,10 +23,10 @@ namespace sc
 {
 	uint16_t Compressor::theardsCount = theards;
 
-	void Compressor::compress(const std::string& inputFilepath, const std::string& outFilepath, CompressionSignature signature, std::vector<uint8_t>* metadata)
+	void Compressor::compress(const fs::path& input, const fs::path& output, CompressionSignature signature, vector<uint8_t> metadata)
 	{
-		ReadFileStream inputStream(inputFilepath);
-		WriteFileStream outputStream(outFilepath);
+		ReadFileStream inputStream(input);
+		WriteFileStream outputStream(output);
 
 		compress(inputStream, outputStream, signature, metadata);
 
@@ -34,50 +34,48 @@ namespace sc
 		outputStream.close();
 	}
 
-	void Compressor::compress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature, std::vector<uint8_t>* metadata)
+	void Compressor::compress(Bytestream& input, Bytestream& output, CompressionSignature signature, vector<uint8_t> metadata)
 	{
-		const uint16_t scMagic = 0x5343;
-
-		outStream.writeUInt16BE(scMagic);
-		if (metadata)
+		output.writeUInt16BE(0x5343);
+		if (metadata.size() != 0)
 		{
-			outStream.writeUInt32BE(4);
+			output.writeUInt32BE(4);
 		}
 
-		if (signature == CompressionSignature::LZMA ||
-			signature == CompressionSignature::LZHAM)
+		switch (signature)
 		{
-			outStream.writeUInt32BE(1);
-		}
-		else if (signature == CompressionSignature::ZSTD)
-		{
-			outStream.writeUInt32BE(3);
-		}
-		else
-		{
-			outStream.writeUInt32BE(2);
+		case sc::CompressionSignature::LZMA:
+		case sc::CompressionSignature::LZHAM:
+			output.writeUInt32BE(1);
+			break;
+		case sc::CompressionSignature::ZSTD:
+			output.writeUInt32BE(3);
+			break;
+		default:
+			commonCompress(input, output, signature);
+			return;
 		}
 
 		md5 hashCtx;
 		uint8_t hash[16];
 
-		uint8_t* buffer = new uint8_t[inStream.size()]();
-		inStream.seek(0);
-		inStream.read(buffer, inStream.size());
-		inStream.seek(0);
+		uint8_t* buffer = new uint8_t[input.size()]();
+		input.seek(0);
+		input.read(buffer, input.size());
+		input.seek(0);
 
-		hashCtx.update(buffer, inStream.size());
+		hashCtx.update(buffer, input.size());
 		hashCtx.final(hash);
 
-		outStream.writeUInt32BE(16);
-		outStream.write(&hash, 16);
+		output.writeUInt32BE(16);
+		output.write(&hash, 16);
 
-		commonCompress(inStream, outStream, signature);
+		commonCompress(input, output, signature);
 
-		if (metadata) {
+		if (metadata.size() != 0) {
 			std::string start = "START";
-			outStream.write((void*)start.c_str(), start.size());
-			outStream.write(metadata->data(), metadata->size());
+			output.write((void*)start.c_str(), start.size());
+			output.write(metadata.data(), metadata.size());
 		}
 	}
 

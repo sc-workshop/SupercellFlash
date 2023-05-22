@@ -4,21 +4,15 @@
 #include "SupercellBytestream/error/StreamException.h"
 #include "SupercellFlash/error/NullPointerException.h"
 
-#include <filesystem>
-
-#include <iostream>
-
-namespace fs = filesystem;
-
 namespace sc
 {
-	void SupercellSWF::load(const string& filePath)
+	void SupercellSWF::load(const fs::path& path)
 	{
-		m_useExternalTexture = loadInternal(filePath, false);
+		m_useExternalTexture = loadInternal(path, false);
 
 		if (m_useExternalTexture)
 		{
-			fs::path path(filePath);
+			fs::path path(path);
 			fs::path basename = path.stem();
 			path.remove_filename();
 
@@ -82,7 +76,7 @@ namespace sc
 		}
 	}
 
-	bool SupercellSWF::loadInternal(string filepath, bool isTexture)
+	bool SupercellSWF::loadInternal(const fs::path& filepath, bool isTexture)
 	{
 		stream.open(filepath);
 

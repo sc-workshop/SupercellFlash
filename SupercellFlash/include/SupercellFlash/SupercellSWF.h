@@ -25,6 +25,9 @@
 
 using namespace std;
 
+#include <filesystem>
+namespace fs = filesystem;
+
 namespace sc
 {
 	class SupercellSWF
@@ -38,11 +41,10 @@ namespace sc
 		std::vector<pMovieClip> movieClips;
 		std::vector<pTextField> textFields;
 		std::vector<pMovieClipModifier> movieClipModifiers;
-		
 
 	public:
-		void load(const std::string& filePath);
-		bool loadInternal(std::string filepath, bool isTexture);
+		void load(const fs::path& filePath);
+		bool loadInternal(const fs::path& filepath, bool isTexture);
 
 		void save(const std::string& filepath, CompressionSignature signature);
 

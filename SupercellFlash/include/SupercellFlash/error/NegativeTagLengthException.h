@@ -16,7 +16,7 @@ namespace sc {
 			message = s.str();
 		}
 
-		const char* what() {
+		const char* what() const override {
 			return message.c_str();
 		}
 	};

@@ -5,6 +5,9 @@
 #include "SupercellCompression/Signature.h"
 #include "SupercellBytestream/base/Bytestream.h"
 
+#include <filesystem>
+namespace fs = filesystem;
+
 namespace sc
 {
 	class Decompressor
@@ -13,7 +16,7 @@ namespace sc
 		/**
 		 * Decompress file and then store it in cache, without need to decompress in the future.
 		 */
-		static bool decompress(const std::string& filepath, std::string& outFilepath);
+		static bool decompress(const fs::path& filepath, fs::path& outFilepath);
 
 		/**
 		 * Decompress file from stream.

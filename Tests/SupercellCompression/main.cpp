@@ -52,24 +52,24 @@ bool optionInCmd(int argc, char* argv[], const std::string& option) {
 }
 
 void printUsage() {
-	printf("Usage: [mode] InputFilePath OutputFilePath options\n");
+	printf("Usage: [mode] input output options\n");
 
 	printf("\n");
 
 	printf("Modes:\n");
-	printf("c - compress file.\n");
-	printf("d - decompress file.\n");
+	printf("c - Compress file.\n");
+	printf("d - Decompress file.\n");
 
 	printf("\n");
 
 	printf("Options:\n");
-	printf("-m - compression mode: LZMA, LZHAM, ZSTD. Default: LZMA\n");
-	printf("-t - theard count(compress only). Default: All CPU cores\n");
+	printf("-m - Compression mode: LZMA, LZHAM, ZSTD. Default: LZMA\n");
+	printf("-t - Theard count. Default: All CPU cores\n");
 
 	printf("\n");
 
 	printf("Flags:\n");
-	printf("--common - process file as common file (like compressed .csv)\n");
+	printf("--common - Process file as common file (like compressed .csv)\n");
 
 	printf("\n");
 
@@ -92,13 +92,13 @@ int main(int argc, char* argv[])
 	}
 	std::string mode(argv[1]);
 
-	std::string inFilepath(argv[2] ? argv[2] : "");
+	fs::path inFilepath(argv[2] ? argv[2] : "");
 	if (inFilepath.empty() || !fs::exists(inFilepath)) {
 		std::cout << "[ERROR] Input file does not exist." << std::endl;
 		return 0;
 	}
 
-	std::string outFilepath(argv[3]);
+	fs::path outFilepath(argv[3]);
 	if (outFilepath.empty()) {
 		std::cout << "[ERROR] Output file does not exist." << std::endl;
 		return 0;
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
 
 	bool isCommon = optionInCmd(argc, argv, "--common");
 
-	// Timer 
+	// Timer
 
 	using std::chrono::high_resolution_clock;
 	using std::chrono::duration_cast;
@@ -124,12 +124,20 @@ int main(int argc, char* argv[])
 		sc::ReadFileStream inStream(inFilepath);
 		sc::WriteFileStream outStream(outFilepath);
 
-		if (isCommon) {
-			sc::Decompressor::commonDecompress(inStream, outStream);
+		try {
+			if (isCommon) {
+				sc::Decompressor::commonDecompress(inStream, outStream);
+			}
+			else {
+				sc::Decompressor::decompress(inStream, outStream);
+			}
 		}
-		else {
-			sc::Decompressor::decompress(inStream, outStream);
+		catch (const std::exception& err) {
+			std::cout << "[ERROR] " << err.what() << endl;
 		}
+
+		inStream.close();
+		outStream.close();
 	}
 	else if (mode == "c") {
 		sc::CompressionSignature signature = sc::CompressionSignature::LZMA;
@@ -150,12 +158,17 @@ int main(int argc, char* argv[])
 		if (theardArg.size() > 0) {
 			sc::Compressor::theardsCount = std::stoi(theardArg);
 		}
-		
-		if (isCommon) {
-			sc::Compressor::commonCompress(inStream, outStream, signature);
+
+		try {
+			if (isCommon) {
+				sc::Compressor::commonCompress(inStream, outStream, signature);
+			}
+			else {
+				sc::Compressor::compress(inStream, outStream, signature);
+			}
 		}
-		else {
-			sc::Compressor::compress(inStream, outStream, signature, nullptr);
+		catch (const std::exception& err) {
+			std::cout << "[ERROR] " << err.what() << endl;
 		}
 	}
 	else {

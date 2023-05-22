@@ -2,36 +2,26 @@
 
 #include <iostream>
 #include <string>
-#include <filesystem>
 
-namespace fs = std::filesystem;
+#include "SupercellBytestream/FileStream.h"
 
-#define TEMP_PATH "./"
 #define CACHE_FOLDER "swf_cache"
 
 namespace sc {
-	std::string SwfCache::infoPath(const std::string& filepath)
+	fs::path SwfCache::getInfoFilePath(const fs::path& filepath)
 	{
-		fs::path tempDir = tempPath();
-		fs::path filename = fs::path(filepath).filename();
+		fs::path path(filepath);
 
-		std::string infoFilePath = (tempDir / filename.replace_extension("info")).string();
-
-		return infoFilePath;
+		return path.replace_extension("info");
 	}
 
 	// Path to swf TEMP folder
-	std::string SwfCache::tempPath()
+	fs::path SwfCache::getTempDirectory()
 	{
-		fs::path path;
-#ifdef USE_CUSTOM_TEMP_PATH
-		path = fs::absolute(TEMP_PATH);
-#else
-		path = fs::temp_directory_path();
-#endif
-		path = path / std::string(CACHE_FOLDER);
+		fs::path path = fs::temp_directory_path();
+		path /= fs::path(CACHE_FOLDER);
 
-		std::string filepath = path.string();
+		fs::path filepath = path.string();
 
 		if (!fs::is_directory(path)) {
 			fs::create_directory(filepath);
@@ -41,73 +31,64 @@ namespace sc {
 	}
 
 	// Path to swf TEMP folder with filename
-	std::string SwfCache::tempPath(const std::string& filepath)
+	fs::path SwfCache::getTempDirectory(const fs::path& filepath)
 	{
-		fs::path tempPath = SwfCache::tempPath();
-		fs::path filename = fs::path(filepath).filename();
-
-		return (tempPath / filename).make_preferred().string();
+		return SwfCache::getTempDirectory() / filepath.filename();
 	}
 
 	// Check if file exists in swf TEMP folder
-	bool SwfCache::exist(const std::string& filepath, std::vector<uint8_t> id, uint32_t fileSize)
+	bool SwfCache::isFileCached(const fs::path& filepath, std::vector<uint8_t> hash, uint32_t size)
 	{
-		fs::path tempDir = tempPath();
-		fs::path file(filepath);
-		file = file.filename();
+		fs::path tempDir = getTempDirectory();
 
-		std::string scFilepath = (tempDir / file).string();
-		std::string infoFilepath = infoPath(scFilepath);
+		fs::path assetPath = tempDir / filepath.filename();
+		fs::path infoPath = getInfoFilePath(assetPath);
 
-		// If one of files does not exist, then file is not in cache
-		if (!fs::exists(scFilepath) || !fs::exists(infoFilepath))
+		if (!fs::exists(assetPath) || !fs::exists(infoPath))
 		{
 			return false;
 		}
 
-		uint32_t infoFileSize = 0;
-		std::vector<uint8_t> infoFileId;
-		getData(filepath, infoFileId, infoFileSize);
+		uint32_t cachedSize = 0;
+		std::vector<uint8_t> cachedHash;
+		readCacheInfo(filepath, cachedHash, cachedSize);
 
-		if (infoFileSize != fileSize || infoFileId != id)
+		if (cachedSize != size || cachedHash != hash)
 			return false;
 
 		return true;
 	}
 
 	// Gets data from info file in swf TEMP folder
-	void SwfCache::getData(const std::string& filepath, std::vector<uint8_t>& sign, uint32_t& fileSize)
+	void SwfCache::readCacheInfo(const fs::path& filepath, std::vector<uint8_t>& hash, uint32_t& size)
 	{
-		const std::string infoFilePath = infoPath(filepath);
-		FILE* infoFile = fopen(infoFilePath.c_str(), "rb");
-		if (infoFile == NULL)
-			return;
+		const fs::path cacheInfoPath = getInfoFilePath(filepath);
+		ReadFileStream file(cacheInfoPath);
 
-		uint8_t Char;
-		while (fread(&Char, sizeof(Char), 1, infoFile) != 0)
-		{
-			if (Char == '\0')
+		uint8_t byte;
+		while (!file.eof()) {
+			byte = file.readUInt8();
+
+			if (byte == 0) {
 				break;
-			sign.push_back(Char);
+			}
+			else {
+				hash.push_back(byte);
+			}
 		}
 
-		fread(&fileSize, sizeof(fileSize), 1, infoFile);
-
-		fclose(infoFile);
+		size = file.readUInt32();
+		file.close();
 	}
 
-	void SwfCache::addData(const std::string& filepath, std::vector<uint8_t> hash, uint32_t fileSize)
+	void SwfCache::writeCacheInfo(const fs::path& filepath, std::vector<uint8_t> hash, uint32_t fileSize)
 	{
-		std::string infoFilePath = infoPath(filepath);
+		fs::path infoFilePath = getInfoFilePath(filepath);
 
-		FILE* file = fopen(infoFilePath.c_str(), "wb");
-		if (file == NULL)
-			return;
-
-		fwrite(hash.data(), hash.size(), 1, file);
-		fwrite("\0", 1, 1, file);
-		fwrite(&fileSize, sizeof(fileSize), 1, file);
-
-		fclose(file);
+		WriteFileStream file(infoFilePath);
+		file.write(hash.data(), hash.size());
+		file.writeUInt8(0);
+		file.writeUInt32(fileSize);
+		file.close();
 	}
 }

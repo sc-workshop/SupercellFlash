@@ -18,10 +18,10 @@ namespace sc {
 		SWFStream() {}
 		~SWFStream() {}
 
-		void open(const std::string filepath) {
+		void open(const fs::path& filepath) {
 			clear();
 
-			std::string output;
+			fs::path output;
 			Decompressor::decompress(filepath, output);
 			ReadFileStream file(output);
 			buffer = std::vector<uint8_t>(file.size());
@@ -29,15 +29,20 @@ namespace sc {
 			file.close();
 		}
 
-		void save(const std::string filepath, CompressionSignature signature) {
+		void save(const fs::path& filepath, const CompressionSignature& signature) {
 			BufferStream input(&buffer);
 			WriteFileStream output(filepath);
 
-			if (signature == CompressionSignature::NONE) {
+			switch (signature)
+			{
+			case sc::CompressionSignature::LZMA:
+			case sc::CompressionSignature::LZHAM:
+			case sc::CompressionSignature::ZSTD:
+				Compressor::compress(input, output, signature);
+				break;
+			default:
 				output.write(buffer.data(), buffer.size());
-			}
-			else {
-				Compressor::compress(input, output, signature, nullptr);
+				break;
 			}
 			
 			clear();

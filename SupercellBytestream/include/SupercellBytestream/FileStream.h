@@ -13,64 +13,14 @@ using std::ifstream;
 using std::ofstream;
 
 namespace sc {
-	/*class FileStream : public Bytestream {
-	protected:
-		FILE* file = NULL;
-		uint32_t fileSize = 0;
-
-		void fileInitialize() {
-			fseek(file, 0, SEEK_END);
-			fileSize = static_cast<uint32_t>(ftell(file));
-			fseek(file, 0, SEEK_SET);
-		};
-
-		size_t _read(void* buff, size_t buffSize) override
-		{
-			throw StreamException(StreamError::READ_ERROR, "Failed to read data from incorrectly initialized file.");
-		};
-
-		size_t _write(void* buff, size_t buffSize) override
-		{
-			throw StreamException(StreamError::WRITE_ERROR, "Failed to write data to incorrectly initialized file.");
-		};
-
-	public:
-		uint32_t tell() override
-		{
-			return static_cast<uint32_t>(ftell(file));
-		};
-
-		int seek(uint32_t pos) override
-		{
-			return fseek(file, pos, SEEK_SET);
-		};
-
-		uint32_t size() override
-		{
-			return fileSize;
-		};
-		void* data() override
-		{
-			uint32_t pos = tell();
-			void* data = malloc(size());
-			read(data, size());
-			seek(pos);
-			return data;
-		}
-
-		void close() override {
-			fclose(file);
-		};
-	};*/
-
 	class WriteFileStream: public Bytestream {
 	private:
 		ofstream file;
 		uint32_t fileSize = 0;
 
 	public:
-		WriteFileStream(std::string filepath) {
-			file.open(filepath.c_str(), std::ios_base::binary);
+		WriteFileStream(fs::path filepath) {
+			file.open(filepath, std::ios_base::binary);
 
 			file.seekp(0, std::ios::end);
 			fileSize = static_cast<uint32_t>(file.tellp());
@@ -120,7 +70,7 @@ namespace sc {
 		uint32_t fileSize = 0;
 
 	public:
-		ReadFileStream(std::string filepath) {
+		ReadFileStream(fs::path filepath) {
 			if (fs::exists(filepath)) {
 				file.open(filepath.c_str(), std::ios_base::binary);
 
@@ -129,7 +79,7 @@ namespace sc {
 				file.seekg(0);
 			}
 			else {
-				throw FileExistException(filepath);
+				throw FileExistException(filepath.string());
 			}
 		}
 

@@ -3,16 +3,19 @@
 #include <string>
 #include <vector>
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 namespace sc {
 	class SwfCache
 	{
 	public:
-		static std::string infoPath(const std::string& filepath);
-		static std::string tempPath();
-		static std::string tempPath(const std::string& filepath);
+		static fs::path getInfoFilePath(const fs::path & filepath);
+		static fs::path getTempDirectory();
+		static fs::path getTempDirectory(const fs::path& filepath);
 
-		static bool exist(const std::string& filepath, std::vector<uint8_t> id, uint32_t fileSize);
-		static void getData(const std::string& filepath, std::vector<uint8_t>& sign, uint32_t& fileSize);
-		static void addData(const std::string& filepath, std::vector<uint8_t> hash, uint32_t fileSize);
+		static bool isFileCached(const fs::path & filepath, std::vector<uint8_t> id, uint32_t fileSize);
+		static void readCacheInfo(const fs::path & filepath, std::vector<uint8_t>& sign, uint32_t& fileSize);
+		static void writeCacheInfo(const fs::path & filepath, std::vector<uint8_t> hash, uint32_t fileSize);
 	};
 }

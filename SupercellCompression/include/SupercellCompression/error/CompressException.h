@@ -7,7 +7,7 @@ namespace sc {
 		std::string message;
 		CompressException(std::string msg) : message(msg) {}
 
-		const char* what() {
+		const char* what() const override {
 			return message.c_str();
 		}
 	};

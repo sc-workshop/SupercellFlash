@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "caching/cache.h"
+#include "SupercellCompression/error/DecompressException.h"
 
 #include "backend/LzmaCompression.h"
 #include "backend/LzhamCompression.h"
@@ -12,66 +13,59 @@
 
 namespace sc
 {
-	bool Decompressor::decompress(const std::string& filepath, std::string& outFilepath)
+	bool Decompressor::decompress(const fs::path& filepath, fs::path& outFilepath)
 	{
-		/* Input file opening */
-		ReadFileStream inStream(filepath.c_str());
-		uint32_t inStreamSize = inStream.size();
-
-		/* Caching things */
-
-		outFilepath = SwfCache::tempPath(filepath);
+		ReadFileStream input(filepath);
+		outFilepath = SwfCache::getTempDirectory(filepath);
 
 		/* Header parsing */
 		CompressionSignature signature;
 		std::vector<uint8_t> hash;
-		bool hasMetadata = getHeader(inStream, signature, hash);
+		bool hasMetadata = getHeader(input, signature, hash);
 
-		bool fileInCache = SwfCache::exist(filepath, hash, inStreamSize);
-		if (fileInCache)
+		bool isCached = SwfCache::isFileCached(filepath, hash, input.size());
+		if (isCached)
 		{
 			return hasMetadata;
 		}
 
-		WriteFileStream outStream(outFilepath);
+		WriteFileStream output(outFilepath);
 
-		commonDecompress(inStream, outStream, signature);
+		commonDecompress(input, output, signature);
 
-		inStream.close();
-		outStream.close();
+		input.close();
+		output.close();
 
-		if (!fileInCache)
+		if (!isCached)
 		{
-#ifndef DISABLE_CACHE
-			SwfCache::addData(filepath, hash, inStreamSize);
-#endif
+			SwfCache::writeCacheInfo(filepath, hash, input.size());
 		}
 
 		return hasMetadata;
 	}
 
-	bool Decompressor::decompress(Bytestream& inStream, Bytestream& outStream) {
+	bool Decompressor::decompress(Bytestream& input, Bytestream& output) {
 		CompressionSignature signature;
 		std::vector<uint8_t> hash;
-		bool hasMetadata = getHeader(inStream, signature, hash);
-		commonDecompress(inStream, outStream, signature);
+		bool hasMetadata = getHeader(input, signature, hash);
+		commonDecompress(input, output, signature);
 		return hasMetadata;
 	}
 
-	void Decompressor::commonDecompress(Bytestream& inStream, Bytestream& outStream) {
-		inStream.seek(0);
-		uint32_t magic = inStream.readUInt32();
-		inStream.read(&magic, sizeof(magic));
-		inStream.seek(0);
+	void Decompressor::commonDecompress(Bytestream& input, Bytestream& output) {
+		input.seek(0);
+		uint32_t magic = input.readUInt32();
+		input.read(&magic, sizeof(magic));
+		input.seek(0);
 
 		if (magic == 0x3A676953) {
-			inStream.skip(64);
-			magic = inStream.readUInt32();
+			input.skip(64);
+			magic = input.readUInt32();
 		}
 
 		CompressionSignature signature = getSignature(magic);
 
-		return commonDecompress(inStream, outStream, signature);
+		return commonDecompress(input, output, signature);
 	}
 
 	void Decompressor::commonDecompress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature) {
@@ -100,12 +94,16 @@ namespace sc
 
 	bool Decompressor::getHeader(Bytestream& inStream, CompressionSignature& signature, std::vector<uint8_t>& hash) {
 		uint16_t magic = inStream.readUInt16BE();
-		if (magic != 0x5343) { // Just a little trick to handle decompressed file
+
+		if (magic != 0x5343) {
+#ifdef _DEBUG
 			signature = CompressionSignature::NONE;
 			return false;
+#else
+			throw DecompressException("Compressed file has wrong magic number");
+#endif
 		}
 
-		// Version of .sc file
 		uint32_t version = inStream.readUInt32BE();
 
 		bool hasMetadata = false;

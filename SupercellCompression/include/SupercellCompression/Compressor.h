@@ -5,6 +5,11 @@
 #include "SupercellCompression/Signature.h"
 #include "SupercellBytestream/base/Bytestream.h"
 
+#include <filesystem>
+namespace fs = filesystem;
+
+using namespace std;
+
 namespace sc
 {
 	class Compressor
@@ -15,12 +20,12 @@ namespace sc
 		/*
 		* Compress .sc file.
 		*/
-		static void compress(const std::string& inputFilepath, const std::string& outFilepath, CompressionSignature signature, std::vector<uint8_t>* metadata);
+		static void compress(const fs::path& inputFilepath, const fs::path& outFilepath, CompressionSignature signature, vector<uint8_t> metadata = {});
 
 		/*
 		* Compress .sc file data from stream.
 		*/
-		static void compress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature, std::vector<uint8_t>* metadata); // TODO: add metadata..?
+		static void compress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature, vector<uint8_t> metadata = {});
 
 		/*
 		* Compress common file data.

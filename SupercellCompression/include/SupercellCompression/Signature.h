@@ -4,9 +4,11 @@ namespace sc
 {
 	enum class CompressionSignature : uint32_t
 	{
+#ifdef _DEBUG
 		NONE = 0,
+#endif // DEBUG
 
-		LZMA,
+		LZMA = 1,
 		LZHAM,
 		ZSTD,
 	};
