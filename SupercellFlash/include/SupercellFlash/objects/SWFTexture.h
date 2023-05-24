@@ -79,7 +79,7 @@ namespace sc
 		uint16_t m_width = 0;
 		uint16_t m_height = 0;
 
-		bool m_linear = false;
+		bool m_linear = true;
 		bool m_downscaling = true;
 	};
 
