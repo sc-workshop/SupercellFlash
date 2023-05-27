@@ -121,6 +121,14 @@ namespace sc {
 			m_stream.writeUInt16(integer);
 		}
 
+		void writeUnsignedInt(uint32_t integer) {
+			m_stream.writeUInt32(integer);
+		}
+
+		uint32_t readUnsignedInt() {
+			return m_stream.readUInt32();
+		}
+
 		void writeInt(int32_t integer) {
 			m_stream.writeInt32(integer);
 		}

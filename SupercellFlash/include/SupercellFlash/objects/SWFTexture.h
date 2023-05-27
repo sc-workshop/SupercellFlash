@@ -31,8 +31,7 @@ namespace sc
 			RGB5_A1,
 			RGB565,
 			LUMINANCE8_ALPHA8 = 6,
-			LUMINANCE8 = 10,
-			// PVR = 15
+			LUMINANCE8 = 10
 		};
 
 	public:
@@ -50,6 +49,7 @@ namespace sc
 
 		bool linear() { return m_linear; }
 		bool downscaling() { return m_downscaling; }
+		// bool isKhronosTexture() { return m_khronosTexture;  }
 
 	public:
 		void pixelFormat(PixelFormat type);
@@ -61,6 +61,11 @@ namespace sc
 
 		void downscaling(bool status) { m_downscaling = status; }
 		void linear(bool status);
+		// void isKhronosTexture(bool status) {
+		// 	linear(false);
+		// 	downscaling(false);
+		// 	textureFilter(Filter::LINEAR_NEAREST);
+		// }
 
 	public:
 		vector<uint8_t> data;
@@ -81,6 +86,7 @@ namespace sc
 
 		bool m_linear = true;
 		bool m_downscaling = true;
+		// bool m_khronosTexture = false;
 	};
 
 	typedef std::shared_ptr<SWFTexture> pSWFTexture;

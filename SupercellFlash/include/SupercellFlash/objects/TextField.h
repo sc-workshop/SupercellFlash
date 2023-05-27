@@ -46,6 +46,7 @@ namespace sc
 		float bendAngle() { return m_bendAngle; }
 
 		bool unknownFlag() const { return m_unknownFlag; }
+		bool unknownFlag2() const { return m_unknownFlag2; }
 		int16_t unknownShort() const { return m_unknownShort; }
 		int16_t unknownShort2() const { return m_unknownShort2; }
 
@@ -75,6 +76,7 @@ namespace sc
 		void bendAngle(float bend) { m_bendAngle = bend; }
 
 		void unknownFlag(bool status) { m_unknownFlag = status; }
+		void unknownFlag2(bool status) { m_unknownFlag2 = status; }
 		void unknownShort(int16_t value) { m_unknownShort = value; }
 		void unknownShort2(int16_t value) { m_unknownShort2 = value; }
 
@@ -110,6 +112,7 @@ namespace sc
 		float m_bendAngle = 0.0f;
 
 		bool m_unknownFlag = false;
+		bool m_unknownFlag2 = false;
 		uint16_t m_unknownShort = 0xFFFF;
 		uint16_t m_unknownShort2 = 0xFFFF;
 	};

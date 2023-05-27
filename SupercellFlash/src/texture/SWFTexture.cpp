@@ -65,6 +65,10 @@ namespace sc
 		{
 			/* Tag processing */
 
+			if (tag == TAG_TEXTURE_9) {
+				throw runtime_error("Khronos texture tag is not implemented");
+			}
+
 			m_textureFilter = Filter::LINEAR_NEAREST;
 			if (tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_3 || tag == TAG_TEXTURE_7) {
 				m_textureFilter = Filter::LINEAR_MIPMAP_NEAREST;

@@ -138,21 +138,23 @@ namespace sc
 		if (m_useDeviceFont)
 			tag = TAG_TEXT_FIELD_2;
 
-		if (m_outlineColor != 0xFFFFFFFF) {
+		if (m_unknownFlag)
+			tag = TAG_TEXT_FIELD_3;
+
+		if (m_outlineColor != 0xFFFFFFFF)
 			tag = TAG_TEXT_FIELD_4;
-		}
 
-		if (m_unknownShort != 0xFFFF || m_unknownShort2 != 0xFFFF) {
+		if (m_unknownShort != 0xFFFF || m_unknownShort2 != 0xFFFF)
 			tag = TAG_TEXT_FIELD_6;
-		}
 
-		if (m_bendAngle != 0.0f) {
+		if (m_bendAngle != 0.0f)
 			tag = TAG_TEXT_FIELD_7;
-		}
 
-		if (m_autoAdjustFontSize) {
+		if (m_autoAdjustFontSize)
 			tag = TAG_TEXT_FIELD_8;
-		}
+
+		if (m_unknownFlag2)
+			tag = TAG_TEXT_FIELD_9;
 
 		if (tag == TAG_TEXT_FIELD) goto FINALIZE;
 
@@ -174,6 +176,10 @@ namespace sc
 		if (tag == TAG_TEXT_FIELD_7) goto FINALIZE;
 
 		swf->stream.writeBool(m_autoAdjustFontSize);
+
+		if (tag == TAG_TEXT_FIELD_8) goto FINALIZE;
+		
+		swf->stream.writeBool(m_unknownFlag2);
 
 FINALIZE:
 		swf->stream.finalizeTag(tag, pos);
