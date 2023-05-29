@@ -10,11 +10,11 @@ namespace sc
 		greenAdd = swf->stream.readUnsignedByte();
 		blueAdd = swf->stream.readUnsignedByte();
 
-		alpha = (float)swf->stream.readUnsignedByte() / 255.0f;
+		alpha = swf->stream.readUnsignedByte();
 
-		redMul = (float)swf->stream.readUnsignedByte() / 255.0f;
-		greenMul = (float)swf->stream.readUnsignedByte() / 255.0f;
-		blueMul = (float)swf->stream.readUnsignedByte() / 255.0f;
+		redMul = swf->stream.readUnsignedByte();
+		greenMul = swf->stream.readUnsignedByte();
+		blueMul = swf->stream.readUnsignedByte();
 
 		return this;
 	}
@@ -28,23 +28,23 @@ namespace sc
 		swf->stream.writeUnsignedByte(greenAdd);
 		swf->stream.writeUnsignedByte(blueAdd);
 
-		swf->stream.writeUnsignedByte((uint8_t)(alpha * 255.0f));
+		swf->stream.writeUnsignedByte(alpha);
 
-		swf->stream.writeUnsignedByte((uint8_t)(redMul * 255.0f));
-		swf->stream.writeUnsignedByte((uint8_t)(greenMul * 255.0f));
-		swf->stream.writeUnsignedByte((uint8_t)(blueMul * 255.0f));
+		swf->stream.writeUnsignedByte(redMul);
+		swf->stream.writeUnsignedByte(greenMul);
+		swf->stream.writeUnsignedByte(blueMul);
 
 		swf->stream.finalizeTag(tag, pos);
 	}
 
 	bool ColorTransform::operator==(const ColorTransform& color) {
-		if (floatEqual(color.alpha, alpha) &&
-			floatEqual(color.blueAdd, blueAdd) &&
-			floatEqual(color.blueMul, blueMul) &&
-			floatEqual(color.greenAdd, greenAdd) &&
-			floatEqual(color.greenMul, greenMul) &&
-			floatEqual(color.redAdd, redAdd) &&
-			floatEqual(color.redMul, redMul)) {
+		if (color.alpha == alpha &&
+			color.blueAdd == blueAdd &&
+			color.blueMul == blueMul &&
+			color.greenAdd == greenAdd &&
+			color.greenMul == greenMul &&
+			color.redAdd == redAdd &&
+			color.redMul == redMul) {
 			return true;
 		}
 

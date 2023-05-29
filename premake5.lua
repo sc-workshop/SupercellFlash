@@ -1,6 +1,6 @@
 
 
-workspace "SupercellTools"
+workspace "SupercellSWF"
     architecture "x64"
 
     configurations {
