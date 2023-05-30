@@ -39,13 +39,13 @@ namespace sc {
 			return true;
 		}
 
-		if (floatEqual(color->alpha, 1.0f) &&
-			floatEqual(color->blueAdd, 0) &&
-			floatEqual(color->blueMul, 1.0f) &&
-			floatEqual(color->greenAdd, 0) &&
-			floatEqual(color->greenMul, 1.0f) &&
-			floatEqual(color->redAdd, 0) &&
-			floatEqual(color->redMul, 1.0f)) {
+		if (color->alpha == 0xFF &&
+			color->blueAdd == 0 &&
+			color->blueMul == 0xFF &&
+			color->greenAdd == 0 &&
+			color->greenMul == 0xFF &&
+			color->redAdd == 0 &&
+			color->redMul == 0xFF) {
 			index = 0xFFFF;
 			return true;
 		}
