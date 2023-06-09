@@ -1,23 +1,40 @@
 
+project "SupercellFlash"
+    kind "StaticLib"
 
-workspace "SupercellSWF"
-    architecture "x64"
+    language "C++"
+    cppdialect "C++17"
 
-    configurations {
-        "Debug",
-        "Release"
+    targetdir "%{wks.location}/build/bin/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
+    objdir "%{wks.location}/build/obj/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
+
+    files {
+		"include/**.h",
+		"src/**.cpp",
+		"src/**.h"
     }
 
-group "Compression"
-	include "external/lzma"
-    include "external/lzham"
-    include "external/zstd"
+    includedirs {
+        "src",
+		"include",
+		"dependencies/Bytestream/",
+        "dependencies/Compression/include"
+    }
 
-group "Libraries" 
-	include "SupercellBytestream"
-	include "SupercellCompression"
-	include "SupercellFlash"
+    links {
+        "SupercellCompression",
+		"LZMA",
+		"LZHAM",
+		"Zstandard"
+    }
 
-group "Tests"
-	include "Tests/SupercellFlash"
-	include "Tests/SupercellCompression"
+    filter "configurations:Debug"
+        defines { "DEBUG" }
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        defines { "NDEBUG" }
+        runtime "Release"
+        optimize "on"
+

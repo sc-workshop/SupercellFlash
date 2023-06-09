@@ -1,0 +1,6 @@
+[submodule "dependencies/Bytestream"]
+	path = dependencies/Bytestream
+	url = https://github.com/scwmake/SupercellBytestream
+[submodule "dependencies/Compression"]
+	path = dependencies/Compression
+	url = https://github.com/scwmake/SupercellCompression
