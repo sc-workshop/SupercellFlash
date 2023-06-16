@@ -12,7 +12,7 @@ using namespace std;
 using namespace sc;
 
 int main(int argc, char* argv[]) {
-    if (argc != 0) {
+    if (argc != 1) {
         cout << "Failed to get filename";
     }
 
