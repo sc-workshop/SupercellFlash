@@ -37,11 +37,11 @@ namespace sc
 		bool isItalic() { return m_isItalic; }
 		bool isMultiline() { return m_isMultiline; }
 		bool isOutlined() { return m_isOutlined; }
-		bool isDynamic() { return m_isDynamic; }
+		bool unknownFlag3() { return m_unknwonFlag3; }
 
 		uint32_t outlineColor() { return m_outlineColor; }
 		bool useDeviceFont() { return m_useDeviceFont; }
-		bool autoAdjustFontSize() { return m_autoAdjustFontSize; }
+		bool autoKern() { return m_autoKern; }
 
 		float bendAngle() { return m_bendAngle; }
 
@@ -67,17 +67,17 @@ namespace sc
 		void isItalic(bool status) { m_isItalic = status; }
 		void isMultiline(bool status) { m_isMultiline = status; }
 		void isOutlined(bool status) { m_isOutlined = status; }
-		void isDynamic(bool status) { m_isDynamic = status; }
+		void unknownFlag3(bool status) { m_unknwonFlag3 = status; }
 
 		void outlineColor(int32_t color) { m_outlineColor = color; }
 		void useDeviceFont(bool status) { m_useDeviceFont = status; }
-		void autoAdjustFontSize(bool status) { m_autoAdjustFontSize = status; }
+		void autoKern(bool status) { m_autoKern = status; }
 
 		void bendAngle(float bend) { m_bendAngle = bend; }
 
 		void unknownFlag(bool status) { m_unknownFlag = status; }
 		void unknownFlag2(bool status) { m_unknownFlag2 = status; }
-		void unknownShort(int16_t value) { m_unknownShort = value; }
+		void unknownShort(int16_t value) { m_unknownShort = value; } // Left/Right margin?
 		void unknownShort2(int16_t value) { m_unknownShort2 = value; }
 
 	public:
@@ -103,11 +103,11 @@ namespace sc
 		bool m_isItalic = false;
 		bool m_isMultiline = false;
 		bool m_isOutlined = false;
-		bool m_isDynamic = false;
+		bool m_unknwonFlag3 = false;
 
 		uint32_t m_outlineColor = 0xFFFFFFFF;
 		bool m_useDeviceFont = false;
-		bool m_autoAdjustFontSize = false;
+		bool m_autoKern = false;
 
 		float m_bendAngle = 0.0f;
 

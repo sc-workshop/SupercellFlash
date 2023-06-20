@@ -15,7 +15,7 @@ namespace sc
 		m_isBold = swf->stream.readBool();
 		m_isItalic = swf->stream.readBool();
 		m_isMultiline = swf->stream.readBool();
-		m_isDynamic = swf->stream.readBool();
+		m_unknwonFlag3 = swf->stream.readBool();
 
 		uint8_t fontSets = swf->stream.readUnsignedByte();
 		if ((fontSets & 1) != 0) {
@@ -62,7 +62,7 @@ namespace sc
 			m_bendAngle = swf->stream.readShort() * 91.019f;
 
 		if (tag > TAG_TEXT_FIELD_7)
-			m_autoAdjustFontSize = swf->stream.readBool();
+			m_autoKern = swf->stream.readBool();
 
 		return this;
 	}
@@ -79,7 +79,7 @@ namespace sc
 		swf->stream.writeBool(m_isBold);
 		swf->stream.writeBool(m_isItalic);
 		swf->stream.writeBool(m_isMultiline);
-		swf->stream.writeBool(m_isDynamic);
+		swf->stream.writeBool(m_unknwonFlag3);
 
 		uint8_t fontSets = 0;
 
@@ -158,7 +158,7 @@ namespace sc
 		if (m_bendAngle != 0.0f)
 			tag = TAG_TEXT_FIELD_7;
 
-		if (m_autoAdjustFontSize)
+		if (m_autoKern)
 			tag = TAG_TEXT_FIELD_8;
 
 		if (m_unknownFlag2)
@@ -187,7 +187,7 @@ namespace sc
 
 		if (tag == TAG_TEXT_FIELD_7) return;
 
-		swf->stream.writeBool(m_autoAdjustFontSize);
+		swf->stream.writeBool(m_autoKern);
 
 		if (tag == TAG_TEXT_FIELD_8) return;
 
