@@ -41,7 +41,6 @@ namespace sc
 
 	void SupercellSWF::save(const fs::path& filepath, CompressionSignature signature)
 	{
-		stream.clear();
 		saveInternal();
 		stream.save(filepath, signature);
 
@@ -54,23 +53,22 @@ namespace sc
 			fs::path lowResFilePath = path / fs::path(basename).concat(m_lowResFileSuffix + "_tex.sc");
 			fs::path externalFilePath = path / fs::path(basename).concat(path.stem().string()).concat("_tex.sc");
 
+			stream.init();
 			for (pSWFTexture texture : textures) {
 				if (texture->data.size() == 0) {
-					stream.clear();
-					return;
+					continue;
 				}
 				texture->save(this, true, false);
 			}
 			stream.writeTag(0);
-
 			stream.save(m_useMultiResTexture ? multiResFilePath.string() : externalFilePath.string(), signature);
 
 			if (m_useLowResTexture || m_useMultiResTexture) {
+				stream.init();
 				for (pSWFTexture texture : textures) {
 					texture->save(this, true, true);
 				}
 				stream.writeTag(0);
-
 				stream.save(lowResFilePath.string(), signature);
 			}
 		}
@@ -118,7 +116,7 @@ namespace sc
 		}
 
 		bool isHasTextureLoadTag = loadTags();
-		stream.clear();
+		stream.close();
 		return isHasTextureLoadTag;
 	}
 
@@ -264,6 +262,8 @@ namespace sc
 
 	void SupercellSWF::saveInternal()
 	{
+		stream.init();
+
 		if (matrixBanks.size() == 0) {
 			matrixBanks.push_back(pMatrixBank(new MatrixBank()));
 		}	

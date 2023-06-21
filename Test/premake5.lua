@@ -1,6 +1,5 @@
-
-project "SupercellFlash"
-    kind "StaticLib"
+project "SupercellFlashTest"
+    kind "ConsoleApp"
 
     language "C++"
     cppdialect "C++17"
@@ -9,23 +8,21 @@ project "SupercellFlash"
     objdir "%{wks.location}/build/obj/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
 
     files {
-		"include/**.h",
-		"src/**.cpp",
-		"src/**.h"
+		"Main.cpp"
     }
 
     includedirs {
-        "src",
-		"include",
-		"dependencies/Bytestream",
-        "dependencies/Compression/include"
+        "%{wks.location}/include",
+		"%{wks.location}/dependencies/Bytestream",
+        "%{wks.location}/dependencies/Compression/include"
     }
 
     links {
         "SupercellCompression",
 		"LZMA",
 		"LZHAM",
-		"Zstandard"
+		"Zstandard",
+		"SupercellFlash"
     }
 
     filter "configurations:Debug"

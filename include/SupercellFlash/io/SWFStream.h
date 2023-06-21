@@ -5,32 +5,34 @@
 
 #include <stdexcept>
 #include <cstdarg>
+#include <cassert>
+
+using namespace std;
 
 namespace sc {
 	class SupercellSWF;
 
 	class SWFStream {
-		BufferStream m_stream = BufferStream(&buffer);
+		vector<uint8_t> m_buffer = vector<uint8_t>(0);
+		shared_ptr<BufferStream> m_stream = nullptr;
 
 	public:
-		std::vector<uint8_t> buffer;
-
 		SWFStream() {}
 		~SWFStream() {}
 
 		void open(const fs::path& filepath) {
-			clear();
+			init();
 
 			fs::path output;
 			Decompressor::decompress(filepath, output);
 			ReadFileStream file(output);
-			buffer = std::vector<uint8_t>(file.size());
-			file.read(buffer.data(), file.size());
+			m_buffer = vector<uint8_t>(file.size());
+			file.read(m_buffer.data(), file.size());
 			file.close();
 		}
 
 		void save(const fs::path& filepath, const CompressionSignature& signature) {
-			BufferStream input(&buffer);
+			m_stream->seek(0);
 			WriteFileStream output(filepath);
 
 			switch (signature)
@@ -38,52 +40,41 @@ namespace sc {
 			case sc::CompressionSignature::LZMA:
 			case sc::CompressionSignature::LZHAM:
 			case sc::CompressionSignature::ZSTD:
-				Compressor::compress(input, output, signature);
+				Compressor::compress(*m_stream, output, signature);
 				break;
 			default:
-				output.write(buffer.data(), buffer.size());
+				output.write(m_buffer.data(), m_buffer.size());
 				break;
 			}
 			
-			clear();
-			input.close();
+			m_stream->close();
 			output.close();
 		}
 
-		void clear() {
-			buffer.resize(0);
-			m_stream.seek(0);
+		void init() {
+			m_buffer = vector<uint8_t>(0);
+			m_stream = shared_ptr<BufferStream>(new BufferStream(&m_buffer));
 		}
 
-		uint8_t* data() {
-			return buffer.data();
-		}
+		uint8_t* data() { return m_buffer.data(); }
 
-		void seek(uint32_t pos) {
-			m_stream.seek(pos);
-		}
+		void seek(uint32_t pos) { m_stream->seek(pos); }
 
-		uint32_t tell() {
-			return m_stream.tell();
-		}
+		uint32_t tell() { return m_stream->tell(); }
 
-		void skip(uint32_t size) {
-			m_stream.seek(m_stream.tell() + size);
-		}
+		void skip(uint32_t size) { m_stream->seek(m_stream->tell() + size); }
 
 		/* Read */
 
-		void read(void* data, size_t size) {
-			m_stream.read(data, size);
-		}
+		void read(void* data, size_t size) { m_stream->read(data, size); }
 
-		int8_t readByte() { return m_stream.readInt8(); }
-		uint8_t readUnsignedByte() { return m_stream.readUInt8(); }
+		int8_t readByte() { return m_stream->readInt8(); }
+		uint8_t readUnsignedByte() { return m_stream->readUInt8(); }
 
-		int16_t readShort() { return m_stream.readInt16(); }
-		uint16_t readUnsignedShort() { return m_stream.readUInt16(); }
+		int16_t readShort() { return m_stream->readInt16(); }
+		uint16_t readUnsignedShort() { return m_stream->readUInt16(); }
 
-		int32_t readInt() { return m_stream.readInt32(); }
+		int32_t readInt() { return m_stream->readInt32(); }
 
 		bool readBool() { return (readUnsignedByte() > 0); }
 
@@ -94,7 +85,7 @@ namespace sc {
 				return "";
 
 			char* str = new char[length]();
-			m_stream.read(str, length);
+			m_stream->read(str, length);
 
 			return std::string(str, length);
 		}
@@ -104,37 +95,37 @@ namespace sc {
 		/* Write */
 
 		void write(void* data, size_t size) {
-			m_stream.write(data, size);
+			m_stream->write(data, size);
 		}
 
 		void writeByte(int8_t integer) {
-			m_stream.writeInt8(integer);
+			m_stream->writeInt8(integer);
 		}
 		void writeUnsignedByte(uint8_t integer) {
-			m_stream.writeUInt8(integer);
+			m_stream->writeUInt8(integer);
 		}
 
 		void writeShort(int16_t integer) {
-			m_stream.writeInt16(integer);
+			m_stream->writeInt16(integer);
 		}
 		void writeUnsignedShort(uint16_t integer) {
-			m_stream.writeUInt16(integer);
+			m_stream->writeUInt16(integer);
 		}
 
 		void writeUnsignedInt(uint32_t integer) {
-			m_stream.writeUInt32(integer);
+			m_stream->writeUInt32(integer);
 		}
 
 		uint32_t readUnsignedInt() {
-			return m_stream.readUInt32();
+			return m_stream->readUInt32();
 		}
 
 		void writeInt(int32_t integer) {
-			m_stream.writeInt32(integer);
+			m_stream->writeInt32(integer);
 		}
 
 		void writeBool(bool status) {
-			m_stream.writeUInt8(status ? 1 : 0);
+			m_stream->writeUInt8(status ? 1 : 0);
 		}
 
 		void writeAscii(std::string ascii) {
@@ -142,7 +133,7 @@ namespace sc {
 
 			writeUnsignedByte(size);
 			if (size > 0 && size < 255) {
-				m_stream.write(ascii.data(), size);
+				m_stream->write(ascii.data(), size);
 			}
 		}
 
@@ -168,6 +159,11 @@ namespace sc {
 
 			memcpy(data() + position, &tag, sizeof(tag));
 			memcpy(data() + (position + sizeof(tag)), &tagSize, sizeof(tagSize));
+		}
+
+		void close() {
+			m_buffer.clear();
+			m_stream->close();
 		}
 	};
 }

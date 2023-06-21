@@ -1,4 +1,4 @@
-       #pragma once
+#pragma once
 
 #include <cstdio>
 #include <cstdint>
@@ -27,6 +27,7 @@ using namespace std;
 
 #include <filesystem>
 namespace fs = filesystem;
+
 
 namespace sc
 {

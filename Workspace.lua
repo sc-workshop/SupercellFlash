@@ -7,6 +7,7 @@ workspace "ScFlash"
     }
 
     include "./"
+	include "./Test"
 
     group "Compression"
 		include "dependencies/Compression"
