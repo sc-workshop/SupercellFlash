@@ -3,17 +3,15 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
+#include <math.h>
+
+#define SWFTEXTURE_BLOCK_SIZE 32
 
 using namespace std;
 
 namespace sc
 {
 	class SupercellSWF;
-
-	struct KhronosTextureData {
-		vector<uint8_t> data;
-		vector<uint8_t> lowresData;
-	};
 
 	class SWFTexture
 	{
@@ -39,6 +37,11 @@ namespace sc
 			LUMINANCE8 = 10
 		};
 
+		enum class TextureEncoding : uint8_t {
+			Raw,
+			KhronosTexture
+		};
+
 	public:
 		static vector<PixelFormat> pixelFormatTable;
 		static vector<uint8_t> pixelByteSizeTable;
@@ -46,6 +49,7 @@ namespace sc
 
 	public:
 		PixelFormat pixelFormat() { return m_pixelFormat; }
+		TextureEncoding textureEncoding() { return m_encoding; }
 
 		Filter textureFilter() { return m_textureFilter; }
 
@@ -57,6 +61,7 @@ namespace sc
 
 	public:
 		void pixelFormat(PixelFormat type);
+		void textureEncoding(TextureEncoding textureEncoding);
 
 		void textureFilter(Filter filter) { m_textureFilter = filter; }
 
@@ -67,19 +72,20 @@ namespace sc
 		void linear(bool status);
 
 	public:
-		vector<uint8_t> data;
-
-		// make sure data vector is empty before using.
-		KhronosTextureData khronosTextureData;
+		vector<uint8_t> textureData;
 
 	public:
 		static vector<uint8_t> getLinearData(SWFTexture& texture, bool toLinear);
 		static vector<uint8_t> getPixelFormatData(SWFTexture& texture, PixelFormat dst);
 		static vector<uint8_t> getPixelFormatData(uint8_t* data, uint16_t width , uint16_t height, PixelFormat srcType, PixelFormat dstType);
 		static vector<uint8_t> rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height);
+		static vector<uint8_t> getEncodingData(SWFTexture& texture, TextureEncoding encoding, uint16_t& width, uint16_t& height);
 
+		static std::vector<uint8_t> decodeKhronosTexture(SWFTexture& texture, uint16_t& width, uint16_t& height);
+		static std::vector<uint8_t> encodeKhronosTexture(SWFTexture& texture);
 	private:
 		PixelFormat m_pixelFormat = PixelFormat::RGBA8;
+		TextureEncoding m_encoding = TextureEncoding::Raw;
 
 		Filter m_textureFilter = Filter::LINEAR_NEAREST;
 

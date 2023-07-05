@@ -1,11 +1,10 @@
 #include "SupercellFlash/SupercellSWF.h"
-#include "SupercellFlash/objects/SWFTexture.h"
-#include <math.h>
+#include "SupercellFlash/texture/SWFTexture.h"
+
+#include "TextureLoader.h"
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
-#include "stb_image_resize.h"
-
-#define SWFTEXTURE_BLOCK_SIZE 32
+#include "SupercellFlash/texture/stb/stb_image_resize.h"
 
 namespace sc
 {
@@ -53,7 +52,10 @@ namespace sc
 
 	SWFTexture* SWFTexture::load(sc::SupercellSWF* swf, uint8_t tag, bool useExternalTexture)
 	{
-		/* Binary data processing */
+		uint32_t bufferSize = 0;
+		if (tag == TAG_TEXTURE_9) {
+			bufferSize = swf->stream.readUnsignedInt();
+		}
 
 		uint8_t pixelFormatIndex = swf->stream.readUnsignedByte();
 		m_pixelFormat = SWFTexture::pixelFormatTable.at(pixelFormatIndex);
@@ -61,35 +63,43 @@ namespace sc
 		m_width = swf->stream.readUnsignedShort();
 		m_height = swf->stream.readUnsignedShort();
 
-		if (!useExternalTexture && tag != TAG_TEXTURE_9)
-		{
-			/* Tag processing */
-			m_textureFilter = Filter::LINEAR_NEAREST;
-			if (tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_3 || tag == TAG_TEXTURE_7) {
-				m_textureFilter = Filter::LINEAR_MIPMAP_NEAREST;
-			}
-			else if (tag == TAG_TEXTURE_8) {
-				m_textureFilter = Filter::NEAREST_NEAREST;
-			}
-
-			m_linear = true;
-			if (tag == TAG_TEXTURE_5 || tag == TAG_TEXTURE_6 || tag == TAG_TEXTURE_7)
-				m_linear = false;
-
-			m_downscaling = false;
-			if (tag == TAG_TEXTURE || tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_6 || tag == TAG_TEXTURE_7)
-				m_downscaling = true;
-
-			uint8_t pixelByteSize = pixelByteSizeTable.at(pixelFormatIndex);
-			uint32_t dataSize = ((m_width * m_height) * pixelByteSize);
-
-			data = vector<uint8_t>(dataSize);
-
-			swf->stream.read(data.data(), dataSize);
+		if (bufferSize == 0) {
+			uint8_t pixelByteSize = pixelByteSizeTable.at((uint8_t)m_pixelFormat);
+			bufferSize = ((m_width * m_height) * pixelByteSize);
 		}
-		else if (!useExternalTexture && tag == TAG_TEXTURE_9) {
-			uint32_t dataSize = swf->stream.readUnsignedInt();
-			swf->stream.read(khronosTextureData.data.data(), dataSize);
+
+		if (!useExternalTexture)
+		{
+			textureData = vector<uint8_t>(bufferSize);
+
+			switch (tag)
+			{
+			case TAG_TEXTURE_9:
+				m_encoding = TextureEncoding::KhronosTexture;
+				break;
+			default:
+				m_encoding = TextureEncoding::Raw;
+
+				m_textureFilter = Filter::LINEAR_NEAREST;
+				if (tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_3 || tag == TAG_TEXTURE_7) {
+					m_textureFilter = Filter::LINEAR_MIPMAP_NEAREST;
+				}
+				else if (tag == TAG_TEXTURE_8) {
+					m_textureFilter = Filter::NEAREST_NEAREST;
+				}
+
+				m_linear = true;
+				if (tag == TAG_TEXTURE_5 || tag == TAG_TEXTURE_6 || tag == TAG_TEXTURE_7)
+					m_linear = false;
+
+				m_downscaling = false;
+				if (tag == TAG_TEXTURE || tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_6 || tag == TAG_TEXTURE_7)
+					m_downscaling = true;
+				
+				break;
+			}
+
+			swf->stream.read(textureData.data(), textureData.size());
 		}
 
 		return this;
@@ -98,91 +108,42 @@ namespace sc
 	void SWFTexture::save(SupercellSWF* swf, bool isExternal, bool isLowres) {
 		uint32_t pos = swf->stream.initTag();
 
-		/* Tag processing */
-
 		uint8_t tag = TAG_TEXTURE;
-		bool isKhronosTexture = false;
 
-		if (isExternal) {
-			if ((isLowres && khronosTextureData.lowresData.size() != 0) || (!isLowres && khronosTextureData.data.size() != 0)) {
-				tag = TAG_TEXTURE_9;
-				isKhronosTexture = true;
-			}
-			else {
-				switch (m_textureFilter)
-				{
-				case sc::SWFTexture::Filter::LINEAR_NEAREST:
-					if (!m_linear) {
-						tag = m_downscaling ? TAG_TEXTURE_6 : TAG_TEXTURE_5;
-					}
-					else if (!m_downscaling) {
-						tag = TAG_TEXTURE_4;
-					}
-					break;
-				case sc::SWFTexture::Filter::LINEAR_MIPMAP_NEAREST:
-					if (!m_linear && m_downscaling) {
-						tag = TAG_TEXTURE_7;
-					}
-					else {
-						tag = m_downscaling ? TAG_TEXTURE_2 : TAG_TEXTURE_3;
-					}
-					break;
-				case sc::SWFTexture::Filter::NEAREST_NEAREST:
-					linear(false);
-					tag = TAG_TEXTURE_8;
-					break;
-				default:
-					break;
-				}
-			}
+		if (!isExternal) {
+			swf->stream.writeUnsignedByte((uint8_t)m_pixelFormat);
+			swf->stream.writeUnsignedShort(m_width);
+			swf->stream.writeUnsignedShort(m_height);
 		}
+		else {
+			tag = getTag();
 
-		uint16_t width = m_width;
-		uint16_t height = m_height;
+			uint16_t width = m_width;
+			uint16_t height = m_height;
+			vector<uint8_t>& buffer = textureData;
 
-		if (isLowres) {
-			width = static_cast<uint16_t>(round(m_width / 2));
-			height = static_cast<uint16_t>(round(m_height / 2));
-		}
+			if (tag == TAG_TEXTURE_9) {
+				swf->stream.writeUnsignedInt((uint32_t)textureData.size());
+			}
 
-		swf->stream.writeUnsignedByte((uint8_t)m_pixelFormat);
-		swf->stream.writeUnsignedShort(width);
-		swf->stream.writeUnsignedShort(height);
-
-		if (isExternal) {
 			if (isLowres) {
-				if (isKhronosTexture) {
-					swf->stream.write(khronosTextureData.lowresData.data(), khronosTextureData.lowresData.size());
-				}
-				else {
-					vector<uint8_t> lowres_data = rescaleTexture(*this, width, height);
-					swf->stream.write(lowres_data.data(), lowres_data.size());
-				}
-			}
-			else {
-				if (isKhronosTexture) {
-					swf->stream.write(khronosTextureData.data.data(), khronosTextureData.data.size());
-				}
-				else {
-					const uint8_t pixelSize = pixelByteSizeTable[(uint8_t)m_pixelFormat];
-
-					/* Image data processing */
-					if (data.size() != (m_width * m_height) * pixelSize) {
-						throw runtime_error("SWFTexture image data has wrong number of bytes! ");
-					}
-
-					swf->stream.write(data.data(), data.size());
-				}
+				width = static_cast<uint16_t>(round(m_width / 2));
+				height = static_cast<uint16_t>(round(m_height / 2));
+				buffer = rescaleTexture(*this, width, height);
 			}
 
+			swf->stream.writeUnsignedByte((uint8_t)m_pixelFormat);
+			swf->stream.writeUnsignedShort(width);
+			swf->stream.writeUnsignedShort(height);
 
+			swf->stream.write(buffer.data(), buffer.size());
 		}
 
 		swf->stream.finalizeTag(tag, pos);
 	};
 
 	vector<uint8_t> SWFTexture::getLinearData(SWFTexture& texture, bool toLinear) {
-		vector<uint8_t> image(texture.data);
+		vector<uint8_t> image(texture.textureData);
 		if (texture.linear() == toLinear) {
 			return image;
 		}
@@ -213,13 +174,13 @@ namespace sc
 						uint32_t target = (pixel_y * width + pixel_x) * pixelSize;
 						if (toLinear) { // blocks to image
 							uint32_t block_target = pixelIndex * pixelSize;
-							memcpy(image.data() + target, texture.data.data() + block_target, pixelSize);
+							memcpy(image.data() + target, texture.textureData.data() + block_target, pixelSize);
 						}
 						else { // image to blocks
 							uint16_t block_pixel_x = pixelIndex % width;
 							uint16_t block_pixel_y = static_cast<uint32_t>(pixelIndex / width);
 							uint32_t block_target = (block_pixel_y * width + block_pixel_x) * pixelSize;
-							memcpy(image.data() + block_target, texture.data.data() + target, pixelSize);
+							memcpy(image.data() + block_target, texture.textureData.data() + target, pixelSize);
 						}
 
 						pixelIndex++;
@@ -340,23 +301,27 @@ namespace sc
 	}
 
 	vector<uint8_t> SWFTexture::getPixelFormatData(SWFTexture& texture, PixelFormat dstFormat) {
-		return getPixelFormatData(texture.data.data(), texture.width(), texture.height(), texture.pixelFormat(), dstFormat);
+		return getPixelFormatData(texture.textureData.data(), texture.width(), texture.height(), texture.pixelFormat(), dstFormat);
 	}
 
 	vector<uint8_t> SWFTexture::rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height) {
 		PixelFormat pixelFormat = texture.pixelFormat();
 		uint8_t pixelSize = pixelByteSizeTable[(uint8_t)texture.pixelFormat()];
 
-		vector<uint8_t> data((width * height) * pixelSize);
+		vector<uint8_t>& imageData = texture.textureData;
+		if (texture.textureEncoding() != TextureEncoding::Raw) {
+			imageData = getEncodingData(texture, TextureEncoding::Raw, width, height);
+		}
 
+		vector<uint8_t> outputData((width * height) * pixelSize);
 		switch (pixelFormat)
 		{
 			// Normal pixel formats
 		case sc::SWFTexture::PixelFormat::RGBA8:
 		case sc::SWFTexture::PixelFormat::LUMINANCE8_ALPHA8:
 		case sc::SWFTexture::PixelFormat::LUMINANCE8:
-			stbir_resize_uint8(texture.data.data(), texture.width(), texture.height(), 0,
-				data.data(), width, height, 0,
+			stbir_resize_uint8(texture.textureData.data(), texture.width(), texture.height(), 0,
+				outputData.data(), width, height, 0,
 				pixelSize);
 			break;
 
@@ -370,15 +335,14 @@ namespace sc
 			vector<uint8_t> encodedData((width * height) * 4);
 
 			stbir_resize_uint8(decodedData.data(), texture.width(), texture.height(), 0,
-				data.data(), width, height, 0,
-				4);
+				outputData.data(), width, height, 0, 4);
 
-			data = getPixelFormatData(encodedData.data(), width, height, PixelFormat::RGBA8, pixelFormat);
+			outputData = getPixelFormatData(encodedData.data(), width, height, PixelFormat::RGBA8, pixelFormat);
 		}
 		break;
 		}
 
-		return data;
+		return outputData;
 	}
 
 	void SWFTexture::linear(bool status) {
@@ -387,8 +351,8 @@ namespace sc
 
 		bool toLinear = m_linear == false && status == true;
 
-		if (data.size() != 0) {
-			data = SWFTexture::getLinearData(*this, toLinear);
+		if (textureData.size() != 0) {
+			textureData = SWFTexture::getLinearData(*this, toLinear);
 		}
 
 		m_linear = status;
@@ -399,31 +363,42 @@ namespace sc
 			return;
 		}
 
-		if (data.size() != 0) {
-			data = SWFTexture::getPixelFormatData(*this, type);
+		if (textureData.size() != 0) {
+			textureData = SWFTexture::getPixelFormatData(*this, type);
 		}
 		
 		m_pixelFormat = type;
 	}
 
+	void SWFTexture::textureEncoding(TextureEncoding encoding) {
+		if (textureData.size() == 0) return;
+
+		textureData = getEncodingData(*this, encoding, m_width, m_height);
+		m_encoding = encoding;
+	}
+
 	void SWFTexture::width(uint16_t width) {
 		m_width = width;
 
-		if (data.size() != 0) {
-			data = rescaleTexture(*this, width, m_height);
+		if (textureData.size() != 0) {
+			textureData = rescaleTexture(*this, width, m_height);
 		}
 	}
 
 	void SWFTexture::height(uint16_t height) {
 		m_height = height;
 
-		if (data.size() != 0) {
-			data = rescaleTexture(*this, m_width, height);
+		if (textureData.size() != 0) {
+			textureData = rescaleTexture(*this, m_width, height);
 		}
 	}
 
 	uint8_t SWFTexture::getTag() {
 		uint8_t tag = TAG_TEXTURE;
+
+		if (m_encoding == TextureEncoding::KhronosTexture) {
+			return TAG_TEXTURE_9;
+		}
 
 		switch (m_textureFilter)
 		{
@@ -452,5 +427,64 @@ namespace sc
 		}
 
 		return tag;
+	}
+
+	std::vector<uint8_t> SWFTexture::decodeKhronosTexture(SWFTexture& texture, uint16_t& width, uint16_t& height) {
+		TextureLoader::CompressedTexture* kTexture = nullptr;
+		ScTexture_FromMemory(texture.textureData, CompressedTextureType::KTX, &kTexture);
+
+		if (kTexture->GetElementType() != TextureLoader::TextureElementType::UNSIGNED_BYTE) {
+			throw std::exception("Unknwown element type in Khronos Texture");
+		};
+		if (kTexture->GetComponentsType() != TextureLoader::TextureComponents::RGBA) {
+			throw std::exception("Unknwown component type in Khronos Texture");
+		};
+
+		width = kTexture->GetWidth();
+		height = kTexture->GetHeight();
+
+		RawTexture textureBuffer;
+		kTexture->Decode(textureBuffer);
+		
+		ScTexture_Destroy(kTexture);
+
+		return textureBuffer.GetBuffer();
+	}
+
+	std::vector<uint8_t> SWFTexture::encodeKhronosTexture(SWFTexture& texture) {
+
+		KhronosTexture* kTexture = new KhronosTexture(
+			texture.width(), texture.height(),
+			glType::GL_UNSIGNED_BYTE, glFormat::GL_RGBA, glInternalFormat::GL_RGBA8, glFormat::GL_RGBA,
+			sc::SWFTexture::getPixelFormatData(texture, SWFTexture::PixelFormat::RGBA8)
+		);
+
+		kTexture->Compress(glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
+
+		std::vector<uint8_t> buffer;
+		BufferStream stream(&buffer);
+		kTexture->Encode(&stream);
+
+		kTexture->Destroy();
+
+		return buffer;
+	}
+
+	vector<uint8_t> SWFTexture::getEncodingData(SWFTexture& texture, TextureEncoding encoding, uint16_t& width, uint16_t& height) {
+		if (texture.textureEncoding() == encoding) return texture.textureData;
+		
+		vector<uint8_t> data;
+
+		if (texture.textureEncoding() == TextureEncoding::Raw &&
+			encoding == TextureEncoding::KhronosTexture) {
+			width = texture.width();
+			height = texture.height();
+			data = encodeKhronosTexture(texture);
+		}
+		else {
+			data = decodeKhronosTexture(texture, width, height);
+		}
+
+		return data;
 	}
 }

@@ -11,10 +11,10 @@
 
 #include "SupercellFlash/objects/Shape.h"
 #include "SupercellFlash/objects/MovieClip.h"
-#include "SupercellFlash/objects/SWFTexture.h"
 #include "SupercellFlash/objects/TextField.h"
 #include "SupercellFlash/objects/MovieClipModifier.h"
 #include "SupercellFlash/objects/ExportName.h"
+#include "SupercellFlash/texture/SWFTexture.h"
 
 #include "SupercellFlash/transformation/MatrixBank.h"
 

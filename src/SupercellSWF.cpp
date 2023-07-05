@@ -1,7 +1,6 @@
 #include "SupercellFlash/SupercellSWF.h"
 #include "SupercellFlash/error/NegativeTagLengthException.h"
 #include "SupercellFlash/error/ObjectLoadingException.h"
-#include "SupercellBytestream/error/StreamException.h"
 #include "SupercellFlash/error/NullPointerException.h"
 
 namespace sc
@@ -34,7 +33,7 @@ namespace sc
 			}
 			else
 			{
-				throw StreamException(StreamError::EXIST_ERROR, "Cannot find external *_tex.sc file");
+				throw std::exception("Cannot find external *_tex.sc file");
 			}
 		}
 	}
@@ -55,9 +54,6 @@ namespace sc
 
 			stream.init();
 			for (pSWFTexture texture : textures) {
-				if (texture->data.size() == 0) {
-					continue;
-				}
 				texture->save(this, true, false);
 			}
 			stream.writeTag(0);
@@ -171,6 +167,7 @@ namespace sc
 			case TAG_TEXTURE_6:
 			case TAG_TEXTURE_7:
 			case TAG_TEXTURE_8:
+			case TAG_TEXTURE_9:
 				if (textures.size() < texturesLoaded) {
 					throw ObjectLoadingException("Trying to load too many textures");
 				}

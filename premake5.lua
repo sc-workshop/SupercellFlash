@@ -18,11 +18,13 @@ project "SupercellFlash"
         "src",
 		"include",
 		"dependencies/Bytestream",
-        "dependencies/Compression/include"
+        "dependencies/Compression/include",
+        "dependencies/TextureLoader/include"
     }
 
     links {
         "SupercellCompression",
+        "SupercellTextureLoader",
 		"LZMA",
 		"LZHAM",
 		"Zstandard"

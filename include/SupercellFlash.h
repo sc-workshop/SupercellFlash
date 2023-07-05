@@ -7,8 +7,8 @@
 #include "SupercellFlash/objects/MovieClipModifier.h"
 #include "SupercellFlash/objects/Shape.h"
 #include "SupercellFlash/objects/ShapeDrawBitmapCommand.h"
-#include "SupercellFlash/objects/SWFTexture.h"
 #include "SupercellFlash/objects/TextField.h"
+#include "SupercellFlash/texture/SWFTexture.h"
 
 #include "SupercellFlash/transformation/ColorTransform.h"
 #include "SupercellFlash/transformation/Matrix2D.h"

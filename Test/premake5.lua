@@ -34,4 +34,3 @@ project "SupercellFlashTest"
         defines { "NDEBUG" }
         runtime "Release"
         optimize "on"
-

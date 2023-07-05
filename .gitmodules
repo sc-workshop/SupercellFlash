@@ -4,3 +4,6 @@
 [submodule "dependencies/Compression"]
 	path = dependencies/Compression
 	url = https://github.com/scwmake/SupercellCompression
+[submodule "dependencies/TextureLoader"]
+	path = dependencies/TextureLoader
+	url = https://github.com/scwmake/SupercellTextureLoader
