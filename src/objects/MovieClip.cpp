@@ -12,13 +12,13 @@ namespace sc
 		m_frameRate = swf->stream.readUnsignedByte();
 		m_unknownFlag = tag == TAG_MOVIE_CLIP_5;
 
-		uint16_t framesCount = swf->stream.readUnsignedShort();
+		const uint16_t framesCount = swf->stream.readUnsignedShort();
 		frames = std::vector<pMovieClipFrame>(framesCount);
 
 		if (tag == TAG_MOVIE_CLIP || tag == TAG_MOVIE_CLIP_4)
 			throw std::runtime_error("TAG_MOVIE_CLIP and TAG_MOVIE_CLIP_4 is unsupported");
 
-		int32_t frameElementsCount = swf->stream.readInt();
+		const int32_t frameElementsCount = swf->stream.readInt();
 		frameElements = std::vector<pMovieClipFrameElement>(frameElementsCount);
 
 		for (int32_t i = 0; i < frameElementsCount; i++)
@@ -29,7 +29,7 @@ namespace sc
 			frameElements[i]->colorTransformIndex = swf->stream.readUnsignedShort();
 		}
 
-		uint16_t instancesCount = swf->stream.readUnsignedShort();
+		const uint16_t instancesCount = swf->stream.readUnsignedShort();
 		instances = std::vector<pDisplayObjectInstance>(instancesCount);
 
 		for (int16_t i = 0; i < instancesCount; i++)
@@ -42,7 +42,19 @@ namespace sc
 		{
 			for (int16_t i = 0; i < instancesCount; i++)
 			{
-				instances[i]->blend = swf->stream.readUnsignedByte();
+				const uint8_t blendMode = swf->stream.readUnsignedByte();
+				instances[i]->reverseBlendMode = (blendMode >> 6) & 1;
+				switch (blendMode & 0x3f)
+				{
+				case 4:
+					instances[i]->blend = DisplayObjectInstance::BlendMode::Screen;
+					break;
+				case 8:
+					instances[i]->blend = DisplayObjectInstance::BlendMode::Add;
+					break;
+				default:
+					break;
+				}
 			}
 		}
 
@@ -126,7 +138,23 @@ namespace sc
 		}
 
 		for (int16_t i = 0; instancesCount > i; i++) {
-			swf->stream.writeUnsignedByte(instances[i]->blend); //Blend modes. TODO: move to enum
+			uint8_t blendMode = 0;
+			blendMode |= instances[i]->reverseBlendMode << 0;
+
+			switch (instances[i]->blend)
+			{
+			case DisplayObjectInstance::BlendMode::Add:
+				blendMode |= 1 << 4;
+				break;
+			case DisplayObjectInstance::BlendMode::Screen:
+				blendMode |= 1 << 5;
+				break;
+			case DisplayObjectInstance::BlendMode::Mix:
+			default:
+				break;
+			}
+
+			swf->stream.writeUnsignedByte(blendMode);
 		}
 
 		for (int16_t i = 0; instancesCount > i; i++) {

@@ -19,8 +19,16 @@ namespace sc
 
 	struct DisplayObjectInstance
 	{
+		enum class BlendMode : uint8_t
+		{
+			Mix,
+			Screen,
+			Add
+		};
+
 		uint16_t id;
-		uint8_t blend = 0;
+		BlendMode blend = BlendMode::Mix;
+		bool reverseBlendMode = false;
 		string name;
 	};
 	typedef shared_ptr<DisplayObjectInstance> pDisplayObjectInstance;
