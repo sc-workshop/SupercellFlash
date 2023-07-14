@@ -22,13 +22,23 @@ namespace sc
 		enum class BlendMode : uint8_t
 		{
 			Mix,
+			Layer,
+			Darken,
+			Multiply,
+			Lighten,
 			Screen,
-			Add
+			Overlay,
+			Hardlight,
+			Add,
+			Subtract,
+			Difference,
+			Invert,
+			Alpha,
+			Erase
 		};
 
 		uint16_t id;
 		BlendMode blend = BlendMode::Mix;
-		bool reverseBlendMode = false;
 		string name;
 	};
 	typedef shared_ptr<DisplayObjectInstance> pDisplayObjectInstance;

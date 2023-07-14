@@ -42,19 +42,7 @@ namespace sc
 		{
 			for (int16_t i = 0; i < instancesCount; i++)
 			{
-				const uint8_t blendMode = swf->stream.readUnsignedByte();
-				instances[i]->reverseBlendMode = (blendMode >> 6) & 1;
-				switch (blendMode & 0x3f)
-				{
-				case 4:
-					instances[i]->blend = DisplayObjectInstance::BlendMode::Screen;
-					break;
-				case 8:
-					instances[i]->blend = DisplayObjectInstance::BlendMode::Add;
-					break;
-				default:
-					break;
-				}
+				instances[i]->blend = (DisplayObjectInstance::BlendMode)swf->stream.readUnsignedByte();
 			}
 		}
 
@@ -138,23 +126,7 @@ namespace sc
 		}
 
 		for (int16_t i = 0; instancesCount > i; i++) {
-			uint8_t blendMode = 0;
-			blendMode |= instances[i]->reverseBlendMode << 0;
-
-			switch (instances[i]->blend)
-			{
-			case DisplayObjectInstance::BlendMode::Add:
-				blendMode |= 1 << 4;
-				break;
-			case DisplayObjectInstance::BlendMode::Screen:
-				blendMode |= 1 << 5;
-				break;
-			case DisplayObjectInstance::BlendMode::Mix:
-			default:
-				break;
-			}
-
-			swf->stream.writeUnsignedByte(blendMode);
+			swf->stream.writeUnsignedByte((uint8_t)instances[i]->blend);
 		}
 
 		for (int16_t i = 0; instancesCount > i; i++) {
