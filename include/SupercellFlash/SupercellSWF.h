@@ -28,7 +28,6 @@ using namespace std;
 #include <filesystem>
 namespace fs = filesystem;
 
-
 namespace sc
 {
 	class SupercellSWF

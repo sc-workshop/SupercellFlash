@@ -306,6 +306,14 @@ namespace sc
 	)
 	{
 		if (m_useExternalTexture) {
+			if (m_multiResFileSuffix != MULTIRES_DEFAULT_SUFFIX ||
+				m_lowResFileSuffix != LOWRES_DEFAULT_SUFFIX) {
+				uint32_t pos = stream.initTag();
+				stream.writeAscii(m_multiResFileSuffix);
+				stream.writeAscii(m_lowResFileSuffix);
+				stream.finalizeTag(TAG_TEXTURE_FILE_SUFFIXES, pos);
+			}
+
 			if (!m_useLowResTexture)
 				stream.writeTag(TAG_DISABLE_LOW_RES_TEXTURE);
 
