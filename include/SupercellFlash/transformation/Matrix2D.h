@@ -20,7 +20,7 @@ namespace sc
 		float ty = 0.0f;
 
 		Matrix2D* load(SupercellSWF* swf, uint8_t tag);
-		void save(SupercellSWF* swf);
+		void save(SupercellSWF* swf, bool precision = false);
 
 		bool operator==(const Matrix2D& matrix);
 	};

@@ -17,14 +17,10 @@ namespace sc {
 		return this;
 	}
 
-	void Matrix2D::save(SupercellSWF* swf)
+	void Matrix2D::save(SupercellSWF* swf, bool precision = false)
 	{
 		uint32_t pos = swf->stream.initTag();
-		uint8_t tag = TAG_MATRIX_2x3;
-
-#ifdef SC_EXPERIMENTAL
-		tag = TAG_MATRIX_2x3_2
-#endif
+		uint8_t tag = precision ? tag = TAG_MATRIX_2x3_2 : TAG_MATRIX_2x3;
 
 		float multiplier = tag == TAG_MATRIX_2x3 ? 1024.0f : 65535.0f;
 

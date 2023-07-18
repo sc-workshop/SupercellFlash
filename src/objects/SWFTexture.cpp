@@ -95,7 +95,7 @@ namespace sc
 				m_downscaling = false;
 				if (tag == TAG_TEXTURE || tag == TAG_TEXTURE_2 || tag == TAG_TEXTURE_6 || tag == TAG_TEXTURE_7)
 					m_downscaling = true;
-				
+
 				break;
 			}
 
@@ -195,7 +195,6 @@ namespace sc
 		uint8_t* data,
 		uint16_t width, uint16_t height,
 		PixelFormat srcType, PixelFormat dstType) {
-
 		const uint8_t pixelSize = pixelByteSizeTable.at((uint8_t)srcType);
 		const uint8_t dstPixelSize = pixelByteSizeTable.at((uint8_t)dstType);
 
@@ -306,13 +305,13 @@ namespace sc
 
 	vector<uint8_t> SWFTexture::rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height) {
 		PixelFormat pixelFormat = texture.pixelFormat();
-		uint8_t pixelSize = pixelByteSizeTable[(uint8_t)texture.pixelFormat()];
 
 		vector<uint8_t>& imageData = texture.textureData;
 		if (texture.textureEncoding() != TextureEncoding::Raw) {
-			imageData = getEncodingData(texture, TextureEncoding::Raw, width, height);
+			imageData = getEncodingData(texture, TextureEncoding::Raw, pixelFormat, width, height);
 		}
 
+		uint8_t pixelSize = pixelByteSizeTable[(uint8_t)texture.pixelFormat()];
 		vector<uint8_t> outputData((width * height) * pixelSize);
 		switch (pixelFormat)
 		{
@@ -366,14 +365,14 @@ namespace sc
 		if (textureData.size() != 0) {
 			textureData = SWFTexture::getPixelFormatData(*this, type);
 		}
-		
+
 		m_pixelFormat = type;
 	}
 
 	void SWFTexture::textureEncoding(TextureEncoding encoding) {
 		if (textureData.size() == 0) return;
 
-		textureData = getEncodingData(*this, encoding, m_width, m_height);
+		textureData = getEncodingData(*this, encoding, m_pixelFormat, m_width, m_height);
 		m_encoding = encoding;
 	}
 
@@ -429,7 +428,7 @@ namespace sc
 		return tag;
 	}
 
-	std::vector<uint8_t> SWFTexture::decodeKhronosTexture(SWFTexture& texture, uint16_t& width, uint16_t& height) {
+	std::vector<uint8_t> SWFTexture::decodeKhronosTexture(SWFTexture& texture, PixelFormat& format, uint16_t& width, uint16_t& height) {
 		TextureLoader::CompressedTexture* kTexture = nullptr;
 		ScTexture_FromMemory(texture.textureData, CompressedTextureType::KTX, &kTexture);
 
@@ -440,19 +439,20 @@ namespace sc
 			throw std::exception("Unknwown component type in Khronos Texture");
 		};
 
+		format = PixelFormat::RGBA8;
+
 		width = kTexture->GetWidth();
 		height = kTexture->GetHeight();
 
 		RawTexture textureBuffer;
 		kTexture->Decode(textureBuffer);
-		
+
 		ScTexture_Destroy(kTexture);
 
 		return textureBuffer.GetBuffer();
 	}
 
 	std::vector<uint8_t> SWFTexture::encodeKhronosTexture(SWFTexture& texture) {
-
 		KhronosTexture* kTexture = new KhronosTexture(
 			texture.width(), texture.height(),
 			glType::GL_UNSIGNED_BYTE, glFormat::GL_RGBA, glInternalFormat::GL_RGBA8, glFormat::GL_RGBA,
@@ -470,9 +470,9 @@ namespace sc
 		return buffer;
 	}
 
-	vector<uint8_t> SWFTexture::getEncodingData(SWFTexture& texture, TextureEncoding encoding, uint16_t& width, uint16_t& height) {
+	vector<uint8_t> SWFTexture::getEncodingData(SWFTexture& texture, TextureEncoding encoding, PixelFormat& format, uint16_t& width, uint16_t& height) {
 		if (texture.textureEncoding() == encoding) return texture.textureData;
-		
+
 		vector<uint8_t> data;
 
 		if (texture.textureEncoding() == TextureEncoding::Raw &&
@@ -482,7 +482,7 @@ namespace sc
 			data = encodeKhronosTexture(texture);
 		}
 		else {
-			data = decodeKhronosTexture(texture, width, height);
+			data = decodeKhronosTexture(texture, format, width, height);
 		}
 
 		return data;

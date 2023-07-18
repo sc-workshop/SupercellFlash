@@ -14,9 +14,11 @@ namespace sc
 {
 	struct MatrixBank
 	{
+	public:
 		vector<pMatrix2D> matrices;
 		vector<pColorTransform> colorTransforms;
 
+	public:
 		bool getMatrixIndex(Matrix2D* matrix, uint16_t& index);
 		bool getColorTransformIndex(ColorTransform* color, uint16_t& index);
 	};

@@ -263,7 +263,7 @@ namespace sc
 
 		if (matrixBanks.size() == 0) {
 			matrixBanks.push_back(pMatrixBank(new MatrixBank()));
-		}	
+		}
 
 		uint16_t exportsCount = static_cast<uint16_t>(exports.size());
 		uint16_t shapeCount = static_cast<uint16_t>(shapes.size());
@@ -367,7 +367,7 @@ namespace sc
 			}
 
 			for (uint16_t m = 0; matricesCount > m; m++) {
-				matrixBanks[i]->matrices[m]->save(this);
+				matrixBanks[i]->matrices[m]->save(this, m_usePrecisionMatrices);
 			}
 
 			for (uint16_t c = 0; colorsCount > c; c++) {

@@ -77,11 +77,11 @@ namespace sc
 	public:
 		static vector<uint8_t> getLinearData(SWFTexture& texture, bool toLinear);
 		static vector<uint8_t> getPixelFormatData(SWFTexture& texture, PixelFormat dst);
-		static vector<uint8_t> getPixelFormatData(uint8_t* data, uint16_t width , uint16_t height, PixelFormat srcType, PixelFormat dstType);
+		static vector<uint8_t> getPixelFormatData(uint8_t* data, uint16_t width, uint16_t height, PixelFormat srcType, PixelFormat dstType);
 		static vector<uint8_t> rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height);
-		static vector<uint8_t> getEncodingData(SWFTexture& texture, TextureEncoding encoding, uint16_t& width, uint16_t& height);
+		static vector<uint8_t> getEncodingData(SWFTexture& texture, TextureEncoding encoding, PixelFormat& format, uint16_t& width, uint16_t& height);
 
-		static std::vector<uint8_t> decodeKhronosTexture(SWFTexture& texture, uint16_t& width, uint16_t& height);
+		static std::vector<uint8_t> decodeKhronosTexture(SWFTexture& texture, PixelFormat& format, uint16_t& width, uint16_t& height);
 		static std::vector<uint8_t> encodeKhronosTexture(SWFTexture& texture);
 	private:
 		PixelFormat m_pixelFormat = PixelFormat::RGBA8;
