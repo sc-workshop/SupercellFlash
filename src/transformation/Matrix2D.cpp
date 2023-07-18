@@ -17,7 +17,7 @@ namespace sc {
 		return this;
 	}
 
-	void Matrix2D::save(SupercellSWF* swf, bool precision = false)
+	void Matrix2D::save(SupercellSWF* swf, bool precision)
 	{
 		uint32_t pos = swf->stream.initTag();
 		uint8_t tag = precision ? tag = TAG_MATRIX_2x3_2 : TAG_MATRIX_2x3;
