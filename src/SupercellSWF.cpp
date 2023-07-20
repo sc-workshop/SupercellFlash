@@ -5,13 +5,13 @@
 
 namespace sc
 {
-	void SupercellSWF::load(const fs::path& path)
+	void SupercellSWF::load(const fs::path& filepath)
 	{
-		m_useExternalTexture = loadInternal(path, false);
+		m_useExternalTexture = loadInternal(filepath, false);
 
 		if (m_useExternalTexture)
 		{
-			fs::path path(path);
+			fs::path path(filepath);
 			fs::path basename = path.stem();
 			path.remove_filename();
 
@@ -323,25 +323,19 @@ namespace sc
 			stream.writeTag(TAG_USE_EXTERNAL_TEXTURE);
 		}
 
-		for (pSWFTexture texture : textures) {
-			if (texture == nullptr) {
-				throw NullPointerException<SWFTexture>();
-			}
-			texture->save(this, !m_useExternalTexture, false);
+		for (uint16_t i = 0; texturesCount > i; i++) {
+			textures[i]->save(this, !m_useExternalTexture, false);
 		}
 
 		if (movieClipModifiers.size() > 0) {
 			uint16_t modifiersCount = static_cast<uint16_t>(movieClipModifiers.size());
+
 			stream.writeUnsignedByte(TAG_MOVIE_CLIP_MODIFIERS_COUNT);
 			stream.writeInt(sizeof(uint16_t));
 			stream.writeUnsignedShort(modifiersCount);
 
-			for (pMovieClipModifier modifier : movieClipModifiers) {
-				if (modifier == nullptr) {
-					throw NullPointerException<MovieClipModifier>();
-				}
-
-				modifier->save(this);
+			for (uint16_t i = 0; modifiersCount > i; i++) {
+				movieClipModifiers[i]->save(this);
 			}
 		}
 

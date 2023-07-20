@@ -27,16 +27,6 @@ int main(int argc, char* argv[])
 	auto endTime = high_resolution_clock::now();
 	std::cout << "Loading took: ";
 
-	//for (auto texture : swf.textures) {
-	//	if (texture->textureEncoding() != sc::SWFTexture::TextureEncoding::Raw) {
-	//		texture->decodeTexture();
-	//	}
-	//}
-	
-	for (auto texture : swf.textures) {
-		texture->textureEncoding(sc::SWFTexture::TextureEncoding::KhronosTexture);
-	}
-	 
 	milliseconds msTime = duration_cast<milliseconds>(endTime - loadingStart);
 	if (msTime.count() < 1000) {
 		std::cout << msTime.count() << " miliseconds." << std::endl;

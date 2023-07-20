@@ -24,7 +24,7 @@ namespace sc {
 			init();
 
 			fs::path output;
-			Decompressor::decompress(filepath, output);
+			Decompressor::Decompress(filepath, output);
 			ReadFileStream file(output);
 			m_buffer = vector<uint8_t>(file.size());
 			file.read(m_buffer.data(), file.size());
@@ -35,18 +35,21 @@ namespace sc {
 			m_stream->seek(0);
 			WriteFileStream output(filepath);
 
+			CompressorContext context;
+			context.signature = signature;
+
 			switch (signature)
 			{
 			case sc::CompressionSignature::LZMA:
 			case sc::CompressionSignature::LZHAM:
 			case sc::CompressionSignature::ZSTD:
-				Compressor::compress(*m_stream, output, signature);
+				Compressor::Compress(*m_stream, output, context);
 				break;
 			default:
 				output.write(m_buffer.data(), m_buffer.size());
 				break;
 			}
-			
+
 			m_stream->close();
 			output.close();
 		}

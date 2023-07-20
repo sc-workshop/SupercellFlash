@@ -143,18 +143,21 @@ namespace sc
 	};
 
 	vector<uint8_t> SWFTexture::getLinearData(SWFTexture& texture, bool toLinear) {
-		vector<uint8_t> image(texture.textureData);
 		if (texture.linear() == toLinear) {
-			return image;
+			return texture.textureData;
 		}
 
-		const uint16_t width = texture.width();
-		const uint16_t height = texture.height();
+		return getLinearData(texture.textureData.data(), texture.width(), texture.height(), texture.pixelFormat(), toLinear);
+	}
+
+	vector<uint8_t> SWFTexture::getLinearData(uint8_t* data, uint16_t width, uint16_t height, PixelFormat type, bool toLinear) {
+		uint8_t pixelSize = pixelByteSizeTable[(uint8_t)type];
+
+		vector<uint8_t> image(width * height * pixelSize);
 
 		const uint16_t x_blocks = static_cast<uint16_t>(floor(width / SWFTEXTURE_BLOCK_SIZE));
 		const uint16_t y_blocks = static_cast<uint16_t>(floor(height / SWFTEXTURE_BLOCK_SIZE));
 
-		uint8_t pixelSize = pixelByteSizeTable[(uint8_t)texture.pixelFormat()];
 		uint32_t pixelIndex = 0;
 
 		for (uint16_t y_block = 0; y_blocks + 1 > y_block; y_block++) {
@@ -174,13 +177,13 @@ namespace sc
 						uint32_t target = (pixel_y * width + pixel_x) * pixelSize;
 						if (toLinear) { // blocks to image
 							uint32_t block_target = pixelIndex * pixelSize;
-							memcpy(image.data() + target, texture.textureData.data() + block_target, pixelSize);
+							memcpy(image.data() + target, data + block_target, pixelSize);
 						}
 						else { // image to blocks
-							uint16_t block_pixel_x = pixelIndex % width;
-							uint16_t block_pixel_y = static_cast<uint32_t>(pixelIndex / width);
+							uint32_t block_pixel_x = pixelIndex % width;
+							uint32_t block_pixel_y = static_cast<uint32_t>(pixelIndex / width);
 							uint32_t block_target = (block_pixel_y * width + block_pixel_x) * pixelSize;
-							memcpy(image.data() + block_target, texture.textureData.data() + target, pixelSize);
+							memcpy(image.data() + block_target, data + target, pixelSize);
 						}
 
 						pixelIndex++;
@@ -304,11 +307,16 @@ namespace sc
 	}
 
 	vector<uint8_t> SWFTexture::rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height) {
+		//texture.linear(true);
 		PixelFormat pixelFormat = texture.pixelFormat();
 
 		vector<uint8_t>& imageData = texture.textureData;
 		if (texture.textureEncoding() != TextureEncoding::Raw) {
 			imageData = getEncodingData(texture, TextureEncoding::Raw, pixelFormat, width, height);
+		}
+
+		if (!texture.linear()) {
+			imageData = getLinearData(imageData.data(), texture.width(), texture.height(), texture.pixelFormat(), true);
 		}
 
 		uint8_t pixelSize = pixelByteSizeTable[(uint8_t)texture.pixelFormat()];
@@ -319,9 +327,11 @@ namespace sc
 		case sc::SWFTexture::PixelFormat::RGBA8:
 		case sc::SWFTexture::PixelFormat::LUMINANCE8_ALPHA8:
 		case sc::SWFTexture::PixelFormat::LUMINANCE8:
-			stbir_resize_uint8(texture.textureData.data(), texture.width(), texture.height(), 0,
+			stbir__resize_arbitrary(NULL, imageData.data(), texture.width(), texture.height(), 0,
 				outputData.data(), width, height, 0,
-				pixelSize);
+				0, 0, 1, 1, NULL, pixelSize, -1, STBIR_FLAG_ALPHA_PREMULTIPLIED, STBIR_TYPE_UINT8, STBIR_FILTER_DEFAULT, STBIR_FILTER_DEFAULT,
+				STBIR_EDGE_CLAMP, STBIR_EDGE_CLAMP, STBIR_COLORSPACE_LINEAR
+			);
 			break;
 
 			// Other encoded formats
@@ -330,15 +340,21 @@ namespace sc
 		case sc::SWFTexture::PixelFormat::RGB565:
 		default:
 		{
-			const vector<uint8_t> decodedData = getPixelFormatData(texture, PixelFormat::RGBA8);
-			vector<uint8_t> encodedData((width * height) * 4);
+			imageData = getPixelFormatData(texture, PixelFormat::RGBA8);
 
-			stbir_resize_uint8(decodedData.data(), texture.width(), texture.height(), 0,
-				outputData.data(), width, height, 0, 4);
+			stbir__resize_arbitrary(NULL, imageData.data(), texture.width(), texture.height(), 0,
+				outputData.data(), width, height, 0,
+				0, 0, 1, 1, NULL, 4, -1, STBIR_FLAG_ALPHA_PREMULTIPLIED, STBIR_TYPE_UINT8, STBIR_FILTER_DEFAULT, STBIR_FILTER_DEFAULT,
+				STBIR_EDGE_CLAMP, STBIR_EDGE_CLAMP, STBIR_COLORSPACE_LINEAR
+			);
 
-			outputData = getPixelFormatData(encodedData.data(), width, height, PixelFormat::RGBA8, pixelFormat);
+			outputData = getPixelFormatData(outputData.data(), width, height, PixelFormat::RGBA8, pixelFormat);
 		}
 		break;
+		}
+
+		if (!texture.linear()) {
+			outputData = getLinearData(outputData.data(), width, height, texture.pixelFormat(), false);
 		}
 
 		return outputData;
