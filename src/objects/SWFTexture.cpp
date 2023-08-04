@@ -449,10 +449,10 @@ namespace sc
 		ScTexture_FromMemory(texture.textureData, CompressedTextureType::KTX, &kTexture);
 
 		if (kTexture->GetElementType() != TextureLoader::TextureElementType::UNSIGNED_BYTE) {
-			throw std::exception("Unknwown element type in Khronos Texture");
+			throw std::runtime_error("Unknwown element type in Khronos Texture");
 		};
 		if (kTexture->GetComponentsType() != TextureLoader::TextureComponents::RGBA) {
-			throw std::exception("Unknwown component type in Khronos Texture");
+			throw std::runtime_error("Unknwown component type in Khronos Texture");
 		};
 
 		format = PixelFormat::RGBA8;

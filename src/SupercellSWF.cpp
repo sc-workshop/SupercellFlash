@@ -33,7 +33,7 @@ namespace sc
 			}
 			else
 			{
-				throw std::exception("Cannot find external *_tex.sc file");
+				throw std::runtime_error("Cannot find external *_tex.sc file");
 			}
 		}
 	}

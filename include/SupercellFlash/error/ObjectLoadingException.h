@@ -11,7 +11,7 @@ namespace sc {
 		ObjectLoadingException(string message) : message(message) {}
 		~ObjectLoadingException() { }
 
-		const char* what() const override {
+		const char* what() const noexcept override {
 			return message.c_str();
 		}
 	};

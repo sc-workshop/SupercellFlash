@@ -17,8 +17,8 @@ namespace sc {
 			s << "Failed to get pointer of \"" << typeid(T).name() << "\"" << endl;
 			message = s.str();
 		}
-	
-		const char* what() const override {
+
+		const char* what() const noexcept  override {
 			return message.c_str();
 		}
 	};
