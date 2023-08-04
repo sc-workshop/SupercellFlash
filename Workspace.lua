@@ -11,6 +11,10 @@ workspace "ScFlash"
 
 	include "./Test"
 
+    group "Textures"
+        include "dependencies/TextureLoader/ThirdParty/libktx"
+        include "dependencies/TextureLoader/ThirdParty/dfdutils"
+
     group "Compression"
 		include "dependencies/Compression"
         include "dependencies/Compression/dependencies/lzma"
@@ -20,3 +24,4 @@ workspace "ScFlash"
     group "Compression/Image"
         include "dependencies/TextureLoader/ThirdParty/ETCPACK"
         include "dependencies/TextureLoader/ThirdParty/astc-encoder"
+        include "dependencies/TextureLoader/ThirdParty/basisu"
