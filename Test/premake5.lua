@@ -22,7 +22,16 @@ project "SupercellFlashTest"
 		"LZMA",
 		"LZHAM",
 		"Zstandard",
-		"SupercellFlash"
+		"ASTC",
+		
+		"SupercellFlash",
+		"SupercellTextureLoader",
+		
+		"libktx",
+		"dfdutils",
+		"basisu",
+		"ETCPACK"
+		
     }
 
     filter "configurations:Debug"

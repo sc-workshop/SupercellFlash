@@ -1,5 +1,6 @@
 build
-scripts
 *.sln
 .*
 *.vcxproj*
+Makefile
+*.make

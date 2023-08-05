@@ -21,7 +21,7 @@ project "SupercellFlash"
         "dependencies/Compression/include",
         "dependencies/TextureLoader/include"
     }
-
+	
     links {
         "SupercellCompression",
         "SupercellTextureLoader",
