@@ -1,9 +1,14 @@
 #pragma once
 
+#include <stdint.h>
+
+#include "math/rect.h"
+
+#include "SupercellFlash/types/SWFString.hpp"
+#include "SupercellFlash/types/SWFContainer.hpp"
+
 #include "SupercellFlash/objects/DisplayObject.h"
 #include "SupercellFlash/objects/MovieClipFrame.h"
-
-using namespace std;
 
 namespace sc
 {
@@ -11,79 +16,58 @@ namespace sc
 
 	struct MovieClipFrameElement
 	{
-		uint16_t instanceIndex;
-		uint16_t matrixIndex = 0xFFFF;
-		uint16_t colorTransformIndex = 0xFFFF;
+		uint16_t instance_index;
+		uint16_t matrix_index = 0xFFFF;
+		uint16_t colorTransform_index = 0xFFFF;
 	};
-	typedef shared_ptr<MovieClipFrameElement> pMovieClipFrameElement;
 
 	struct DisplayObjectInstance
 	{
 		enum class BlendMode : uint8_t
 		{
-			Mix,
-			Layer,
-			Darken,
+			Normal = 0,
+			// Normal1 = 1,
+			Layer = 2,
 			Multiply,
-			Lighten,
 			Screen,
-			Overlay,
-			Hardlight,
+			Lighten,
+			Darken,
+			Difference,
 			Add,
 			Subtract,
-			Difference,
 			Invert,
 			Alpha,
-			Erase
+			Erase,
+			Overlay,
+			HardLight,
 		};
 
 		uint16_t id;
-		BlendMode blend = BlendMode::Mix;
-		string name;
+		BlendMode blend_mode = BlendMode::Normal;
+		SWFString name;
 	};
-	typedef shared_ptr<DisplayObjectInstance> pDisplayObjectInstance;
-
-	struct ScalingGrid
-	{
-		float x;
-		float y;
-		float width;
-		float height;
-	};
-	typedef shared_ptr<ScalingGrid> pScalingGrid;
 
 	class MovieClip : public DisplayObject
 	{
 	public:
-		vector<pMovieClipFrameElement> frameElements;
-		vector<pDisplayObjectInstance> instances;
-		vector<pMovieClipFrame> frames;
+		SWFVector<MovieClipFrameElement, uint32_t> frame_elements;
+		SWFVector<DisplayObjectInstance> instances;
+		SWFVector<MovieClipFrame> frames;
 
 	public:
-		uint8_t frameRate() { return m_frameRate; }
-		pScalingGrid scalingGrid() { return m_scalingGrid; }
-		uint8_t matrixBankIndex() { return m_matrixBankIndex; }
-		bool unknownFlag() { return m_unknownFlag; }
+		uint8_t frame_rate = 24;
+
+		uint8_t bank_index = 0;
+
+		bool use_nine_slice = false;
+		Rect<float> scaling_grid;
+
+		bool unknown_flag = false;
 
 	public:
-		void frameRate(uint8_t rate) { m_frameRate = rate; }
-		void scalingGrid(pScalingGrid grid) { m_scalingGrid = grid; }
-		void matrixBankIndex(uint8_t index) { m_matrixBankIndex = index; }
-		void unknownFlag(bool status) { m_unknownFlag = status; }
+		void load(SupercellSWF& swf, uint8_t tag);
+		void save(SupercellSWF& swf) const;
 
-	public:
-		MovieClip* load(SupercellSWF* swf, uint8_t tag);
-		void save(SupercellSWF* swf);
-
-	private:
-		uint8_t m_frameRate = 24;
-
-		bool m_unknownFlag = false;
-		pScalingGrid m_scalingGrid = nullptr;
-		uint8_t m_matrixBankIndex = 0;
-
-		uint8_t getTag();
+		virtual uint8_t tag() const;
 	};
-
-	typedef shared_ptr<MovieClip> pMovieClip;
 }

@@ -1,17 +1,15 @@
 #pragma once
 
-#include <string>
-#include <cstdint>
+#include <stdint.h>
 
 namespace sc
 {
 	class DisplayObject
 	{
 	public:
-		uint16_t id() const { return m_id; }
-		void id(uint16_t id) { m_id = id; }
+		uint16_t id = 0;
 
-	protected:
-		uint16_t m_id = 0;
+	public:
+		virtual uint8_t tag() const = 0;
 	};
 }

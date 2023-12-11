@@ -11,7 +11,7 @@ newoption {
     default = "win"
  }
 
-workspace "ScFlash"
+workspace "SupercellFlash"
     configurations {
         "Debug",
         "Release"
@@ -19,7 +19,7 @@ workspace "ScFlash"
 
     filter {"options:platform=win"}
         system "windows"
-        platforms { "Win32", "Win64" }
+        platforms { "Win64" }
 
     filter {"options:platform=macos"}
         system "macosx"
@@ -46,56 +46,36 @@ workspace "ScFlash"
         architecture "arm64"
     
     filter {}
+	
+	targetdir "%{wks.location}/build/bin/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
+    objdir "%{wks.location}/build/obj/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
+	
+	symbols "on"
+	filter "configurations:Debug"
+        runtime "Debug"
+
+        defines {
+            "DEBUG"
+        }
+        optimize "off"
+    
+    filter "configurations:Release"
+        runtime "Release"
+
+        defines {
+            "NDEBUG"
+        }
+        optimize "Speed"
+	
+	filter ""
 
     include "./"
-    include "dependencies/TextureLoader"
-
-	include "./Test"
-
-    group "Textures"
-        include "dependencies/TextureLoader/ThirdParty/libktx"
-        include "dependencies/TextureLoader/ThirdParty/dfdutils"
+	include "core"
+	include "Test"
 
     group "Compression"
-		include "dependencies/Compression"
-        include "dependencies/Compression/dependencies/lzma"
-        include "dependencies/Compression/dependencies/lzham"
-        include "dependencies/Compression/dependencies/zstd"
-
-    group "Compression/Image"
-        include "dependencies/TextureLoader/ThirdParty/ETCPACK"
-        include "dependencies/TextureLoader/ThirdParty/astc-encoder"
-        include "dependencies/TextureLoader/ThirdParty/basisu"
-
-    
-    -- Android Arm64 (aarch64)
-    --filter {"options:android64", "system:android"}
-    --    architecture "ARM64"
---
-    ---- Android Arm
-    --filter {"options:android64", "system:android"}
-    --    architecture "ARM"
---
-    ---- Android x86
-    --filter {"options:x86_build", "options: not arm_build", "system:android"}
-    --    architecture "x86"
---
-    ---- Android x64
-    --filter {"options: not x86_build", "options: not arm_build", "system:android"}
-    --    print("Build for Android x86_64")
-    --    architecture "x86_64"
---
-    ---- Windows x86
-    --filter {"options:x86_build", "options: not arm_build", "system:windows"}
-    --    print("Build for Windows x32")
-    --    architecture "x86"
---
-    ---- Windows x64
-    --filter {"options: not x86_build", "options: not arm_build", "system:windows"}
-    --    print("Build for Windows x64")
-    --    architecture "x86_64"
---
-    ---- MacOSX
-    --filter {"system:macosx"}
-    --    print("Build for MacOS")
-    --    architecture "ARM64"
+		include "compression"
+        include "compression/dependencies/lzma"
+        include "compression/dependencies/lzham"
+        include "compression/dependencies/zstd"
+        include "compression/dependencies/astc"

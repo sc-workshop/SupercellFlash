@@ -1,6 +1,8 @@
 #pragma once
+#include <stdint.h>
 
 #include "SupercellFlash/objects/DisplayObject.h"
+#include "SupercellFlash/types/SWFString.hpp"
 
 namespace sc
 {
@@ -9,117 +11,55 @@ namespace sc
 	class TextField : public DisplayObject
 	{
 	public:
-		TextField() { }
-		virtual ~TextField() { }
-
 		enum class Align : uint8_t
 		{
-			Left,
-			Center,
 			Right,
-			Justify
+			Center,
+			Justify,
+			Left,
 		};
 
-	public:
-		std::string text() { return m_text; }
-
-		std::string fontName() { return m_fontName; }
-		uint32_t fontColor() { return m_fontColor; }
-		uint8_t fontSize() { return m_fontSize; }
-		Align fontAlign() { return m_fontAlign; }
-
-		int16_t left() { return m_left; }
-		int16_t top() { return m_top; }
-		int16_t right() { return m_right; }
-		int16_t bottom() { return m_bottom; }
-
-		bool isBold() { return m_isBold; }
-		bool isItalic() { return m_isItalic; }
-		bool isMultiline() { return m_isMultiline; }
-		bool isOutlined() { return m_isOutlined; }
-		bool unknownFlag3() { return m_unknwonFlag3; }
-
-		uint32_t outlineColor() { return m_outlineColor; }
-		bool useDeviceFont() { return m_useDeviceFont; }
-		bool autoKern() { return m_autoKern; }
-
-		float bendAngle() { return m_bendAngle; }
-
-		bool unknownFlag() const { return m_unknownFlag; }
-		bool unknownFlag2() const { return m_unknownFlag2; }
-		int16_t unknownShort() const { return m_unknownShort; }
-		int16_t unknownShort2() const { return m_unknownShort2; }
-
-	public:
-		void text(const std::string& newText) { m_text = newText; }
-
-		void fontName(const std::string& newfontName) { m_fontName = newfontName; }
-		void fontColor(int32_t color) { m_fontColor = color; }
-		void fontSize(uint8_t size) { m_fontSize = size; }
-		void fontAlign(Align align) { m_fontAlign = align; }
-
-		void left(int16_t left) { m_left = left; }
-		void top(int16_t top) { m_top = top; }
-		void right(int16_t right) { m_right = right; }
-		void bottom(int16_t bottom) { m_bottom = bottom; }
-
-		void isBold(bool status) { m_isBold = status; }
-		void isItalic(bool status) { m_isItalic = status; }
-		void isMultiline(bool status) { m_isMultiline = status; }
-		void isOutlined(bool status) { m_isOutlined = status; }
-		void unknownFlag3(bool status) { m_unknwonFlag3 = status; }
-
-		void outlineColor(int32_t color) { m_outlineColor = color; }
-		void useDeviceFont(bool status) { m_useDeviceFont = status; }
-		void autoKern(bool status) { m_autoKern = status; }
-
-		void bendAngle(float bend) { m_bendAngle = bend; }
-
-		void unknownFlag(bool status) { m_unknownFlag = status; }
-		void unknownFlag2(bool status) { m_unknownFlag2 = status; }
-		void unknownShort(int16_t value) { m_unknownShort = value; } // Left/Right margin?
-		void unknownShort2(int16_t value) { m_unknownShort2 = value; }
-
-	public:
-		TextField* load(SupercellSWF* swf, uint8_t tag);
-		void save(SupercellSWF* swf);
-
 	private:
-		std::string m_text = "";
+		SWFString text = "";
 
-		std::string m_fontName = "";
-		uint32_t m_fontColor = 0xFFFFFFFF;
-		uint8_t m_fontSize = 0;
-		Align m_fontAlign = Align::Left;
+		SWFString font_name = "";
+		uint32_t font_color = 0xFFFFFFFF;
+		uint8_t font_size = 0;
+		Align font_align = Align::Left;
+		bool unknown_align1 = false;
+		bool unknown_align2 = false;
+		bool unknown_align3 = false;
+		bool unknown_align4 = false;
+		bool unknown_align5 = false;
 
-		uint8_t m_fontSets = 0; // TODO: move all this seperate booleans
+		int16_t left = 0;
+		int16_t top = 0;
+		int16_t right = 0;
+		int16_t bottom = 0;
 
-		int16_t m_left = 0;
-		int16_t m_top = 0;
-		int16_t m_right = 0;
-		int16_t m_bottom = 0;
+		bool is_bold = false;
+		bool is_italic = false;
+		bool is_multiline = false;
+		bool is_outlined = false;
+		bool unknown_flag3 = false;
 
-		bool m_isBold = false;
-		bool m_isItalic = false;
-		bool m_isMultiline = false;
-		bool m_isOutlined = false;
-		bool m_unknwonFlag3 = false;
+		uint32_t outline_color = 0xFFFFFFFF;
+		bool use_device_font = false;
+		bool auto_kern = false;
 
-		uint32_t m_outlineColor = 0xFFFFFFFF;
-		bool m_useDeviceFont = false;
-		bool m_autoKern = false;
+		float bend_angle = 0.0f;
 
-		float m_bendAngle = 0.0f;
+		bool unknown_flag = false;
+		uint16_t unknown_short = 0xFFFF;
+		uint16_t unknown_short2 = 0xFFFF;
 
-		bool m_unknownFlag = false;
-		bool m_unknownFlag2 = false;
-		uint16_t m_unknownShort = 0xFFFF;
-		uint16_t m_unknownShort2 = 0xFFFF;
+		SWFString typography_file = "";
 
-		uint8_t getTag();
+	public:
+		void load(SupercellSWF& swf, uint8_t tag);
+		void save(SupercellSWF& swf) const;
+		void save_data(SupercellSWF& swf, uint8_t tag) const;
 
-		void writeData(SupercellSWF* swf, uint8_t tag);
+		virtual uint8_t tag() const;
 	};
-
-	typedef shared_ptr<TextField> pTextField;
 }

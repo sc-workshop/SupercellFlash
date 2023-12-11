@@ -5,38 +5,26 @@ project "SupercellFlash"
     language "C++"
     cppdialect "C++17"
 
-    targetdir "%{wks.location}/build/bin/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
-    objdir "%{wks.location}/build/obj/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
-
     files {
-		"include/**.h",
-		"src/**.cpp",
-		"src/**.h"
-    }
-
-    includedirs {
-        "src",
-		"include",
-		"dependencies/Bytestream",
-        "dependencies/Compression/include",
-        "dependencies/TextureLoader/include"
+		"include/**",
+		"source/**"
     }
 	
+	includedirs
+	{
+		"./include",
+		"./core",
+		"./compression/include"
+	}
+	
     links {
-        "SupercellCompression",
-        "SupercellTextureLoader",
-		"LZMA",
-		"LZHAM",
-		"Zstandard"
+		"Core",
+        "Compression"
     }
+	
+	defines 
+	{
+		"_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING"
+	}
 
-    filter "configurations:Debug"
-        defines { "DEBUG" }
-        runtime "Debug"
-        symbols "on"
-
-    filter "configurations:Release"
-        defines { "NDEBUG" }
-        runtime "Release"
-        optimize "on"
 

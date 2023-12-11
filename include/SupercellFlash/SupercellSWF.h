@@ -1,99 +1,61 @@
 #pragma once
 
-#include <cstdio>
-#include <cstdint>
-#include <string>
-#include <vector>
-#include <stdexcept>
-#include <algorithm>
+#include <stdint.h>
+#include <filesystem>
 
-#include "io/SWFStream.h"
+#include "types/SWFStream.hpp"
 
-#include "SupercellFlash/objects/Shape.h"
-#include "SupercellFlash/objects/MovieClip.h"
-#include "SupercellFlash/objects/TextField.h"
-#include "SupercellFlash/objects/MovieClipModifier.h"
-#include "SupercellFlash/objects/ExportName.h"
-#include "SupercellFlash/texture/SWFTexture.h"
+// SWF Objects
+#include "objects/ExportName.h"
+#include "objects/MatrixBank.h"
 
-#include "SupercellFlash/transformation/MatrixBank.h"
-
-#include "SupercellFlash/Tags.h"
+#include "objects/SWFTexture.h"
+#include "objects/Shape.h"
+#include "objects/MovieClip.h"
+#include "objects/TextField.h"
+#include "objects/MovieClipModifier.h"
 
 #define MULTIRES_DEFAULT_SUFFIX "_highres"
 #define LOWRES_DEFAULT_SUFFIX "_lowres"
-
-using namespace std;
-
-#include <filesystem>
-namespace fs = filesystem;
 
 namespace sc
 {
 	class SupercellSWF
 	{
 	public:
-		std::vector<pExportName> exports;
-		vector<pMatrixBank> matrixBanks;
+		SWFVector<ExportName> exports;
+		SWFVector<MatrixBank> matrixBanks;
 
-		std::vector<pSWFTexture> textures;
-		std::vector<pShape> shapes;
-		std::vector<pMovieClip> movieClips;
-		std::vector<pTextField> textFields;
-		std::vector<pMovieClipModifier> movieClipModifiers;
+		SWFVector<SWFTexture> textures;
+		SWFVector<Shape> shapes;
+		SWFVector<MovieClip> movieclips;
+		SWFVector<TextField> textfields;
+		SWFVector<MovieClipModifier> movieclip_modifiers;
 
 	public:
-		void load(const fs::path& filePath);
-		bool loadInternal(const fs::path& filepath, bool isTexture);
+		void load(const std::filesystem::path& filePath);
+		bool load_internal(const std::filesystem::path& filepath, bool is_texture);
 
-		void save(const fs::path& filepath, CompressionSignature signature);
+		void save(const fs::path& filepath, SWFStream::Signature signature);
+		void save_internal(bool is_texture, bool is_lowres);
 
 		SWFStream stream;
 
-	public:
-		bool useExternalTexture() { return m_useExternalTexture; }
+	private:
+		bool load_tags();
 
-		bool useMultiResTexture() { return m_useMultiResTexture; }
-		bool useLowResTexture() { return m_useLowResTexture; }
-
-		std::string multiResFileSuffix() { return m_multiResFileSuffix; }
-		std::string lowResFileSuffix() { return m_lowResFileSuffix; }
-
-		bool usePrecisionMatrices() { return m_usePrecisionMatrices; }
+		void save_tags();
+		void save_textures(bool has_data, bool is_lowres);
 
 	public:
-		void useExternalTexture(bool status) { m_useExternalTexture = status; }
+		bool use_external_texture = false;
+		bool use_multi_resolution = false;
+		bool use_low_resolution = true;
+		//bool use_precision_matrices = false;
 
-		void useMultiResTexture(bool status) { m_useMultiResTexture = status; }
-		void useLowResTexture(bool status) { m_useLowResTexture = status; }
+		bool low_memory_usage_mode = false;
 
-		void multiResFileSuffix(std::string postfix) { m_multiResFileSuffix = postfix; }
-		void lowResFileSuffix(std::string postfix) { m_lowResFileSuffix = postfix; }
-
-		void usePrecisionMatrices(bool status) { m_usePrecisionMatrices = status; }
-
-	private:
-		bool loadTags();
-
-		void saveInternal();
-		void saveTags(
-			uint16_t shapeCount,
-			uint16_t movieClipsCount,
-			uint16_t texturesCount,
-			uint16_t textFieldsCount
-		);
-
-		void initMatrixBank(uint16_t matricesCount, uint16_t colorTransformsCount);
-
-	private:
-		bool m_useExternalTexture = false;
-		bool m_useMultiResTexture = false;
-
-		bool m_useLowResTexture = true;
-
-		bool m_usePrecisionMatrices = false;
-
-		std::string m_multiResFileSuffix = MULTIRES_DEFAULT_SUFFIX;
-		std::string m_lowResFileSuffix = LOWRES_DEFAULT_SUFFIX;
+		SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;
+		SWFString low_resolution_suffix = LOWRES_DEFAULT_SUFFIX;
 	};
 }

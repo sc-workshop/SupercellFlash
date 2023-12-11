@@ -1,28 +1,23 @@
 #pragma once
 
+#include <stdint.h>
+
 #include "SupercellFlash/objects/DisplayObject.h"
 #include "SupercellFlash/objects/ShapeDrawBitmapCommand.h"
 
-#include <vector>
-#include <cstdint>
-#include <memory>
-
-using namespace std;
+#include "SupercellFlash/types/SWFContainer.hpp"
 
 namespace sc
 {
 	class Shape : public DisplayObject
 	{
 	public:
-		vector<pShapeDrawBitmapCommand> commands;
+		SWFVector<ShapeDrawBitmapCommand> commands;
 
 	public:
-		Shape* load(SupercellSWF* swf, uint8_t tag);
-		void save(SupercellSWF* swf);
+		void load(SupercellSWF& swf, uint8_t tag);
+		void save(SupercellSWF& swf) const;
 
-	private:
-		uint8_t getTag();
+		virtual uint8_t tag() const;
 	};
-
-	typedef std::shared_ptr<Shape> pShape;
 }

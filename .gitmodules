@@ -1,9 +1,6 @@
-[submodule "dependencies/Bytestream"]
-	path = dependencies/Bytestream
-	url = https://github.com/scwmake/SupercellBytestream
-[submodule "dependencies/Compression"]
-	path = dependencies/Compression
-	url = https://github.com/scwmake/SupercellCompression
-[submodule "dependencies/TextureLoader"]
-	path = dependencies/TextureLoader
-	url = https://github.com/scwmake/SupercellTextureLoader
+[submodule "core"]
+	path = core
+	url = https://github.com/sc-workshop/SC-Core
+[submodule "compression"]
+	path = compression
+	url = https://github.com/sc-workshop/SupercellCompression

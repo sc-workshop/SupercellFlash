@@ -1,10 +1,7 @@
 #pragma once
 
-#include <string>
-#include <cstdint>
-#include <memory>
-
-using namespace std;
+#include <stdint.h>
+#include "SupercellFlash/types/SWFString.hpp"
 
 namespace sc
 {
@@ -13,23 +10,13 @@ namespace sc
 	struct MovieClipFrame
 	{
 	public:
-		string label() { return m_label; }
-		uint16_t elementsCount() { return m_elementsCount; }
+		uint16_t elements_count = 0;
+		SWFString label;
 
 	public:
-		void label(string name) { m_label = name; }
-		void elementsCount(uint16_t count) { m_elementsCount = count; }
+		void load(SupercellSWF& swf);
+		void save(SupercellSWF& swf) const;
 
-	public:
-		MovieClipFrame* load(SupercellSWF* swf);
-		void save(SupercellSWF* movieClipStream);
-
-	private:
-		uint16_t m_elementsCount = 0;
-		string m_label = "";
-
-		uint8_t getTag();
+		virtual uint8_t tag() const;
 	};
-
-	typedef std::shared_ptr<MovieClipFrame> pMovieClipFrame;
 }

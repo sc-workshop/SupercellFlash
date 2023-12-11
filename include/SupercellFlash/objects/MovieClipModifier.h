@@ -1,12 +1,9 @@
 #pragma once
 
+#include <stdint.h>
+
 #include "SupercellFlash/objects/DisplayObject.h"
 #include "SupercellFlash/Tags.h"
-
-#include <cstdint>
-#include <memory>
-
-using namespace std;
 
 namespace sc
 {
@@ -18,22 +15,17 @@ namespace sc
 		enum class Type : uint8_t
 		{
 			Mask = TAG_MOVIE_CLIP_MODIFIER,
-			Masked,
-			Unmasked,
+			Masked = TAG_MOVIE_CLIP_MODIFIER_2,
+			Unmasked = TAG_MOVIE_CLIP_MODIFIER_3,
 		};
 
-		MovieClipModifier* load(SupercellSWF* swf, uint8_t tag);
-		void save(SupercellSWF* swf);
+	public:
+		Type type = Type::Mask;
 
 	public:
-		Type type() { return m_type; };
-		void type(Type type) { m_type = type; }
+		void load(SupercellSWF& swf, uint8_t tag);
+		void save(SupercellSWF& swf) const;
 
-	private:
-		Type m_type = Type::Mask;
-
-		uint8_t getTag();
+		virtual uint8_t tag() const;
 	};
-
-	typedef std::shared_ptr<MovieClipModifier> pMovieClipModifier;
 }

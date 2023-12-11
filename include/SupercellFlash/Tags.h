@@ -57,4 +57,4 @@
 #define TAG_TEXT_FIELD_8 44
 
 #define TAG_TEXTURE_9 45 // SWFTexture Khronos Texture
-#define TAG_TEXT_FIELD_9 46 // New unknown boolean
+#define TAG_TEXT_FIELD_9 46 // Typograph
