@@ -13,7 +13,7 @@ namespace sc
 		alpha = swf.stream.read_unsigned_byte();
 
 		multiply.r = swf.stream.read_unsigned_byte();
-		multiply.b = swf.stream.read_unsigned_byte();
+		multiply.g = swf.stream.read_unsigned_byte();
 		multiply.b = swf.stream.read_unsigned_byte();
 	}
 
