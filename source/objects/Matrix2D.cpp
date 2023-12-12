@@ -47,6 +47,6 @@ namespace sc {
 
 	uint8_t Matrix2D::tag() const
 	{
-		return is_precision ? TAG_MATRIX_2x3_2 : TAG_MATRIX_2x3_2;
+		return is_precision ? TAG_MATRIX_2x3_2 : TAG_MATRIX_2x3;
 	};
 }
