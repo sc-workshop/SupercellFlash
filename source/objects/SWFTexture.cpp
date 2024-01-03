@@ -115,11 +115,11 @@ namespace sc
 
 		if (m_encoding != TextureEncoding::Raw) return;
 
-		Image::PixelDepth destination_depth = SWFTexture::pixel_depth_table[std::find(
+		Image::PixelDepth destination_depth = SWFTexture::pixel_depth_table[static_cast<uint8_t>(std::find(
 			SWFTexture::pixel_format_table.begin(),
 			SWFTexture::pixel_format_table.end(),
 			format
-		) - SWFTexture::pixel_format_table.begin()];
+		) - SWFTexture::pixel_format_table.begin())];
 
 		Ref<Image> texture = CreateRef<RawImage>(m_image->width(), m_image->height(), destination_depth);
 

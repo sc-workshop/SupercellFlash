@@ -200,7 +200,7 @@ namespace sc
 
 				// Texture Image
 				std::filesystem::path basename = output_path.stem();
-				std::filesystem::path output_image_path = output_path / basename.concat(std::string("_", i)).concat(".png");
+				std::filesystem::path output_image_path = output_path / basename.concat("_").concat(std::to_string(i)).concat(".png");
 				OutputFileStream output_image(output_image_path);
 
 				Ref<RawImage> image = nullptr;
@@ -256,7 +256,7 @@ namespace sc
 			}
 
 			// Texture Images path gather
-			std::vector<std::filesystem::path> texture_images_paths;
+			SWFVector<std::filesystem::path> texture_images_paths;
 
 			for (auto const& file_descriptor : std::filesystem::directory_iterator(input))
 			{
@@ -270,7 +270,7 @@ namespace sc
 			}
 
 			//Texture Converting
-			for (size_t i = 0; texture_images_paths.size() > i; i++)
+			for (uint16_t i = 0; texture_images_paths.size() > i; i++)
 			{
 				// Image Loading
 				RawImage* image = nullptr;
@@ -283,7 +283,13 @@ namespace sc
 				texture.load_from_buffer(
 					image_data,
 					image->width(), image->height(),
-					SWFTexture::pixel_format_table[find(SWFTexture::pixel_depth_table.begin(), SWFTexture::pixel_depth_table.end(), image->depth()) - SWFTexture::pixel_depth_table.begin()]
+					SWFTexture::pixel_format_table[
+						static_cast<uint8_t>(
+							std::find(
+								SWFTexture::pixel_depth_table.begin(),
+								SWFTexture::pixel_depth_table.end(), image->depth()
+							) - SWFTexture::pixel_depth_table.begin())
+					]
 				);
 
 				if (texture_infos.size() > i)
@@ -346,6 +352,8 @@ namespace sc
 				{
 					textures[i] = texture;
 				}
+
+				std::cout << "Processed texture: " << texture_images_paths[i] << std::endl;
 			}
 		}
 	};
