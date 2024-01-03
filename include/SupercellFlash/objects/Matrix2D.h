@@ -10,13 +10,17 @@ namespace sc
 	struct Matrix2D : public Matrix2x3<float>
 	{
 	public:
+		Matrix2D() {};
+		virtual ~Matrix2D() = default;
+
+	public:
 		bool is_precision = false;
 
 	public:
-		void load(SupercellSWF& swf, uint8_t tag);
-		void save(SupercellSWF& swf) const;
+		virtual void load(SupercellSWF& swf, uint8_t tag);
+		virtual void save(SupercellSWF& swf) const;
 
-		uint8_t tag() const;
+		virtual uint8_t tag() const;
 
 	public:
 		bool operator==(const Matrix2D& matrix) const;

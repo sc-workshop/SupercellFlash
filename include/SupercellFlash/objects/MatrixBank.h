@@ -14,6 +14,7 @@ namespace sc
 	{
 	public:
 		MatrixBank(uint16_t matrix_count = 0, uint16_t color_transforms_count = 0);
+		virtual ~MatrixBank() = default;
 
 	public:
 		SWFVector<Matrix2D> matrices;

@@ -10,16 +10,20 @@ namespace sc
 	struct ColorTransform
 	{
 	public:
+		ColorTransform() {};
+		virtual ~ColorTransform() = default;
+
+	public:
 		uint8_t alpha = 255;
 
 		Color<uint8_t> add{ 0, 0, 0 };
 		Color<uint8_t> multiply{ 255, 255, 255 };
 
 	public:
-		void load(SupercellSWF& swf);
-		void save(SupercellSWF& swf) const;
+		virtual void load(SupercellSWF& swf);
+		virtual void save(SupercellSWF& swf) const;
 
-		uint8_t tag() const;
+		virtual uint8_t tag() const;
 
 	public:
 		bool operator==(const ColorTransform& color) const;

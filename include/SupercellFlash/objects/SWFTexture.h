@@ -20,6 +20,10 @@ namespace sc
 	class SWFTexture
 	{
 	public:
+		SWFTexture() {};
+		virtual ~SWFTexture() = default;
+
+	public:
 		enum class Filter : uint8_t
 		{
 			LINEAR_NEAREST,
@@ -43,41 +47,24 @@ namespace sc
 		};
 
 	public:
-		static PixelFormat pixel_format_table[];
-		//static uint8_t pixel_size_table[];
-		static Image::PixelDepth pixel_depth_table[];
-		//static uint8_t channels_table[];
+		static const SWFVector<PixelFormat, uint8_t> pixel_format_table;
+		static const SWFVector<Image::PixelDepth, uint8_t> pixel_depth_table;
 
 	public:
-		//	PixelFormat pixelFormat() { return m_pixel_type; }
 		TextureEncoding encoding();
-		//
-		//	Filter textureFilter() { return filtering; }
-		//
-		//	uint16_t width() { return m_width; }
-		//	uint16_t height() { return m_height; }
-		//
+		PixelFormat pixel_format();
+
 		bool linear();
-		//	bool downscaling() { return downscaling; }
-		//
+
 	public:
-		//	void pixelFormat(PixelFormat type);
+
 		void encoding(TextureEncoding encoding);
-		//
-		//	void textureFilter(Filter filter) { filtering = filter; }
-		//
-		//	void width(uint16_t width);
-		//	void height(uint16_t height);
-		//
-		//	void downscaling(bool status) { downscaling = status; }
+		void pixel_format(PixelFormat format);
 		void linear(bool status);
 
+		const Image* const image() const;
+
 	public:
-		//vector<uint8_t> textureData;
-
-		//public:
-			//static vector<uint8_t> getLinearData(SWFTexture& texture, bool toLinear);
-
 		/// <summary>
 		/// Groups image data to blocks 32x32
 		/// </summary>
@@ -88,52 +75,24 @@ namespace sc
 		/// <param name="type">Pixel type</param>
 		/// <param name="is_raw">If true, converts image to block. Otherwise converts blocks to image</param>
 		static void make_linear_data(uint8_t* inout_data, uint8_t* output_data, uint16_t width, uint16_t height, PixelFormat type, bool is_raw);
-		//
-		//	static vector<uint8_t> getPixelFormatData(SWFTexture& texture, PixelFormat dst);
-		//	static vector<uint8_t> getPixelFormatData(uint8_t* data, uint16_t width, uint16_t height, PixelFormat srcType, PixelFormat dstType);
-		//
-		//	static vector<uint8_t> rescaleTexture(SWFTexture& texture, uint16_t width, uint16_t height);
-		//	static vector<uint8_t> getEncodingData(SWFTexture& texture, TextureEncoding encoding, PixelFormat& format, uint16_t& width, uint16_t& height);
-		//
-		//	static std::vector<uint8_t> decodeKhronosTexture(SWFTexture& texture, PixelFormat& format, uint16_t& width, uint16_t& height);
-		//	static std::vector<uint8_t> encodeKhronosTexture(SWFTexture& texture);
-
-		const Image* const image() const {
-			if (m_image == nullptr)
-			{
-				throw ObjectLoadingException("Image is not loaded yet");
-			}
-
-			return m_image;
-		}
 
 	public:
 		void load_from_buffer(Stream& data, uint16_t width, uint16_t height, PixelFormat format, bool has_data = true);
 		void load_from_khronos_texture(Stream& data);
 
-	private:
-		void image(Image* image)
-		{
-			if (m_image)
-			{
-				delete m_image;
-			}
-
-			m_image = image;
-		}
-
-		Image* m_image = nullptr;
-		PixelFormat m_pixel_type = PixelFormat::RGBA8;
+	protected:
+		Ref<Image> m_image = nullptr;
+		bool m_linear = true;
+		PixelFormat m_pixel_format = PixelFormat::RGBA8;
 		TextureEncoding m_encoding = TextureEncoding::Raw;
 
 	public:
 		Filter filtering = Filter::LINEAR_NEAREST;
-		bool m_linear = true;
 		bool downscaling = true;
 
 	public:
-		void load(SupercellSWF& swf, uint8_t tag, bool use_external_texture);
-		void save(SupercellSWF& swf, bool has_data, bool is_lowres) const;
+		virtual void load(SupercellSWF& swf, uint8_t tag, bool use_external_texture);
+		virtual void save(SupercellSWF& swf, bool has_data, bool is_lowres) const;
 		virtual uint8_t tag(bool has_data = false) const;
 	};
 }

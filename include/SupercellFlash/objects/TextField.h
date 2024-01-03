@@ -11,6 +11,10 @@ namespace sc
 	class TextField : public DisplayObject
 	{
 	public:
+		TextField() {};
+		virtual ~TextField() = default;
+
+	public:
 		enum class Align : uint8_t
 		{
 			Right,
@@ -56,9 +60,9 @@ namespace sc
 		SWFString typography_file = "";
 
 	public:
-		void load(SupercellSWF& swf, uint8_t tag);
-		void save(SupercellSWF& swf) const;
-		void save_data(SupercellSWF& swf, uint8_t tag) const;
+		virtual void load(SupercellSWF& swf, uint8_t tag);
+		virtual void save(SupercellSWF& swf) const;
+		virtual void save_data(SupercellSWF& swf, uint8_t tag) const;
 
 		virtual uint8_t tag() const;
 	};

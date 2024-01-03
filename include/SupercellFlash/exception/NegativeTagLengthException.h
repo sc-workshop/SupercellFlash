@@ -5,7 +5,8 @@
 namespace sc {
 	struct NegativeTagLengthException : public GeneralRuntimeException {
 	public:
-		NegativeTagLengthException(uint16_t tag, size_t position) {
+		NegativeTagLengthException(uint16_t tag, size_t position) : GeneralRuntimeException("NegativeTagLengthException")
+		{
 			std::stringstream message;
 			message
 				<< "Tag " << tag

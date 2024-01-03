@@ -50,6 +50,10 @@ namespace sc
 	class MovieClip : public DisplayObject
 	{
 	public:
+		MovieClip() {};
+		virtual ~MovieClip() = default;
+
+	public:
 		SWFVector<MovieClipFrameElement, uint32_t> frame_elements;
 		SWFVector<DisplayObjectInstance> instances;
 		SWFVector<MovieClipFrame> frames;
@@ -65,8 +69,8 @@ namespace sc
 		bool unknown_flag = false;
 
 	public:
-		void load(SupercellSWF& swf, uint8_t tag);
-		void save(SupercellSWF& swf) const;
+		virtual void load(SupercellSWF& swf, uint8_t tag);
+		virtual void save(SupercellSWF& swf) const;
 
 		virtual uint8_t tag() const;
 	};

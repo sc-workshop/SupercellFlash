@@ -12,6 +12,10 @@ namespace sc
 	class Shape : public DisplayObject
 	{
 	public:
+		Shape() {};
+		virtual ~Shape() = default;
+
+	public:
 		SWFVector<ShapeDrawBitmapCommand> commands;
 
 	public:

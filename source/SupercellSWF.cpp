@@ -320,7 +320,7 @@ namespace sc
 			stream.write_tag_flag(TAG_USE_EXTERNAL_TEXTURE);
 		}
 
-		save_textures(false, !use_external_texture);
+		save_textures(!use_external_texture, false);
 
 		if (movieclip_modifiers.size() > 0) {
 			stream.write_unsigned_byte(TAG_MOVIE_CLIP_MODIFIERS_COUNT); // Tag
@@ -382,42 +382,6 @@ namespace sc
 			movieclip.save(*this);
 			stream.write_tag_final(position);
 		}
-
-		//
-		//for (uint16_t i = 0; shapeCount > i; i++) {
-		//	shapes[i]->save(this);
-		//}
-		//
-		//for (uint16_t i = 0; textFieldsCount > i; i++) {
-		//	textFields[i]->save(this);
-		//}
-		//
-		//uint8_t matrixBanksCount = static_cast<uint8_t>(matrixBanks.size());
-		//
-		//for (uint8_t i = 0; matrixBanksCount > i; i++) {
-		//	uint16_t matricesCount = static_cast<uint16_t>(matrixBanks[i]->matrices.size());
-		//	uint16_t colorsCount = static_cast<uint16_t>(matrixBanks[i]->colorTransforms.size());
-		//
-		//	if (i != 0) {
-		//		uint32_t bankPos = stream.initTag();
-		//		stream.writeUnsignedShort(matricesCount);
-		//		stream.writeUnsignedShort(colorsCount);
-		//		stream.finalizeTag(TAG_MATRIX_BANK, bankPos);
-		//	}
-		//
-		//	for (uint16_t m = 0; matricesCount > m; m++) {
-		//		matrixBanks[i]->matrices[m]->save(this, m_usePrecisionMatrices);
-		//	}
-		//
-		//	for (uint16_t c = 0; colorsCount > c; c++) {
-		//		matrixBanks[i]->colorTransforms[c]->save(this);
-		//	}
-		//}
-		//
-		//for (uint16_t i = 0; movieClipsCount > i; i++) {
-		//	movieClips[i]->save(this);
-		//}
-		//
 	}
 
 	void SupercellSWF::save_textures(bool has_data, bool is_lowres)

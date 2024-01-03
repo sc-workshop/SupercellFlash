@@ -23,6 +23,10 @@ namespace sc
 	class SupercellSWF
 	{
 	public:
+		SupercellSWF() {};
+		virtual ~SupercellSWF() = default;
+
+	public:
 		SWFVector<ExportName> exports;
 		SWFVector<MatrixBank> matrixBanks;
 
@@ -33,15 +37,15 @@ namespace sc
 		SWFVector<MovieClipModifier> movieclip_modifiers;
 
 	public:
-		void load(const std::filesystem::path& filePath);
+		virtual void load(const std::filesystem::path& filePath);
 		bool load_internal(const std::filesystem::path& filepath, bool is_texture);
 
-		void save(const fs::path& filepath, SWFStream::Signature signature);
+		virtual void save(const fs::path& filepath, SWFStream::Signature signature);
 		void save_internal(bool is_texture, bool is_lowres);
 
 		SWFStream stream;
 
-	private:
+	protected:
 		bool load_tags();
 
 		void save_tags();
@@ -51,7 +55,6 @@ namespace sc
 		bool use_external_texture = false;
 		bool use_multi_resolution = false;
 		bool use_low_resolution = true;
-		//bool use_precision_matrices = false;
 
 		bool low_memory_usage_mode = false;
 

@@ -12,6 +12,10 @@ namespace sc
 	class MovieClipModifier : public DisplayObject
 	{
 	public:
+		MovieClipModifier() {};
+		virtual ~MovieClipModifier() = default;
+
+	public:
 		enum class Type : uint8_t
 		{
 			Mask = TAG_MOVIE_CLIP_MODIFIER,
@@ -23,8 +27,8 @@ namespace sc
 		Type type = Type::Mask;
 
 	public:
-		void load(SupercellSWF& swf, uint8_t tag);
-		void save(SupercellSWF& swf) const;
+		virtual void load(SupercellSWF& swf, uint8_t tag);
+		virtual void save(SupercellSWF& swf) const;
 
 		virtual uint8_t tag() const;
 	};
