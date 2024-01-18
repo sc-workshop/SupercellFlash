@@ -128,7 +128,7 @@ namespace sc
 		m_image = texture;
 	}
 
-	const Image* const SWFTexture::image() const {
+	const Image* SWFTexture::image() const {
 		if (m_image == nullptr)
 		{
 			throw ObjectLoadingException("Image is not loaded yet");

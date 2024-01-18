@@ -62,7 +62,7 @@ namespace sc
 		void pixel_format(PixelFormat format);
 		void linear(bool status);
 
-		const Image* const image() const;
+		const Image* image() const;
 
 	public:
 		/// <summary>

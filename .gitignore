@@ -1,4 +1,5 @@
 build
+android_build
 *.sln
 .*
 *.vcxproj*
