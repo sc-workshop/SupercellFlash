@@ -203,31 +203,39 @@ namespace sc
 				std::filesystem::path output_image_path = output_path / basename.concat("_").concat(std::to_string(i)).concat(".png");
 				OutputFileStream output_image(output_image_path);
 
-				Ref<RawImage> image = nullptr;
+				Ref<RawImage> image;
+
+				stb::ImageFormat format = stb::ImageFormat::PNG;
 
 				switch (texture.encoding())
 				{
 				case SWFTexture::TextureEncoding::KhronosTexture:
 				{
-					image = CreateRef<RawImage>(
+					RawImage image(
 						texture.image()->width(), texture.image()->height(),
 						texture.image()->depth()
-						);
+					);
 
-					sc::MemoryStream image_data(image->data(), image->data_length());
+					sc::MemoryStream image_data(image.data(), image.data_length());
 					((sc::KhronosTexture*)(texture.image()))->decompress_data(image_data);
+
+					stb::write_image(image, format, output_image);
 				}
 				break;
 
 				case SWFTexture::TextureEncoding::Raw:
-					image = Ref<RawImage>((sc::RawImage*)(texture.image()));
+					texture.linear(true);
+					stb::write_image(
+						*(sc::RawImage*)(texture.image()),
+						format,
+						output_image
+					);
 					break;
 
 				default:
 					break;
 				}
 
-				stb::write_image(*image, stb::ImageFormat::PNG, output_image);
 				std::cout << "Decoded texture: " << output_image_path << std::endl;
 			}
 
