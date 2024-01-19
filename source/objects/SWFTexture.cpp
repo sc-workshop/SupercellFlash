@@ -271,9 +271,9 @@ namespace sc
 
 	void SWFTexture::load_from_buffer(Stream& data, uint16_t width, uint16_t height, PixelFormat type, bool has_data)
 	{
-		Image::PixelDepth depth = SWFTexture::pixel_depth_table[(uint8_t)m_pixel_format];
 		m_pixel_format = type;
 
+		Image::PixelDepth depth = SWFTexture::pixel_depth_table[(uint8_t)m_pixel_format];
 		m_image = CreateRef<RawImage>(width, height, depth);
 
 		if (has_data)

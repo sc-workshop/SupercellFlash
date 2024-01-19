@@ -111,9 +111,7 @@ namespace sc
 				case TAG_TEXTURE_7:
 				case TAG_TEXTURE_8:
 				case TAG_TEXTURE_9:
-					textures.emplace_back();
-
-					textures[textures.size() - 1].load(*this, tag, true);
+					textures.emplace_back().load(*this, tag, true);
 					break;
 
 				default:
