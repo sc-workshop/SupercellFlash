@@ -5,32 +5,32 @@ namespace sc
 {
 	const SWFVector<SWFTexture::PixelFormat, uint8_t> SWFTexture::pixel_format_table =
 	{
+			SWFTexture::PixelFormat::RGBA8,		// 0
+			SWFTexture::PixelFormat::RGBA8,
+			SWFTexture::PixelFormat::RGBA4,		// 2
+			SWFTexture::PixelFormat::RGB5_A1,	// 3
+			SWFTexture::PixelFormat::RGB565,	// 4
+			SWFTexture::PixelFormat::RGBA8,
+			SWFTexture::PixelFormat::LUMINANCE8_ALPHA8, // 6
 			SWFTexture::PixelFormat::RGBA8,
 			SWFTexture::PixelFormat::RGBA8,
-			SWFTexture::PixelFormat::RGBA4,
-			SWFTexture::PixelFormat::RGB5_A1,
-			SWFTexture::PixelFormat::RGB565,
 			SWFTexture::PixelFormat::RGBA8,
-			SWFTexture::PixelFormat::LUMINANCE8_ALPHA8,
-			SWFTexture::PixelFormat::RGBA8,
-			SWFTexture::PixelFormat::RGBA8,
-			SWFTexture::PixelFormat::RGBA4,
-			SWFTexture::PixelFormat::LUMINANCE8
+			SWFTexture::PixelFormat::LUMINANCE8 // 10
 	};
 
 	const SWFVector<Image::PixelDepth, uint8_t>  SWFTexture::pixel_depth_table =
 	{
+		Image::PixelDepth::RGBA8,	// 0
+		Image::PixelDepth::RGBA8,
+		Image::PixelDepth::RGBA4,	// 2
+		Image::PixelDepth::RGB5_A1, // 3
+		Image::PixelDepth::RGB565,	// 4
+		Image::PixelDepth::RGBA8,
+		Image::PixelDepth::LUMINANCE8_ALPHA8, // 6
 		Image::PixelDepth::RGBA8,
 		Image::PixelDepth::RGBA8,
-		Image::PixelDepth::RGBA4,
-		Image::PixelDepth::RGB5_A1,
-		Image::PixelDepth::RGB565,
 		Image::PixelDepth::RGBA8,
-		Image::PixelDepth::LUMINANCE8_ALPHA8,
-		Image::PixelDepth::RGBA8,
-		Image::PixelDepth::RGBA8,
-		Image::PixelDepth::RGBA4,
-		Image::PixelDepth::LUMINANCE8
+		Image::PixelDepth::LUMINANCE8 // 10
 	};
 
 	bool SWFTexture::linear()
@@ -268,6 +268,53 @@ namespace sc
 			swf.stream.write(buffer->data(), buffer->length());
 		}
 	};
+
+	void SWFTexture::load_from_image(RawImage& image)
+	{
+		SWFTexture::PixelFormat image_format{};
+		Ref<Stream> image_data = CreateRef<MemoryStream>(image.data(), image.data_length());
+
+		switch (image.depth())
+		{
+		case RawImage::PixelDepth::RGBA8:
+		case RawImage::PixelDepth::RGBA4:
+		case RawImage::PixelDepth::RGB5_A1:
+		case RawImage::PixelDepth::RGB565:
+		case RawImage::PixelDepth::LUMINANCE8_ALPHA8:
+		case RawImage::PixelDepth::LUMINANCE8:
+			image_format = SWFTexture::pixel_format_table[
+				static_cast<uint8_t>(
+					std::find(
+						SWFTexture::pixel_depth_table.begin(),
+						SWFTexture::pixel_depth_table.end(), image.depth()
+					) - SWFTexture::pixel_depth_table.begin())
+			];
+			break;
+
+		case RawImage::PixelDepth::RGB8:
+		{
+			image_format = SWFTexture::PixelFormat::RGB565;
+			RawImage::PixelDepth output_depth = RawImage::PixelDepth::RGB565;
+
+			image_data = CreateRef<MemoryStream>(Image::calculate_image_length(image.width(), image.height(), output_depth));
+			Image::remap(
+				image.data(), (uint8_t*)image_data->data(),
+				image.width(), image.height(),
+				image.depth(), output_depth
+			);
+		}
+		break;
+
+		default:
+			break;
+		}
+
+		load_from_buffer(
+			*image_data,
+			image.width(), image.height(),
+			image_format
+		);
+	}
 
 	void SWFTexture::load_from_buffer(Stream& data, uint16_t width, uint16_t height, PixelFormat type, bool has_data)
 	{

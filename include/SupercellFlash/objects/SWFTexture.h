@@ -35,8 +35,8 @@ namespace sc
 		{
 			RGBA8 = 0,
 			RGBA4 = 2,
-			RGB5_A1 = 4,
-			RGB565 = 5,
+			RGB5_A1 = 3,
+			RGB565 = 4,
 			LUMINANCE8_ALPHA8 = 6,
 			LUMINANCE8 = 10
 		};
@@ -77,6 +77,7 @@ namespace sc
 		static void make_linear_data(uint8_t* inout_data, uint8_t* output_data, uint16_t width, uint16_t height, PixelFormat type, bool is_raw);
 
 	public:
+		void load_from_image(RawImage& image);
 		void load_from_buffer(Stream& data, uint16_t width, uint16_t height, PixelFormat format, bool has_data = true);
 		void load_from_khronos_texture(Stream& data);
 

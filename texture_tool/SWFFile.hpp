@@ -286,17 +286,7 @@ namespace sc
 
 				// Image Converting
 				SWFTexture texture;
-				texture.load_from_buffer(
-					image_data,
-					image->width(), image->height(),
-					SWFTexture::pixel_format_table[
-						static_cast<uint8_t>(
-							std::find(
-								SWFTexture::pixel_depth_table.begin(),
-								SWFTexture::pixel_depth_table.end(), image->depth()
-							) - SWFTexture::pixel_depth_table.begin())
-					]
-				);
+				texture.load_from_image(*image);
 
 				if (texture_infos.size() > i)
 				{

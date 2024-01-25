@@ -76,14 +76,14 @@ int main(int argc, char* argv[])
 			}
 
 			file.load_textures_from_folder(input_path);
-			fs::path output_path = fs::path(input_path.parent_path() / fs::path(basename.concat(".sc")) );
+			fs::path output_path = fs::path(input_path.parent_path() / fs::path(basename.concat(".sc")));
 			if (is_dl_file)
 			{
 				file.save(output_path, sc::SWFStream::Signature::Zstandard);
 			}
 			else
 			{
-				file.save_internal(false, false);
+				file.save_internal(true, false);
 				file.stream.save_file(output_path, sc::SWFStream::Signature::Zstandard);
 				file.stream.clear();
 			}

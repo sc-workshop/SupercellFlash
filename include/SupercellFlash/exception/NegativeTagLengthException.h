@@ -11,7 +11,7 @@ namespace sc {
 			message
 				<< "Tag " << tag
 				<< " at position " << std::to_string(position)
-				<< "not initialized correctly and has a negative length.";
+				<< " not initialized correctly and has a negative length.";
 
 			m_message = message.str();
 		}
