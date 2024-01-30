@@ -201,8 +201,6 @@ namespace sc
 				std::filesystem::path output_image_path = output_path / basename.concat("_").concat(std::to_string(i)).concat(".png");
 				OutputFileStream output_image(output_image_path);
 
-				Ref<RawImage> image;
-
 				stb::ImageFormat format = stb::ImageFormat::PNG;
 
 				switch (texture.encoding())
