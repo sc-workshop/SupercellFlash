@@ -21,6 +21,7 @@ namespace sc
 		// If the file is a real texture, only the texture tags are loaded, otherwise the entire file is loaded.
 		SWFFile(std::filesystem::path path)
 		{
+			current_file = path;
 			stream.open_file(path);
 
 			// Path Check
@@ -111,6 +112,7 @@ namespace sc
 				case TAG_TEXTURE_7:
 				case TAG_TEXTURE_8:
 				case TAG_TEXTURE_9:
+				case TAG_TEXTURE_10:
 					textures.emplace_back().load(*this, tag, true);
 					break;
 
@@ -243,6 +245,7 @@ namespace sc
 
 		void load_textures_from_folder(std::filesystem::path input)
 		{
+			current_file = input;
 			std::filesystem::path basename = input.stem();
 			std::filesystem::path texture_info_path = std::filesystem::path(input / basename.concat(".json"));
 

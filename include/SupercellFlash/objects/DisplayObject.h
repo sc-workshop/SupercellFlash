@@ -4,6 +4,8 @@
 
 namespace sc
 {
+	class SupercellSWF;
+
 	class DisplayObject
 	{
 	public:
@@ -13,6 +15,6 @@ namespace sc
 		uint16_t id = 0;
 
 	public:
-		virtual uint8_t tag() const = 0;
+		virtual uint8_t tag(SupercellSWF& swf) const = 0;
 	};
 }

@@ -5,6 +5,7 @@
 #include "SupercellFlash/exception/ObjectLoadingException.h"
 
 #include "SupercellFlash/Tags.h"
+#include <cmath>
 
 namespace fs = std::filesystem;
 
@@ -13,6 +14,7 @@ namespace sc
 #pragma region Loading
 	void SupercellSWF::load(const fs::path& filepath)
 	{
+		current_file = filepath;
 		use_external_texture = load_internal(filepath, false);
 
 		if (use_external_texture)
@@ -139,6 +141,7 @@ namespace sc
 			case TAG_TEXTURE_7:
 			case TAG_TEXTURE_8:
 			case TAG_TEXTURE_9:
+			case TAG_TEXTURE_10:
 				if (textures.size() < textures_loaded) {
 					throw ObjectLoadingException("Trying to load too many textures");
 				}
@@ -213,6 +216,7 @@ namespace sc
 			case TAG_MOVIE_CLIP_3:
 			case TAG_MOVIE_CLIP_4:
 			case TAG_MOVIE_CLIP_5:
+			case TAG_MOVIE_CLIP_6:
 				if (movieclips.size() < movieclips_loaded) {
 					throw ObjectLoadingException("Trying to load too many MovieClips");
 				}
@@ -235,6 +239,7 @@ namespace sc
 #pragma region Saving
 	void SupercellSWF::save(const fs::path& filepath, sc::ScCompression::Signature signature)
 	{
+		current_file = filepath;
 		if (matrixBanks.size() == 0) {
 			matrixBanks.resize(1);
 		}
@@ -329,7 +334,7 @@ namespace sc
 
 			for (const MovieClipModifier& modifier : movieclip_modifiers)
 			{
-				size_t position = stream.write_tag_header(modifier.tag());
+				size_t position = stream.write_tag_header(modifier.tag(*this));
 				modifier.save(*this);
 				stream.write_tag_final(position);
 			}
@@ -337,14 +342,14 @@ namespace sc
 
 		for (const Shape& shape : shapes)
 		{
-			size_t position = stream.write_tag_header(shape.tag());
+			size_t position = stream.write_tag_header(shape.tag(*this));
 			shape.save(*this);
 			stream.write_tag_final(position);
 		}
 
 		for (const TextField& textField : textfields)
 		{
-			size_t position = stream.write_tag_header(textField.tag());
+			size_t position = stream.write_tag_header(textField.tag(*this));
 			textField.save(*this);
 			stream.write_tag_final(position);
 		}
@@ -355,7 +360,7 @@ namespace sc
 
 			if (i != 0)
 			{
-				stream.write_unsigned_byte(bank.tag()); // Tag
+				stream.write_unsigned_byte(bank.tag(*this)); // Tag
 				stream.write_int(sizeof(uint16_t) * 2); // Tag Size
 				stream.write_unsigned_short(bank.matrices.size());
 				stream.write_unsigned_short(bank.color_transforms.size());
@@ -363,14 +368,14 @@ namespace sc
 
 			for (const Matrix2D& matrix : bank.matrices)
 			{
-				size_t position = stream.write_tag_header(matrix.tag());
+				size_t position = stream.write_tag_header(matrix.tag(*this));
 				matrix.save(*this);
 				stream.write_tag_final(position);
 			}
 
 			for (const ColorTransform& color : bank.color_transforms)
 			{
-				size_t position = stream.write_tag_header(color.tag());
+				size_t position = stream.write_tag_header(color.tag(*this));
 				color.save(*this);
 				stream.write_tag_final(position);
 			}
@@ -378,7 +383,7 @@ namespace sc
 
 		for (const MovieClip& movieclip : movieclips)
 		{
-			size_t position = stream.write_tag_header(movieclip.tag());
+			size_t position = stream.write_tag_header(movieclip.tag(*this));
 			movieclip.save(*this);
 			stream.write_tag_final(position);
 		}
@@ -386,10 +391,64 @@ namespace sc
 
 	void SupercellSWF::save_textures(bool has_data, bool is_lowres)
 	{
-		for (SWFTexture& texture : textures)
+		for (uint16_t i = 0; textures.size() > i; i++)
 		{
-			size_t position = stream.write_tag_header(texture.tag(has_data));
+			SWFTexture& texture = textures[i];
+
+			size_t position = stream.write_tag_header(texture.tag(*this, has_data));
 			texture.save(*this, has_data, is_lowres);
+			if (use_external_texture_files)
+			{
+				texture.encoding(SWFTexture::TextureEncoding::KhronosTexture);
+
+				// Path String In Tag
+				fs::path output_filepath = current_file.parent_path();
+				output_filepath /= current_file.stem();
+				if (is_lowres)
+				{
+					output_filepath += (const char*)low_resolution_suffix.data();
+				}
+				output_filepath += "_";
+				output_filepath += std::to_string(i);
+				output_filepath += ".zktx";
+
+				{
+					SWFString texture_path((const char*)output_filepath.filename().c_str());
+					stream.write_string(texture_path);
+				}
+
+				Ref<Stream> input_data = nullptr;
+
+				// Texture Saving
+
+				// Lowres Processing
+				if (is_lowres)
+				{
+					const Image* image_data = texture.image();
+					RawImage image(image_data->width(), image_data->height(), image_data->depth());
+
+					RawImage lowres_texture(
+						(uint16_t)round(image.width() / 2), (uint16_t)round(image.height() / 2), image.depth()
+					);
+					image.copy(lowres_texture);
+
+					KhronosTexture compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
+
+					input_data = CreateRef<BufferStream>();
+					compressed_lowres.write(*input_data);
+				}
+				else
+				{
+					const Image* image = texture.image();
+					input_data = CreateRef<MemoryStream>(image->data(), image->data_length());
+				}
+
+				OutputFileStream output_file(output_filepath);
+
+				sc::Compressor::Zstd::Props props;
+				sc::Compressor::Zstd ctx(props);
+				ctx.compress_stream(*input_data, output_file);
+			}
 			stream.write_tag_final(position);
 		}
 	}

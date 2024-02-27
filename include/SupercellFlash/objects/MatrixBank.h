@@ -24,6 +24,6 @@ namespace sc
 		bool get_matrix_index(const Matrix2D& matrix, uint16_t& index) const;
 		bool get_colorTransform_index(const ColorTransform& color, uint16_t& index) const;
 
-		virtual uint8_t tag() const;
+		virtual uint8_t tag(SupercellSWF& swf) const;
 	};
 }

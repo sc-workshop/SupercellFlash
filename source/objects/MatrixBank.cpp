@@ -58,7 +58,7 @@ namespace sc {
 		return false;
 	}
 
-	uint8_t MatrixBank::tag() const
+	uint8_t MatrixBank::tag(SupercellSWF&) const
 	{
 		return TAG_MATRIX_BANK;
 	};

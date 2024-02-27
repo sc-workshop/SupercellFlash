@@ -11,7 +11,7 @@ using namespace std::chrono;
 
 namespace fs = std::filesystem;
 
-#define print(text) cout << text << endl;
+#define print(text) std::cout << text << std::endl;
 
 int main(int argc, char* argv[])
 {
@@ -19,6 +19,8 @@ int main(int argc, char* argv[])
 
 	if (argc <= 2) {
 		print("Usage: SCTex [decode/encode] [input file or folder] [_dl.sc file for encode]");
+		print("Flags: ");
+		print("--suppress-external-files: Disables forced saving of textures in zktx");
 		return 1;
 	}
 
@@ -33,6 +35,18 @@ int main(int argc, char* argv[])
 	std::string operation = argv[1];
 
 	time_point operation_start = high_resolution_clock::now();
+
+	// Flags
+	bool use_external_files = true;
+	for (int i = 1; argc > i; i++)
+	{
+		std::string argument = argv[i];
+
+		if (argument == "--suppress-external-files")
+		{
+			use_external_files = false;
+		}
+	}
 
 	try
 	{
@@ -69,6 +83,7 @@ int main(int argc, char* argv[])
 			}
 
 			sc::SWFFile file;
+			file.use_external_texture_files = use_external_files;
 			bool is_dl_file = !dl_file_path.empty() && fs::exists(dl_file_path);
 			if (is_dl_file)
 			{

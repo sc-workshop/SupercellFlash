@@ -71,7 +71,7 @@ namespace sc
 		if (vertices_count != 0) {
 			for (const ShapeDrawBitmapCommand& command : commands)
 			{
-				size_t position = swf.stream.write_tag_header(command.tag());
+				size_t position = swf.stream.write_tag_header(command.tag(swf));
 				command.save(swf);
 				swf.stream.write_tag_final(position);
 			}
@@ -80,7 +80,7 @@ namespace sc
 		swf.stream.write_tag_flag(TAG_END);
 	}
 
-	uint8_t Shape::tag() const
+	uint8_t Shape::tag(SupercellSWF&) const
 	{
 		return TAG_SHAPE_2;
 	}

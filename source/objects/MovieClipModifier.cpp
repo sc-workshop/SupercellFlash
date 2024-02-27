@@ -14,7 +14,7 @@ namespace sc {
 		swf.stream.write_unsigned_short(id);
 	}
 
-	uint8_t MovieClipModifier::tag() const
+	uint8_t MovieClipModifier::tag(SupercellSWF&) const
 	{
 		return (uint8_t)type;
 	}

@@ -64,6 +64,6 @@ namespace sc
 		virtual void save(SupercellSWF& swf) const;
 		virtual void save_data(SupercellSWF& swf, uint8_t tag) const;
 
-		virtual uint8_t tag() const;
+		virtual uint8_t tag(SupercellSWF& swf) const;
 	};
 }

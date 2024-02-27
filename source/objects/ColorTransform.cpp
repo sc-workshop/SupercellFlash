@@ -45,7 +45,7 @@ namespace sc
 		return false;
 	}
 
-	uint8_t ColorTransform::tag() const
+	uint8_t ColorTransform::tag(SupercellSWF&) const
 	{
 		return TAG_COLOR_TRANSFORM;
 	}

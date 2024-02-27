@@ -1,5 +1,6 @@
 #include "SupercellFlash/SupercellSWF.h"
 #include "SupercellFlash/objects/SWFTexture.h"
+#include "SupercellCompression/Zstd.h"
 
 namespace sc
 {
@@ -141,6 +142,12 @@ namespace sc
 	{
 		bool has_khronos_texture = false;
 		int khronos_texture_length = 0;
+		SWFString external_texture_path;
+
+		if (tag == TAG_TEXTURE_10)
+		{
+			swf.stream.read_string(external_texture_path);
+		}
 
 		if (has_data && tag == TAG_TEXTURE_9)
 		{
@@ -158,6 +165,22 @@ namespace sc
 
 		uint16_t width = swf.stream.read_unsigned_short();
 		uint16_t height = swf.stream.read_unsigned_short();
+
+		if (!external_texture_path.empty())
+		{
+			InputFileStream texture_file(fs::path(
+				swf.current_file.parent_path() / fs::path(external_texture_path.data())
+			));
+
+			BufferStream texture_data;
+
+			sc::Decompressor::Zstd dctx;
+			dctx.decompress_stream(texture_file, texture_data);
+
+			texture_data.seek(0);
+			load_from_khronos_texture(texture_data);
+			return;
+		}
 
 		if (has_data)
 		{
@@ -258,7 +281,7 @@ namespace sc
 		swf.stream.write_unsigned_short(width);
 		swf.stream.write_unsigned_short(height);
 
-		if (has_data)
+		if (has_data && !swf.use_external_texture_files)
 		{
 			if (buffer == nullptr)
 			{
@@ -378,13 +401,18 @@ namespace sc
 		}
 	}
 
-	uint8_t SWFTexture::tag(bool has_data) const
+	uint8_t SWFTexture::tag(SupercellSWF& swf, bool has_data) const
 	{
 		uint8_t tag = TAG_TEXTURE;
 
 		if (!has_data)
 		{
 			return tag;
+		}
+
+		if (swf.use_external_texture_files)
+		{
+			return TAG_TEXTURE_10;
 		}
 
 		if (m_encoding == TextureEncoding::KhronosTexture) {

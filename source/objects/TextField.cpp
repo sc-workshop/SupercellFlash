@@ -118,10 +118,10 @@ namespace sc
 
 		swf.stream.write_string(text);
 
-		save_data(swf, tag());
+		save_data(swf, tag(swf));
 	}
 
-	uint8_t TextField::tag() const
+	uint8_t TextField::tag(SupercellSWF&) const
 	{
 		uint8_t tag = TAG_TEXT_FIELD;
 

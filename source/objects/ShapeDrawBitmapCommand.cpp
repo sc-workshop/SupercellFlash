@@ -44,7 +44,7 @@ namespace sc
 		}
 	}
 
-	uint8_t ShapeDrawBitmapCommand::tag() const
+	uint8_t ShapeDrawBitmapCommand::tag(SupercellSWF&) const
 	{
 		return TAG_SHAPE_DRAW_BITMAP_COMMAND_3;
 	}

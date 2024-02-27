@@ -16,7 +16,7 @@ namespace sc
 		swf.stream.write_string(label);
 	}
 
-	uint8_t MovieClipFrame::tag() const
+	uint8_t MovieClipFrame::tag(SupercellSWF&) const
 	{
 		return TAG_MOVIE_CLIP_FRAME_2;
 	};

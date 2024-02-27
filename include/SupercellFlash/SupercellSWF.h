@@ -27,6 +27,8 @@ namespace sc
 		virtual ~SupercellSWF() = default;
 
 	public:
+		fs::path current_file;
+
 		SWFVector<ExportName> exports;
 		SWFVector<MatrixBank> matrixBanks;
 
@@ -52,9 +54,14 @@ namespace sc
 		void save_textures(bool has_data, bool is_lowres);
 
 	public:
+		// Saves all textures to _tex.sc if true
 		bool use_external_texture = false;
 		bool use_multi_resolution = false;
 		bool use_low_resolution = true;
+		bool use_precision_matrix = false;
+
+		// Saves all textures to zktx files if true and use_external_texture is true
+		bool use_external_texture_files = true;
 
 		bool low_memory_usage_mode = false;
 

@@ -66,12 +66,14 @@ namespace sc
 		bool use_nine_slice = false;
 		Rect<float> scaling_grid;
 
+		uint8_t custom_property = 0;
+
 		bool unknown_flag = false;
 
 	public:
 		virtual void load(SupercellSWF& swf, uint8_t tag);
 		virtual void save(SupercellSWF& swf) const;
 
-		virtual uint8_t tag() const;
+		virtual uint8_t tag(SupercellSWF& swf) const;
 	};
 }

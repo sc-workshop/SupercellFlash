@@ -20,7 +20,7 @@ namespace sc {
 
 	void Matrix2D::save(SupercellSWF& swf) const
 	{
-		float multiplier = is_precision ? 65535.0f : 1024.0f;
+		float multiplier = swf.use_precision_matrix ? 65535.0f : 1024.0f;
 
 		swf.stream.write_int((int)(a * multiplier));
 		swf.stream.write_int((int)(b * multiplier));
@@ -45,8 +45,8 @@ namespace sc {
 		return false;
 	}
 
-	uint8_t Matrix2D::tag() const
+	uint8_t Matrix2D::tag(SupercellSWF& swf) const
 	{
-		return is_precision ? TAG_MATRIX_2x3_2 : TAG_MATRIX_2x3;
+		return swf.use_precision_matrix ? TAG_MATRIX_2x3_2 : TAG_MATRIX_2x3;
 	};
 }

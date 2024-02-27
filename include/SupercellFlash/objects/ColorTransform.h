@@ -23,7 +23,7 @@ namespace sc
 		virtual void load(SupercellSWF& swf);
 		virtual void save(SupercellSWF& swf) const;
 
-		virtual uint8_t tag() const;
+		virtual uint8_t tag(SupercellSWF& swf) const;
 
 	public:
 		bool operator==(const ColorTransform& color) const;

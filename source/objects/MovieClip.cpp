@@ -18,6 +18,11 @@ namespace sc
 		uint16_t frame_count = swf.stream.read_unsigned_short();
 		frames.resize(frame_count);
 
+		if (tag == TAG_MOVIE_CLIP_6)
+		{
+			custom_property = swf.stream.read_unsigned_byte();
+		}
+
 		int32_t frame_elements_count = swf.stream.read_int();
 		frame_elements.resize(frame_elements_count);
 
@@ -38,7 +43,7 @@ namespace sc
 			instances[i].id = swf.stream.read_unsigned_short();
 		}
 
-		if (tag == TAG_MOVIE_CLIP_3 || tag == TAG_MOVIE_CLIP_5)
+		if (tag == TAG_MOVIE_CLIP_3 || tag >= TAG_MOVIE_CLIP_5)
 		{
 			for (int16_t i = 0; i < instance_count; i++)
 			{
@@ -94,6 +99,7 @@ namespace sc
 		swf.stream.write_unsigned_short(id);
 		swf.stream.write_unsigned_byte(frame_rate);
 		swf.stream.write_unsigned_short(frames.size());
+		swf.stream.write_unsigned_byte(custom_property);
 
 		swf.stream.write_unsigned_int(frame_elements.size());
 		for (const MovieClipFrameElement& element : frame_elements)
@@ -129,7 +135,7 @@ namespace sc
 
 		for (const MovieClipFrame& frame : frames)
 		{
-			size_t position = swf.stream.write_tag_header(frame.tag());
+			size_t position = swf.stream.write_tag_header(frame.tag(swf));
 			frame.save(swf);
 			swf.stream.write_tag_final(position);
 		}
@@ -148,8 +154,9 @@ namespace sc
 		swf.stream.write_tag_flag(TAG_END);
 	}
 
-	uint8_t MovieClip::tag() const
+	uint8_t MovieClip::tag(SupercellSWF&) const
 	{
-		return unknown_flag ? TAG_MOVIE_CLIP_5 : TAG_MOVIE_CLIP_3;
+		//return unknown_flag ? TAG_MOVIE_CLIP_5 : TAG_MOVIE_CLIP_3;
+		return TAG_MOVIE_CLIP_6;
 	}
 }
