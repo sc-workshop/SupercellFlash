@@ -405,7 +405,7 @@ namespace sc
 				output_filepath /= current_file.stem();
 				if (is_lowres)
 				{
-					output_filepath += (const char*)low_resolution_suffix.data();
+					output_filepath += low_resolution_suffix.string();
 				}
 				output_filepath += "_";
 				output_filepath += std::to_string(i);
@@ -417,14 +417,14 @@ namespace sc
 					stream.write_string(texture_path);
 				}
 
-				Ref<Stream> input_data = nullptr;
+				BufferStream input_data;
 
 				// Texture Saving
 
+				KhronosTexture* image_data = (KhronosTexture*)texture.image();
 				// Lowres Processing
 				if (is_lowres)
 				{
-					const Image* image_data = texture.image();
 					RawImage image(image_data->width(), image_data->height(), image_data->depth());
 
 					RawImage lowres_texture(
@@ -434,20 +434,19 @@ namespace sc
 
 					KhronosTexture compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
 
-					input_data = CreateRef<BufferStream>();
-					compressed_lowres.write(*input_data);
+					compressed_lowres.write(input_data);
 				}
 				else
 				{
-					const Image* image = texture.image();
-					input_data = CreateRef<MemoryStream>(image->data(), image->data_length());
+					image_data->write(input_data);
 				}
 
 				OutputFileStream output_file(output_filepath);
 
 				sc::Compressor::Zstd::Props props;
 				sc::Compressor::Zstd ctx(props);
-				ctx.compress_stream(*input_data, output_file);
+				input_data.seek(0);
+				ctx.compress_stream(input_data, output_file);
 			}
 			texture.save(*this, has_data, is_lowres);
 			stream.write_tag_final(position);
