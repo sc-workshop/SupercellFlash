@@ -396,7 +396,6 @@ namespace sc
 			SWFTexture& texture = textures[i];
 
 			size_t position = stream.write_tag_header(texture.tag(*this, has_data));
-			texture.save(*this, has_data, is_lowres);
 			if (use_external_texture_files && use_external_texture && has_data)
 			{
 				texture.encoding(SWFTexture::TextureEncoding::KhronosTexture);
@@ -413,7 +412,8 @@ namespace sc
 				output_filepath += ".zktx";
 
 				{
-					SWFString texture_path((const char*)output_filepath.filename().c_str());
+					fs::path texture_filename = output_filepath.filename();
+					SWFString texture_path(texture_filename.string());
 					stream.write_string(texture_path);
 				}
 
@@ -449,6 +449,7 @@ namespace sc
 				sc::Compressor::Zstd ctx(props);
 				ctx.compress_stream(*input_data, output_file);
 			}
+			texture.save(*this, has_data, is_lowres);
 			stream.write_tag_final(position);
 		}
 	}

@@ -218,7 +218,8 @@ namespace sc
 
 	void SWFTexture::save(SupercellSWF& swf, bool has_data, bool is_lowres) const
 	{
-		Stream* buffer = nullptr;
+		uint8_t texture_tag = tag(swf, has_data);
+		Ref<Stream> buffer = nullptr;
 
 		uint16_t width = is_lowres ? static_cast<uint16_t>(round(m_image->width() / 2)) : m_image->width();
 		uint16_t height = is_lowres ? static_cast<uint16_t>(round(m_image->height() / 2)) : m_image->height();
@@ -238,16 +239,16 @@ namespace sc
 
 				KhronosTexture compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
 
-				buffer = new BufferStream();
+				buffer = CreateRef<BufferStream>();
 				compressed_lowres.write(*buffer);
 			}
 			else if (has_data)
 			{
-				buffer = new BufferStream();
+				buffer = CreateRef<BufferStream>();
 				image->write(*buffer);
 			}
 
-			if (has_data)
+			if (texture_tag == TAG_TEXTURE_9)
 			{
 				swf.stream.write_int(static_cast<int32_t>(buffer->length()));
 			}
@@ -260,7 +261,7 @@ namespace sc
 			{
 				if (is_lowres)
 				{
-					buffer = new MemoryStream(Image::calculate_image_length(width, height, m_image->depth()));
+					buffer = CreateRef<MemoryStream>(Image::calculate_image_length(width, height, m_image->depth()));
 
 					RawImage lowres_image(
 						(uint8_t*)buffer->data(),
@@ -272,7 +273,7 @@ namespace sc
 				}
 				else
 				{
-					buffer = new MemoryStream(m_image->data(), m_image->data_length());
+					buffer = CreateRef<MemoryStream>(m_image->data(), m_image->data_length());
 				}
 			}
 		}
@@ -283,7 +284,7 @@ namespace sc
 
 		if (has_data && !swf.use_external_texture_files)
 		{
-			if (buffer == nullptr)
+			if (buffer.get() == nullptr)
 			{
 				throw GeneralRuntimeException("EmptyImageBuffer");
 			}
