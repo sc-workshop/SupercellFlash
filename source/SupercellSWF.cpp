@@ -412,8 +412,8 @@ namespace sc
 				output_filepath += ".zktx";
 
 				{
-					fs::path texture_filename = output_filepath.filename();
-					SWFString texture_path(texture_filename.string());
+					std::string texture_filename = output_filepath.filename().string();
+					SWFString texture_path(texture_filename);
 					stream.write_string(texture_path);
 				}
 
