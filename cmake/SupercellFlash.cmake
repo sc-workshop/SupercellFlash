@@ -61,6 +61,10 @@ set(HEADERS
     "include/SupercellFlash/objects/SWFTexture.h"
 
     "include/SupercellFlash/objects/TextField.h"
+	
+	"include/SupercellFlash/types/SWFContainer.hpp"
+	"include/SupercellFlash/types/SWFStream.hpp"
+	"include/SupercellFlash/types/SWFString.hpp"
 )
 
 add_library(${TARGET} STATIC ${SOURCES} ${HEADERS})

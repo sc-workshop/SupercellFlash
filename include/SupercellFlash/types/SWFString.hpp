@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory/alloc.h>
+#include <generic/ref.h>
 #include <string>
 
 #include "io/stream.h"
@@ -16,24 +17,34 @@ namespace sc
 		{
 			size_t string_size = strlen(data);
 			m_length = string_size >= 0xFE ? 0xFE : static_cast<uint8_t>(string_size);
-			m_data = memalloc<char>(m_length + 1);
-			memcopy(data, m_data, m_length);
-			*(m_data + m_length) = '\0';
+			if (!m_length) return;
+
+			char* data_ptr = memalloc<char>(m_length + 1);
+			m_data = Ref<char>(data_ptr);
+			memcopy(data, data_ptr, m_length);
+			*(data_ptr + m_length) = '\0';
 		}
 
 		SWFString(std::string& string)
 		{
 			m_length = string.length() >= 0xFE ? 0xFE : static_cast<uint8_t>(string.length());
+			if (!m_length) return;
 
-			m_data = memalloc<char>(m_length);
-			memcopy(string.data(), m_data, m_length);
+			char* data_ptr = memalloc<char>(m_length + 1);
+			m_data = Ref<char>(data_ptr);
+
+			memcopy(string.c_str(), data_ptr, m_length + 1);
 		}
 
 		SWFString(const SWFString& string)
 		{
 			m_length = string.length();
-			m_data = memalloc<char>(m_length);
-			memcopy(string.data(), m_data, m_length);
+			if (!m_length) return;
+
+			char* data_ptr = memalloc<char>(m_length + 1);
+			m_data = Ref<char>(data_ptr);
+
+			memcopy(string.data(), data_ptr, m_length + 1);
 		}
 
 		~SWFString()
@@ -54,20 +65,20 @@ namespace sc
 
 		char* data() const
 		{
-			return (char*)(m_data);
+			return m_data.get();
 		}
 
 		std::string string() const
 		{
-			return std::string((const char*)m_data, (const char*)m_data + m_length);
+			if (empty()) return std::string();
+			return std::string((const char*)m_data.get(), (const char*)m_data.get() + m_length);
 		}
 
 		void clear()
 		{
 			if (m_data)
 			{
-				free(m_data);
-				m_data = nullptr;
+				m_data.reset();
 			}
 			m_length = 0;
 		}
@@ -95,7 +106,7 @@ namespace sc
 			for (uint16_t i = 0; m_length > i; i++)
 			{
 				const char* lsymbol = string + i;
-				const char* rsymbol = m_data + i;
+				const char* rsymbol = m_data.get() + i;
 
 				if (*lsymbol != *rsymbol)
 				{
@@ -118,52 +129,32 @@ namespace sc
 				return;
 			}
 
-			if (new_length == 0xFF)
+			if (new_length >= 0xFF)
 			{
-				new_length = 0;
+				new_length = 0xFE;
 			}
 
 			if (new_length == 0)
 			{
-				free(m_data);
-				m_data = nullptr;
-				m_length = 0;
+				clear();
+				return;
 			}
-
-			//if (m_length > new_length)
-			//{
-			//	m_length = new_length;
-			//
-			//	*(m_data + new_length) = '\0';
-			//}
-			//else
-			//{
-			//	char* new_data = memalloc<char>(new_length);
-			//
-			//	for (uint8_t i = 0; new_length > i; i++)
-			//	{
-			//		*(new_data + i) = i < m_length ? *(m_data + i) : fill;
-			//	}
-			//
-			//	free(m_data);
-			//	m_data = new_data;
-			//}
 
 			char* new_data = memalloc<char>(new_length + 1);
 
 			for (uint8_t i = 0; new_length > i; i++)
 			{
-				*(new_data + i) = i >= m_length ? fill : *(m_data + i);
+				*(new_data + i) = i >= m_length ? fill : *(m_data.get() + i);
 			}
 			*(new_data + new_length) = '\0';
 
 			clear();
-			m_data = new_data;
+			m_data = Ref<char>(new_data);
 			m_length = new_length;
 		}
 
 	private:
-		char* m_data = nullptr;
+		Ref<char> m_data = nullptr;
 		uint8_t m_length = 0;
 	};
 }
