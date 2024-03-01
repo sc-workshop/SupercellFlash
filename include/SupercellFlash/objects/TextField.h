@@ -23,7 +23,7 @@ namespace sc
 			Left,
 		};
 
-	private:
+	public:
 		SWFString text = "";
 
 		SWFString font_name = "";
