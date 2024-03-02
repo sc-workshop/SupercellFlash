@@ -12,6 +12,10 @@ namespace sc
 	class SWFStream : public BufferStream
 	{
 	public:
+		SWFStream(const SWFStream&) {};
+		SWFStream& operator=(const SWFStream&) {};
+
+	public:
 		typedef sc::ScCompression::Signature Signature;
 
 #pragma region File IO
