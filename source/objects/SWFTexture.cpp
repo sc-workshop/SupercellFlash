@@ -219,63 +219,15 @@ namespace sc
 	void SWFTexture::save(SupercellSWF& swf, bool has_data, bool is_lowres) const
 	{
 		uint8_t texture_tag = tag(swf, has_data);
-		Ref<Stream> buffer = nullptr;
 
-		uint16_t width = is_lowres ? static_cast<uint16_t>(round(m_image->width() / 2)) : m_image->width();
-		uint16_t height = is_lowres ? static_cast<uint16_t>(round(m_image->height() / 2)) : m_image->height();
+		uint16_t width = is_lowres ? (uint16_t)(round(m_image->width() / 2)) : m_image->width();
+		uint16_t height = is_lowres ? (uint16_t)(round(m_image->height() / 2)) : m_image->height();
 
-		if (m_encoding == TextureEncoding::KhronosTexture)
+		bool has_khronos_texture = texture_tag == TAG_TEXTURE_9;
+		size_t khronos_texture_size_position = swf.stream.position();
+		if (has_khronos_texture)
 		{
-			KhronosTexture* image = (KhronosTexture*)m_image.get();
-
-			if (has_data && is_lowres)
-			{
-				RawImage texture(image->width(), image->height(), image->depth());
-				MemoryStream texture_data(texture.data(), texture.data_length());
-				image->decompress_data(texture_data);
-
-				RawImage lowres_texture(width, height, image->depth());
-				texture.copy(lowres_texture);
-
-				KhronosTexture compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
-
-				buffer = CreateRef<BufferStream>();
-				compressed_lowres.write(*buffer);
-			}
-			else if (has_data)
-			{
-				buffer = CreateRef<BufferStream>();
-				image->write(*buffer);
-			}
-
-			if (texture_tag == TAG_TEXTURE_9)
-			{
-				swf.stream.write_int(static_cast<int32_t>(buffer->length()));
-			}
-		}
-		else
-		{
-			RawImage* image = (RawImage*)m_image.get();
-
-			if (has_data)
-			{
-				if (is_lowres)
-				{
-					buffer = CreateRef<MemoryStream>(Image::calculate_image_length(width, height, m_image->depth()));
-
-					RawImage lowres_image(
-						(uint8_t*)buffer->data(),
-						width, height,
-						m_image->depth(), m_image->colorspace()
-					);
-
-					image->copy(lowres_image);
-				}
-				else
-				{
-					buffer = CreateRef<MemoryStream>(m_image->data(), m_image->data_length());
-				}
-			}
+			swf.stream.write_int(-1);
 		}
 
 		swf.stream.write_unsigned_byte((uint8_t)m_pixel_format);
@@ -284,12 +236,68 @@ namespace sc
 
 		if (has_data && !swf.use_external_texture_files)
 		{
-			if (buffer.get() == nullptr)
+			size_t current_position = swf.stream.position();
+			save_buffer(swf.stream, is_lowres);
+			if (has_khronos_texture)
 			{
-				throw GeneralRuntimeException("EmptyImageBuffer");
+				int* khronos_texture_length = (int*)swf.stream.data() + khronos_texture_size_position;
+				*khronos_texture_length = (int)(swf.stream.position() - current_position);
 			}
+		}
+	};
 
-			swf.stream.write(buffer->data(), buffer->length());
+	void SWFTexture::save_buffer(Stream& stream, bool is_lowres) const
+	{
+		if (m_encoding == TextureEncoding::KhronosTexture)
+		{
+			KhronosTexture* image = (KhronosTexture*)m_image.get();
+
+			if (is_lowres)
+			{
+				RawImage texture(image->width(), image->height(), image->depth());
+				MemoryStream texture_data(texture.data(), texture.data_length());
+				image->decompress_data(texture_data);
+
+				RawImage lowres_texture(
+					(uint16_t)(round(m_image->width() / 2)),
+					(uint16_t)(round(m_image->height() / 2)),
+					image->depth()
+				);
+				texture.copy(lowres_texture);
+
+				KhronosTexture compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
+
+				compressed_lowres.write(stream);
+			}
+			else
+			{
+				image->write(stream);
+			}
+		}
+		else
+		{
+			RawImage* image = (RawImage*)m_image.get();
+
+			if (is_lowres)
+			{
+				uint16_t width = (uint16_t)(round(m_image->width() / 2));
+				uint16_t height = (uint16_t)(round(m_image->height() / 2));
+				MemoryStream buffer(
+					Image::calculate_image_length(width, height, m_image->depth())
+				);
+
+				RawImage lowres_image(
+					(uint8_t*)buffer.data(),
+					width, height,
+					m_image->depth(), m_image->colorspace()
+				);
+
+				image->copy(lowres_image);
+			}
+			else
+			{
+				stream.write(m_image->data(), m_image->data_length());
+			}
 		}
 	};
 

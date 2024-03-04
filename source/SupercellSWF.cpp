@@ -418,28 +418,7 @@ namespace sc
 				}
 
 				BufferStream input_data;
-
-				// Texture Saving
-
-				KhronosTexture* image_data = (KhronosTexture*)texture.image();
-				// Lowres Processing
-				if (is_lowres)
-				{
-					RawImage image(image_data->width(), image_data->height(), image_data->depth());
-
-					RawImage lowres_texture(
-						(uint16_t)round(image.width() / 2), (uint16_t)round(image.height() / 2), image.depth()
-					);
-					image.copy(lowres_texture);
-
-					KhronosTexture compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
-
-					compressed_lowres.write(input_data);
-				}
-				else
-				{
-					image_data->write(input_data);
-				}
+				texture.save_buffer(input_data, is_lowres);
 
 				OutputFileStream output_file(output_filepath);
 
