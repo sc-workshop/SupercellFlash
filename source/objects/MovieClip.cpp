@@ -159,4 +159,9 @@ namespace sc
 		//return unknown_flag ? TAG_MOVIE_CLIP_5 : TAG_MOVIE_CLIP_3;
 		return TAG_MOVIE_CLIP_6;
 	}
+
+	bool MovieClip::is_movieclip() const
+	{
+		return true;
+	}
 }

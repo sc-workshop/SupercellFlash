@@ -176,4 +176,9 @@ namespace sc
 
 		swf.stream.write_string(typography_file);
 	}
+
+	bool TextField::is_textfield() const
+	{
+		return true;
+	}
 }

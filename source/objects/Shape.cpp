@@ -84,4 +84,9 @@ namespace sc
 	{
 		return TAG_SHAPE_2;
 	}
+
+	bool Shape::is_shape() const
+	{
+		return true;
+	}
 }

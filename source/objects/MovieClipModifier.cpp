@@ -18,4 +18,9 @@ namespace sc {
 	{
 		return (uint8_t)type;
 	}
+
+	bool MovieClipModifier::is_modifier() const
+	{
+		return true;
+	}
 }

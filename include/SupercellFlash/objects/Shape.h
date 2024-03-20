@@ -23,5 +23,7 @@ namespace sc
 		void save(SupercellSWF& swf) const;
 
 		virtual uint8_t tag(SupercellSWF& swf) const;
+
+		virtual bool is_shape() const;
 	};
 }

@@ -65,5 +65,7 @@ namespace sc
 		virtual void save_data(SupercellSWF& swf, uint8_t tag) const;
 
 		virtual uint8_t tag(SupercellSWF& swf) const;
+
+		virtual bool is_textfield() const;
 	};
 }
