@@ -25,7 +25,7 @@ namespace sc
 			*(data_ptr + m_length) = '\0';
 		}
 
-		SWFString(std::string& string)
+		SWFString(const std::string& string)
 		{
 			m_length = string.length() >= 0xFE ? 0xFE : static_cast<uint8_t>(string.length());
 			if (!m_length) return;
