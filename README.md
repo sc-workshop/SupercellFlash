@@ -41,10 +41,9 @@ Before starting, install all necessary submodules
 ```
 git update --remote
 ```
-So, Premake5 is used here as a configuration system. Make sure you have but installed and you can use it. Then use the following command:
-```
-premake5 [action] --file=Workspace.lua
-```
 
-You can view the list of "actions" [here](https://premake.github.io/docs/Using-Premake). 
-Then, depending on your system and compiler, you should be able to successfully build project.
+CMake build system is used. Make sure you have but installed and you can use it. Then just run ```cmake``` command from project root directory with specified generator type and output directory.
+Example for Visual Studio 2019 for Windows (also you can use 2022 version):
+```
+cmake -G "Visual Studio 16 2019" -B ./build
+```
