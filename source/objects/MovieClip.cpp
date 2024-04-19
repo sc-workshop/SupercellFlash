@@ -99,7 +99,11 @@ namespace sc
 		swf.stream.write_unsigned_short(id);
 		swf.stream.write_unsigned_byte(frame_rate);
 		swf.stream.write_unsigned_short(frames.size());
-		swf.stream.write_unsigned_byte(custom_property);
+
+		if (swf.save_custom_property)
+		{
+			swf.stream.write_unsigned_byte(custom_property);
+		}
 
 		swf.stream.write_unsigned_int(frame_elements.size());
 		for (const MovieClipFrameElement& element : frame_elements)
@@ -154,10 +158,14 @@ namespace sc
 		swf.stream.write_tag_flag(TAG_END);
 	}
 
-	uint8_t MovieClip::tag(SupercellSWF&) const
+	uint8_t MovieClip::tag(SupercellSWF& swf) const
 	{
-		//return unknown_flag ? TAG_MOVIE_CLIP_5 : TAG_MOVIE_CLIP_3;
-		return TAG_MOVIE_CLIP_6;
+		if (swf.save_custom_property)
+		{
+			return TAG_MOVIE_CLIP_6;
+		}
+
+		return unknown_flag ? TAG_MOVIE_CLIP_5 : TAG_MOVIE_CLIP_3;
 	}
 
 	bool MovieClip::is_movieclip() const

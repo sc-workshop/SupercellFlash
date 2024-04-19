@@ -37,10 +37,10 @@ namespace sc {
 	{
 		if (color.alpha == 0xFF &&
 			color.add.r == 0 &&
-			color.add.g == 0xFF &&
+			color.add.g == 0 &&
 			color.add.b == 0 &&
 			color.multiply.r == 0xFF &&
-			color.multiply.g == 0 &&
+			color.multiply.g == 0xFF &&
 			color.multiply.b == 0xFF) {
 			index = 0xFFFF;
 			return true;

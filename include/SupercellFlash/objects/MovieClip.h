@@ -66,8 +66,10 @@ namespace sc
 		bool use_nine_slice = false;
 		Rect<float> scaling_grid;
 
+		// TODO
 		uint8_t custom_property = 0;
 
+	public:
 		bool unknown_flag = false;
 
 	public:

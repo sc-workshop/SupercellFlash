@@ -63,6 +63,9 @@ namespace sc
 		// Saves all textures to zktx files if true and use_external_texture is true
 		bool use_external_texture_files = true;
 
+		// Saves custom properties in MovieClips
+		bool save_custom_property = true;
+
 		bool low_memory_usage_mode = false;
 
 		SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;
