@@ -112,9 +112,10 @@ namespace sc
 
 	void SWFTexture::pixel_format(SWFTexture::PixelFormat format)
 	{
-		m_pixel_format = format;
-
+		if (m_pixel_format == format) return;
 		if (m_encoding != TextureEncoding::Raw) return;
+
+		m_pixel_format = format;
 
 		Image::PixelDepth destination_depth = SWFTexture::pixel_depth_table[static_cast<uint8_t>(std::find(
 			SWFTexture::pixel_format_table.begin(),
