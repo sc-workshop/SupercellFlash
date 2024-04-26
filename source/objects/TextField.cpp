@@ -131,7 +131,7 @@ namespace sc
 		if (unknown_flag)
 			tag = TAG_TEXT_FIELD_3;
 
-		if (outline_color != 0xFFFFFFFF)
+		if (outline_color != 0x000000FF)
 			tag = TAG_TEXT_FIELD_4;
 
 		if (unknown_short != 0xFFFF || unknown_short2 != 0xFFFF)

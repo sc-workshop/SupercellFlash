@@ -47,7 +47,7 @@ namespace sc
 		bool is_outlined = false;
 		bool unknown_flag3 = false;
 
-		uint32_t outline_color = 0xFFFFFFFF;
+		uint32_t outline_color = 0x000000FF;
 		bool use_device_font = false;
 		bool auto_kern = false;
 
