@@ -241,7 +241,7 @@ namespace sc
 			save_buffer(swf.stream, is_lowres);
 			if (has_khronos_texture)
 			{
-				int* khronos_texture_length = (int*)swf.stream.data() + khronos_texture_size_position;
+				int* khronos_texture_length = (int*)((ptrdiff_t)swf.stream.data() + khronos_texture_size_position);
 				*khronos_texture_length = (int)(swf.stream.position() - current_position);
 			}
 		}
