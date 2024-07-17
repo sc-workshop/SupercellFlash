@@ -158,6 +158,11 @@ namespace sc
 			return compare(other.data(), other.length()) == 0;
 		}
 
+		bool operator==(const char* other) const
+		{
+			return compare(other, strlen(other)) == 0;
+		}
+
 	private:
 		Ref<char> m_data = nullptr;
 		uint8_t m_length = 0;
