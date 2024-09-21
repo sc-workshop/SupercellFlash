@@ -5,7 +5,7 @@ set(SOURCES main.cpp)
 
 set(CLI_TARGET supercell-flash-test-tool)
 
-add_executable(${CLI_TARGET} ${HEADERS} ${SOURCES})
+add_executable(${CLI_TARGET} ${SOURCES})
 
 set_target_properties(${CLI_TARGET} PROPERTIES
     FOLDER SupercellSDK/tools
