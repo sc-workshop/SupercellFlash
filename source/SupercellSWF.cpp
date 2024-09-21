@@ -2,6 +2,7 @@
 
 #include "exception/io/FileExceptions.h"
 #include "SupercellFlash/exception/NegativeTagLengthException.h"
+#include "SupercellFlash/exception/ObjectNotFoundException.h"
 #include "SupercellFlash/exception/ObjectLoadingException.h"
 
 #include "SupercellFlash/Tags.h"
@@ -432,4 +433,68 @@ namespace sc
 		}
 	}
 #pragma endregion
+
+	uint16_t SupercellSWF::GetDisplayObjectID(SWFString& name)
+	{
+		for (ExportName& exportName : exports)
+		{
+			if (exportName.name == name)
+			{
+				return exportName.id;
+			}
+		}
+
+		throw new ObjectNotFoundException(name);
+	}
+
+	DisplayObject& SupercellSWF::GetDisplayObjectByID(uint16_t id)
+	{
+		for (Shape& shape : shapes)
+		{
+			if (shape.id == id)
+			{
+				return shape;
+			}
+		}
+
+		for (TextField& textfield : textfields)
+		{
+			if (textfield.id == id)
+			{
+				return textfield;
+			}
+		}
+
+		for (MovieClipModifier& modifier : movieclip_modifiers)
+		{
+			if (modifier.id == id)
+			{
+				return modifier;
+			}
+		}
+
+		for (MovieClip& movie : movieclips)
+		{
+			if (movie.id == id)
+			{
+				return movie;
+			}
+		}
+
+		throw new ObjectNotFoundException(id);
+	}
+
+	MovieClip& SupercellSWF::GetDisplayObjectByName(SWFString& name)
+	{
+		uint16_t id = GetDisplayObjectID(name);
+		for (MovieClip& movie : movieclips)
+		{
+			if (movie.id == id)
+			{
+				return movie;
+			}
+		}
+
+		throw new ObjectNotFoundException(name);
+	}
 }

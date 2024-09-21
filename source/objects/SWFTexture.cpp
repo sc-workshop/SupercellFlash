@@ -294,6 +294,7 @@ namespace sc
 				);
 
 				image->copy(lowres_image);
+				stream.write(lowres_image.data(), lowres_image.data_length());
 			}
 			else
 			{

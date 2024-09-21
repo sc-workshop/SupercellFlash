@@ -54,6 +54,11 @@ namespace sc
 		void save_textures(bool has_data, bool is_lowres);
 
 	public:
+		uint16_t GetDisplayObjectID(SWFString& name);
+		DisplayObject& GetDisplayObjectByID(uint16_t id);
+		MovieClip& GetDisplayObjectByName(SWFString& name);
+
+	public:
 		// Saves all textures to _tex.sc if true
 		bool use_external_texture = false;
 		bool use_multi_resolution = false;
