@@ -140,7 +140,7 @@ namespace sc
 					export_name.id = export_name_data->id();
 					if (export_name_data->name_ref_id() > 0)
 					{
-						auto export_name_str = strings_vector->Get(export_name_data->name_ref_id() - 1);
+						auto export_name_str = strings_vector->Get(export_name_data->name_ref_id());
 						export_name.name = SWFString(export_name_str->c_str());
 					}
 				}
