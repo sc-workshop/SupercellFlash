@@ -116,22 +116,66 @@ namespace sc
 			return load_tags();
 		}
 
-		void SupercellSWF::load_sc2()
+		void SupercellSWF::load_sc2_matrix_banks(const SC2::DataStorage* storage)
 		{
-			stream.seek(0);
+			auto matrix_banks_vector = storage->matrix_banks();
+			// Return if empty
+			if (!matrix_banks_vector) return;
 
-			uint32_t data_storage_size = stream.read_unsigned_int();
-			auto data_storage = SC2::GetDataStorage((char*)stream.data() + stream.position());
-			stream.seek(data_storage_size, sc::Stream::SeekMode::Add);
+			uint32_t matrix_bank_count = matrix_banks_vector->size();
+			matrixBanks.reserve(matrix_bank_count);
 
-			auto strings_vector = data_storage->strings();
-
-			// Exports
+			for (uint32_t i = 0; matrix_bank_count > i; i++)
 			{
-				uint32_t exports_data_size = stream.read_unsigned_int();
-				auto exports_data = SC2::GetExportNames((char*)stream.data() + stream.position());
+				auto bank_data = matrix_banks_vector->Get(i);
+				MatrixBank& bank = matrixBanks.emplace_back();
+
+				auto matrices_vector = bank_data->matrices();
+				auto colors_vector = bank_data->colors();
+
+				if (matrices_vector)
+				{
+					uint32_t matrices_count = matrices_vector->size();
+					bank.matrices.reserve(matrices_count);
+
+					for (uint32_t m = 0; matrices_count > m; m++)
+					{
+						auto matrix_data = matrices_vector->Get(m);
+						Matrix2D& matrix = bank.matrices.emplace_back();
+						matrix.a = matrix_data->a(); matrix.b = matrix_data->b(); matrix.c = matrix_data->c(); matrix.d = matrix_data->d();
+						matrix.tx = matrix_data->tx(); matrix.ty = matrix_data->ty();
+					}
+				}
+
+				if (colors_vector)
+				{
+					uint32_t colors_count = colors_vector->size();
+					bank.color_transforms.reserve(colors_count);
+
+					for (uint32_t c = 0; colors_count > c; c++)
+					{
+						auto color_data = colors_vector->Get(c);
+						ColorTransform& color = bank.color_transforms.emplace_back();
+						color.add.r = color_data->r_add(); color.add.g = color_data->g_add(); color.add.b = color_data->b_add();
+						color.multiply.r = color_data->r_mul(); color.multiply.g = color_data->g_mul(); color.multiply.b = color_data->b_mul();
+						color.alpha = color_data->alpha();
+					}
+				}
+			}
+		}
+
+		void SupercellSWF::load_sc2_export_names(const SC2::DataStorage* storage)
+		{
+			auto strings_vector = storage->strings();
+
+			uint32_t exports_data_size = stream.read_unsigned_int();
+			auto exports_data = SC2::GetExportNames((char*)stream.data() + stream.position());
+			{
 				auto exports_ids = exports_data->object_ids();
 				auto exports_name_ref_ids = exports_data->name_ref_ids();
+
+				// Return if some of vectors are empty
+				if (!exports_ids || !exports_name_ref_ids) return;
 
 				if (exports_ids->size() != exports_name_ref_ids->size())
 				{
@@ -149,6 +193,19 @@ namespace sc
 				}
 			}
 
+		}
+
+		void SupercellSWF::load_sc2()
+		{
+			stream.seek(0);
+
+			uint32_t data_storage_size = stream.read_unsigned_int();
+			auto data_storage = SC2::GetDataStorage((char*)stream.data() + stream.position());
+			stream.seek(data_storage_size, sc::Stream::SeekMode::Add);
+
+			load_sc2_matrix_banks(data_storage);
+
+			load_sc2_export_names(data_storage);
 		}
 
 		bool SupercellSWF::load_tags()

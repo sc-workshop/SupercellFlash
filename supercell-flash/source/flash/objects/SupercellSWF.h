@@ -23,6 +23,11 @@
 namespace sc
 {
 	namespace flash {
+		namespace SC2
+		{
+			class DataStorage;
+		}
+
 		class SupercellSWF
 		{
 		public:
@@ -48,6 +53,7 @@ namespace sc
 			bool load_internal(const std::filesystem::path& filepath, bool is_texture);
 
 			bool load_sc1(bool is_texture);
+
 			void load_sc2();
 
 			virtual void save(const fs::path& filepath, Signature signature);
@@ -83,6 +89,10 @@ namespace sc
 
 			SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;
 			SWFString low_resolution_suffix = LOWRES_DEFAULT_SUFFIX;
+
+		private:
+			void load_sc2_export_names(const SC2::DataStorage* storage);
+			void load_sc2_matrix_banks(const SC2::DataStorage* storage);
 		};
 	}
 }
