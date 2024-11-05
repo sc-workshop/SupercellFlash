@@ -16,7 +16,7 @@ table DataStorage
     strings: [string];
 
 
-    unk2: [ubyte];
+    unk2: [ubyte]; // most likely custom properties
     unk3: [ubyte];
 
     // An array of rectangles that is currently only used for MovieClip Scaling Grids.

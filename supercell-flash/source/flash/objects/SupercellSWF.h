@@ -74,7 +74,7 @@ namespace sc
 			bool use_precision_matrix = false;
 
 			// Saves all textures to zktx files if true and use_external_texture is true
-			bool use_external_texture_files = true;
+			bool use_external_texture_files = false;
 
 			// Saves custom properties in MovieClips
 			bool save_custom_property = true;
