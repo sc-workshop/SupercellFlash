@@ -42,7 +42,7 @@ set_target_properties(${TARGET} PROPERTIES
 )
 
 target_link_libraries(${TARGET}
-    PRIVATE SC2_API
+    PUBLIC SC2_API
 )
 
 # setup project
