@@ -142,7 +142,7 @@ namespace sc
 				exports.reserve(export_names_count);
 				for (uint32_t i = 0; export_names_count > i; i++)
 				{
-					ExportName export_name = exports.emplace_back();
+					ExportName& export_name = exports.emplace_back();
 					export_name.id = exports_ids->Get(i);
 					auto export_name_str = strings_vector->Get(exports_name_ref_ids->Get(i));
 					export_name.name = SWFString(export_name_str->c_str());
