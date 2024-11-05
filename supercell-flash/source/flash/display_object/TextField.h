@@ -23,6 +23,9 @@ namespace sc
 				Left,
 			};
 
+			static Align get_horizontal_align(uint8_t flags);
+			static Align get_vertical_align(uint8_t flags);
+
 		public:
 			SWFString text = "";
 

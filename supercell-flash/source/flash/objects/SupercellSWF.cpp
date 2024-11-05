@@ -6,6 +6,7 @@
 // SC2
 #include "SC2/DataStorage_generated.h"
 #include "SC2/ExportNames_generated.h"
+#include "SC2/TextFields_generated.h"
 
 namespace fs = std::filesystem;
 
@@ -166,33 +167,81 @@ namespace sc
 
 		void SupercellSWF::load_sc2_export_names(const SC2::DataStorage* storage)
 		{
-			auto strings_vector = storage->strings();
-
 			uint32_t exports_data_size = stream.read_unsigned_int();
+
 			auto exports_data = SC2::GetExportNames((char*)stream.data() + stream.position());
+			auto exports_ids = exports_data->object_ids();
+			auto exports_name_ref_ids = exports_data->name_ref_ids();
+
+			// Return if some of vectors are empty
+			if (!exports_ids || !exports_name_ref_ids) return;
+			if (exports_ids->size() != exports_name_ref_ids->size())
 			{
-				auto exports_ids = exports_data->object_ids();
-				auto exports_name_ref_ids = exports_data->name_ref_ids();
-
-				// Return if some of vectors are empty
-				if (!exports_ids || !exports_name_ref_ids) return;
-
-				if (exports_ids->size() != exports_name_ref_ids->size())
-				{
-					throw Exception();
-				}
-
-				uint32_t export_names_count = exports_ids->size();
-				exports.reserve(export_names_count);
-				for (uint32_t i = 0; export_names_count > i; i++)
-				{
-					ExportName& export_name = exports.emplace_back();
-					export_name.id = exports_ids->Get(i);
-					auto export_name_str = strings_vector->Get(exports_name_ref_ids->Get(i));
-					export_name.name = SWFString(export_name_str->c_str());
-				}
+				throw Exception();
 			}
 
+			auto strings_vector = storage->strings();
+			uint32_t export_names_count = exports_ids->size();
+			exports.reserve(export_names_count);
+			for (uint32_t i = 0; export_names_count > i; i++)
+			{
+				ExportName& export_name = exports.emplace_back();
+				export_name.id = exports_ids->Get(i);
+				export_name.name = SWFString(
+					strings_vector->Get(
+						exports_name_ref_ids->Get(i)
+					)->c_str()
+				);
+			}
+
+			stream.seek(exports_data_size, sc::Stream::SeekMode::Add);
+		}
+
+		void SupercellSWF::load_sc2_textfields(const SC2::DataStorage* storage)
+		{
+			uint32_t textfield_data_size = stream.read_unsigned_int();
+			auto textfields_data = SC2::GetTextFields((char*)stream.data() + stream.position());
+
+			auto textfields_vector = textfields_data->textfields();
+			if (!textfields_vector) return;
+
+			auto strings_vector = storage->strings();
+			uint32_t textfields_count = textfields_vector->size();
+			textfields.reserve(textfields_count);
+
+			for (uint32_t i = 0; textfields_count > i; i++)
+			{
+				auto textfield_data = textfields_vector->Get(i);
+				TextField& textfield = textfields.emplace_back();
+
+				textfield.id = textfield_data->id();
+				textfield.font_name = SWFString(
+					strings_vector->Get(
+						textfield_data->font_name_ref_id()
+					)->c_str()
+				);
+
+				textfield.left = textfield_data->bound().left();
+				textfield.right = textfield_data->bound().right();
+				textfield.top = textfield_data->bound().top();
+				textfield.bottom = textfield_data->bound().bottom();
+
+				textfield.font_color = textfield_data->font_color();
+				textfield.outline_color = textfield_data->outline_color();
+
+				textfield.text = SWFString(
+					strings_vector->Get(
+						textfield_data->text_ref_id()
+					)->c_str()
+				);
+
+				textfield.font_vertical_align = TextField::get_vertical_align(textfield_data->align());
+				textfield.font_horizontal_align = TextField::get_horizontal_align(textfield_data->align());
+
+				textfield.font_size = textfield_data->font_size();
+			}
+
+			stream.seek(textfield_data_size, sc::Stream::SeekMode::Add);
 		}
 
 		void SupercellSWF::load_sc2()

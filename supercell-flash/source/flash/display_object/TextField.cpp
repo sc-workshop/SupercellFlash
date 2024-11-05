@@ -20,25 +20,8 @@ namespace sc
 			unknown_flag3 = swf.stream.read_bool();
 
 			uint8_t font_align_flags = swf.stream.read_unsigned_byte();
-			if ((font_align_flags & 1) != 0) {
-				font_horizontal_align = Align::Right;
-			}
-			if ((font_align_flags & (1 << 1)) != 0) {
-				font_horizontal_align = Align::Center;
-			}
-			if ((font_align_flags & (1 << 2)) != 0) {
-				font_horizontal_align = Align::Justify;
-			}
-
-			if ((font_align_flags & (1 << 3)) != 0) {
-				font_vertical_align = Align::Right;
-			}
-			if ((font_align_flags & (1 << 4)) != 0) {
-				font_vertical_align = Align::Center;
-			}
-			if ((font_align_flags & (1 << 5)) != 0) {
-				font_vertical_align = Align::Justify;
-			}
+			font_horizontal_align = TextField::get_horizontal_align(font_align_flags);
+			font_vertical_align = TextField::get_vertical_align(font_align_flags);
 
 			unknown_align6 = (font_align_flags & (1 << 6)) != 0;
 			unknown_align7 = (font_align_flags & (1 << 7)) != 0;
@@ -186,6 +169,36 @@ namespace sc
 			if (tag == TAG_TEXT_FIELD_8) return;
 
 			swf.stream.write_string(typography_file);
+		}
+
+		TextField::Align TextField::get_horizontal_align(uint8_t flags)
+		{
+			if ((flags & 1) != 0) {
+				return Align::Right;
+			}
+			if ((flags & (1 << 1)) != 0) {
+				return Align::Center;
+			}
+			if ((flags & (1 << 2)) != 0) {
+				return Align::Justify;
+			}
+
+			return Align::Left;
+		}
+
+		TextField::Align TextField::get_vertical_align(uint8_t flags)
+		{
+			if ((flags & (1 << 3)) != 0) {
+				return Align::Right;
+			}
+			if ((flags & (1 << 4)) != 0) {
+				return Align::Center;
+			}
+			if ((flags & (1 << 5)) != 0) {
+				return Align::Justify;
+			}
+
+			return Align::Left;
 		}
 
 		bool TextField::is_textfield() const

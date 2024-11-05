@@ -91,8 +91,10 @@ namespace sc
 			SWFString low_resolution_suffix = LOWRES_DEFAULT_SUFFIX;
 
 		private:
-			void load_sc2_export_names(const SC2::DataStorage* storage);
 			void load_sc2_matrix_banks(const SC2::DataStorage* storage);
+
+			void load_sc2_export_names(const SC2::DataStorage* storage);
+			void load_sc2_textfields(const SC2::DataStorage* storage);
 		};
 	}
 }
