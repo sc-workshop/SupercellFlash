@@ -55,10 +55,10 @@ namespace sc
 			InputFileStream file(filepath);
 			if (file.read_short() == SC_MAGIC && file.read_unsigned_int() == 5)
 			{
-				uint32_t metadata_size = stream.read_unsigned_int();
+				uint32_t metadata_size = file.read_unsigned_int();
 
 				// TODO: Metadata
-				stream.seek(metadata_size, sc::Stream::SeekMode::Add);
+				file.seek(metadata_size, sc::Stream::SeekMode::Add);
 
 				ZstdDecompressor decompressor;
 				decompressor.decompress(file, stream);
@@ -130,22 +130,25 @@ namespace sc
 			{
 				uint32_t exports_data_size = stream.read_unsigned_int();
 				auto exports_data = SC2::GetExportNames((char*)stream.data() + stream.position());
-				auto exports_vector = exports_data->exports();
+				auto exports_ids = exports_data->object_ids();
+				auto exports_name_ref_ids = exports_data->name_ref_ids();
 
-				exports.reserve(exports_vector->size());
-				for (uint32_t i = 0; exports_vector->size() > i; i++)
+				if (exports_ids->size() != exports_name_ref_ids->size())
 				{
-					auto export_name_data = exports_vector->Get(i);
+					throw Exception();
+				}
+
+				uint32_t export_names_count = exports_ids->size();
+				exports.reserve(export_names_count);
+				for (uint32_t i = 0; export_names_count > i; i++)
+				{
 					ExportName export_name = exports.emplace_back();
-					export_name.id = export_name_data->id();
-					if (export_name_data->name_ref_id() > 0)
-					{
-						auto export_name_str = strings_vector->Get(export_name_data->name_ref_id());
-						export_name.name = SWFString(export_name_str->c_str());
-					}
+					export_name.id = exports_ids->Get(i);
+					auto export_name_str = strings_vector->Get(exports_name_ref_ids->Get(i));
+					export_name.name = SWFString(export_name_str->c_str());
 				}
 			}
-			
+
 		}
 
 		bool SupercellSWF::load_tags()
