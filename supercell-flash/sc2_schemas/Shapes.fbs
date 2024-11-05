@@ -1,0 +1,35 @@
+namespace sc.flash.SC2;
+
+// A command that contains polygon vertices and texture index on which sprite is placed
+table ShapeDrawBitmapCommand
+{
+    unk1: uint; // Maybe flags
+
+    // Index of target texture
+    texture_index: uint;
+
+    // Count of vertices in command
+    points_count: uint;
+
+    // Offset in DataStorage shape commands buffer
+    points_offset: uint;
+}
+
+// A Shape is an object that can be composed of several commands and form a "sprite"
+// Inherited from DisplayObject
+table Shape
+{
+    // DisplayObject id
+    id: ushort;
+
+    // Array of bitmap draw commands
+    commands: [ShapeDrawBitmapCommand];
+}
+
+// The fourth chunk that contains an array of shapes
+table Shapes
+{
+    shapes: [Shape];
+}
+
+root_type Shapes;

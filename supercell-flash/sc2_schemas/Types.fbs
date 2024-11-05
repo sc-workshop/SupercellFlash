@@ -1,0 +1,57 @@
+namespace sc.flash.SC2.Typing;
+
+// A structure that represents Rectangle
+// Used for MovieClip Scaling Grid
+struct Rect
+{
+    left: float;
+    top: float;
+    right: float;
+    bottom: float;
+}
+
+// A structure that represents Matrix 2x3
+// Used for transforming Display Objects in 2D space
+struct Matrix2x3
+{
+    // Scale X
+    a: float;
+
+    // Skew X
+    b: float;
+
+    // Skew Y
+    c: float;
+
+    // Scale Y
+    d: float;
+
+    // Translation X
+    tx: float;
+
+    // Translation Y
+    ty: float;
+}
+
+// A structure that represents Multiply and Addition color
+// Used for transforming Display Objects color
+struct ColorTransform
+{
+    // Red Addition
+    r_add: ubyte;
+    // Green Addition
+    g_add: ubyte;
+    // Blue Addition
+    b_add: ubyte;
+
+    // Alpha Multiply
+    alpha: ubyte;
+
+    // Red Multiply
+    r_mul: ubyte;
+    // Greenn Multiply
+    g_mul: ubyte;
+    // Blue Multiply
+    b_mul: ubyte;
+}
+

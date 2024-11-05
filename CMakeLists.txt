@@ -9,9 +9,9 @@ option(SC_FLASH_BUILD_TOOLS "Build tools of supercell::flash library" ON)
 # includes
 include(FetchContent)
 
+set(SC_SERIALIZATION_DEPENDENCIES ON)
 if(SC_FLASH_BUILD_TOOLS)
     set(SC_CLI_DEPENDENCIES ON)
-	set(SC_SERIALIZATION_DEPENDENCIES ON)
 endif()
 
 include(cmake/dependencies.cmake)

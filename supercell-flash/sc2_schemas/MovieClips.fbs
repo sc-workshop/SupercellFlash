@@ -1,0 +1,61 @@
+namespace sc.flash.SC2;
+
+// Structure for describing properties of each frame of a MovieClip
+struct MovieClipFrame
+{
+    // Count of MovieClipFrameElement to be displayed in current frame
+    used_transform: uint;
+
+    // Label name of current frame
+    label_ref_id: uint;
+}
+
+// A movieclip is a timeline and/or animation object with frames and children that are used in the object 
+// It can transform properties of children objecs, and create animation in that way
+// It can have an export name for use in a game or external tools
+// Inherited from DisplayObject
+table MovieClip
+{
+    // Display Object Id
+    id: ushort;
+
+    // Export Name Reference Id
+    export_name_ref_id: uint = null;
+
+    // MovieClip Framerate
+    framerate: ubyte;
+
+    // Count of frames in MovieClip // idk what this is doing here but ok :\
+    frames_count: uint;
+
+    // Also known as tag 49
+    unknown_bool: ubyte;
+
+    // Array of children ids
+    children_ids: [ushort];
+    
+    // Array of children blend modes
+    children_blending: [ubyte];
+
+    // Array of children name reference ids
+    children_name_ref_ids: [uint];
+
+    // Byte offset to frame elements in DataStorage MovieClip frame elements buffer
+    frame_elements_offset: uint;
+
+    // MovieClip frames
+    frames: [MovieClipFrame];
+
+    // Index of target bank with transformations
+    matrix_bank_index: uint;
+
+    // Index of Rect for 9-slice scaling
+    scaling_grid_index: uint = null;
+}
+
+table MovieClips
+{
+    movieclips: [MovieClip];
+}
+
+root_type MovieClips;

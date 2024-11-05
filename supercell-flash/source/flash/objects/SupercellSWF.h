@@ -43,7 +43,12 @@ namespace sc
 
 		public:
 			virtual void load(const std::filesystem::path& filePath);
+
+
 			bool load_internal(const std::filesystem::path& filepath, bool is_texture);
+
+			bool load_sc1(bool is_texture);
+			void load_sc2();
 
 			virtual void save(const fs::path& filepath, Signature signature);
 			void save_internal(bool is_texture, bool is_lowres);

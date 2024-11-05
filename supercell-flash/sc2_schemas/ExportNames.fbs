@@ -1,0 +1,19 @@
+namespace sc.flash.SC2;
+
+// A Table that represents Export Name for a MovieClip
+table ExportName
+{
+    // MovieClip id
+    id: ushort;
+
+    // Name string reference id
+    name_ref_id: ushort;
+}
+
+// The second chunk. Сontains Export Names and their IDs, for use by the game or external tools
+table ExportNames
+{
+    exports: [ExportName];
+}
+
+root_type ExportNames;

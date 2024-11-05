@@ -3,6 +3,10 @@
 #include "flash/flash_tags.h"
 #include <cmath>
 
+// SC2
+#include "SC2/DataStorage_generated.h"
+#include "SC2/ExportNames_generated.h"
+
 namespace fs = std::filesystem;
 
 namespace sc
@@ -44,9 +48,35 @@ namespace sc
 			stream.clear();
 		}
 
-		bool SupercellSWF::load_internal(const fs::path& filepath, bool is_texture)
+		bool SupercellSWF::load_internal(const std::filesystem::path& filepath, bool is_texture)
 		{
-			stream.open_file(filepath);
+			stream.clear();
+
+			InputFileStream file(filepath);
+			if (file.read_short() == SC_MAGIC && file.read_unsigned_int() == 5)
+			{
+				uint32_t metadata_size = stream.read_unsigned_int();
+
+				// TODO: Metadata
+				stream.seek(metadata_size, sc::Stream::SeekMode::Add);
+
+				ZstdDecompressor decompressor;
+				decompressor.decompress(file, stream);
+
+				load_sc2();
+				return false;
+			}
+			else
+			{
+				stream.seek(0);
+				Decompressor::decompress(file, stream);
+				return load_sc1(is_texture);
+			}
+		}
+
+		bool SupercellSWF::load_sc1(bool is_texture)
+		{
+			stream.seek(0);
 
 			// Reading .sc file
 			if (!is_texture)
@@ -84,6 +114,38 @@ namespace sc
 			}
 
 			return load_tags();
+		}
+
+		void SupercellSWF::load_sc2()
+		{
+			stream.seek(0);
+
+			uint32_t data_storage_size = stream.read_unsigned_int();
+			auto data_storage = SC2::GetDataStorage((char*)stream.data() + stream.position());
+			stream.seek(data_storage_size, sc::Stream::SeekMode::Add);
+
+			auto strings_vector = data_storage->strings();
+
+			// Exports
+			{
+				uint32_t exports_data_size = stream.read_unsigned_int();
+				auto exports_data = SC2::GetExportNames((char*)stream.data() + stream.position());
+				auto exports_vector = exports_data->exports();
+
+				exports.reserve(exports_vector->size());
+				for (uint32_t i = 0; exports_vector->size() > i; i++)
+				{
+					auto export_name_data = exports_vector->Get(i);
+					ExportName export_name = exports.emplace_back();
+					export_name.id = export_name_data->id();
+					if (export_name_data->name_ref_id() > 0)
+					{
+						auto export_name_str = strings_vector->Get(export_name_data->name_ref_id() - 1);
+						export_name.name = SWFString(export_name_str->c_str());
+					}
+				}
+			}
+			
 		}
 
 		bool SupercellSWF::load_tags()
