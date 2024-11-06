@@ -1,7 +1,7 @@
 namespace sc.flash.SC2;
 
 // A command that contains polygon vertices and texture index on which sprite is placed
-table ShapeDrawBitmapCommand
+struct ShapeDrawBitmapCommand
 {
     unk1: uint; // Maybe flags
 
