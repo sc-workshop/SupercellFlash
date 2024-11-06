@@ -33,12 +33,16 @@ namespace sc
 		public:
 			SupercellSWF() {};
 			virtual ~SupercellSWF() = default;
+			SupercellSWF(const SupercellSWF&) = default;
+			SupercellSWF(SupercellSWF&&) = default;
+			SupercellSWF& operator=(const SupercellSWF&) = default;
+			SupercellSWF& operator=(SupercellSWF&&) = default;
 
 		public:
 			fs::path current_file;
 
 			SWFVector<ExportName> exports;
-			SWFVector<MatrixBank> matrixBanks;
+			SWFVector<MatrixBank, uint32_t> matrixBanks;
 
 			SWFVector<SWFTexture> textures;
 			SWFVector<Shape> shapes;

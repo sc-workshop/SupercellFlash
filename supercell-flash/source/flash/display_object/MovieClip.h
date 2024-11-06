@@ -54,6 +54,10 @@ namespace sc
 		public:
 			MovieClip() {};
 			virtual ~MovieClip() = default;
+			MovieClip(const MovieClip&) = default;
+			MovieClip(MovieClip&&) = default;
+			MovieClip& operator=(const MovieClip&) = default;
+			MovieClip& operator=(MovieClip&&) = default;
 
 		public:
 			SWFVector<MovieClipFrameElement, uint32_t> frame_elements;
@@ -63,7 +67,7 @@ namespace sc
 		public:
 			uint8_t frame_rate = 24;
 
-			uint8_t bank_index = 0;
+			uint32_t bank_index = 0;
 
 			std::optional<sc::RectF> scaling_grid;
 

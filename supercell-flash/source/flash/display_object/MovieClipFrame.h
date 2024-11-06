@@ -12,9 +12,13 @@ namespace sc
 		public:
 			MovieClipFrame() {};
 			virtual ~MovieClipFrame() = default;
+			MovieClipFrame(const MovieClipFrame&) = default;
+			MovieClipFrame(MovieClipFrame&&) = default;
+			MovieClipFrame& operator=(const MovieClipFrame&) = default;
+			MovieClipFrame& operator=(MovieClipFrame&&) = default;
 
 		public:
-			uint16_t elements_count = 0;
+			uint32_t elements_count = 0;
 			SWFString label;
 
 		public:

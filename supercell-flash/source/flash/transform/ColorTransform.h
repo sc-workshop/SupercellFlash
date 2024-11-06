@@ -11,7 +11,6 @@ namespace sc
 		{
 		public:
 			ColorTransform() {};
-			virtual ~ColorTransform() = default;
 
 		public:
 			uint8_t alpha = 255;
@@ -20,10 +19,10 @@ namespace sc
 			ColorRGB multiply{ 255, 255, 255 };
 
 		public:
-			virtual void load(SupercellSWF& swf);
-			virtual void save(SupercellSWF& swf) const;
+			void load(SupercellSWF& swf);
+			void save(SupercellSWF& swf) const;
 
-			virtual uint8_t tag(SupercellSWF& swf) const;
+			uint8_t tag(SupercellSWF& swf) const;
 
 		public:
 			bool operator==(const ColorTransform& color) const;

@@ -13,6 +13,10 @@ namespace sc
 		public:
 			TextField() {};
 			virtual ~TextField() = default;
+			TextField(const TextField&) = default;
+			TextField(TextField&&) = default;
+			TextField& operator=(const TextField&) = default;
+			TextField& operator=(TextField&&) = default;
 
 		public:
 			enum class Align : uint8_t

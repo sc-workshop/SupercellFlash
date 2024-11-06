@@ -37,6 +37,7 @@ namespace sc
 
 				sc::Memory::copy(string.c_str(), data_ptr, m_length + 1);
 			}
+			SWFString& operator=(const SWFString&) = default;
 
 			SWFString(const SWFString& string)
 			{

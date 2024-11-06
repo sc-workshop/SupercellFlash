@@ -29,9 +29,14 @@ namespace sc
 
 		void ShapeDrawBitmapCommand::save(SupercellSWF& swf) const
 		{
+			if (vertices.size() >= std::numeric_limits<uint8_t>().max())
+			{
+				throw Exception("Too many vertices in shape draw command");
+			}
+
 			uint8_t verticesCount = static_cast<uint8_t>(vertices.size());
 
-			swf.stream.write_unsigned_byte(texture_index);
+			swf.stream.write_unsigned_byte((uint8_t)texture_index);
 			swf.stream.write_unsigned_byte(verticesCount);
 
 			for (const ShapeDrawBitmapCommandVertex& vertex : vertices)
@@ -49,10 +54,10 @@ namespace sc
 
 		void ShapeDrawBitmapCommand::create_triangle_indices(bool advanced)
 		{
-			uint16_t triangles_count = vertices.size() - 2;
+			uint32_t triangles_count = vertices.size() - 2;
 
 			triangle_indices.resize(triangles_count * 3);
-			for (uint16_t i = 0; triangles_count > i; i++)
+			for (uint32_t i = 0; triangles_count > i; i++)
 			{
 				if (advanced)
 				{
@@ -68,7 +73,7 @@ namespace sc
 				}
 			}
 
-			for (uint16_t i = 0; triangle_indices.size() > i; i++)
+			for (uint32_t i = 0; triangle_indices.size() > i; i++)
 			{
 				if (triangle_indices[i] >= vertices.size())
 				{

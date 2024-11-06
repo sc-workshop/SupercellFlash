@@ -21,11 +21,15 @@ namespace sc
 		public:
 			ShapeDrawBitmapCommand() {};
 			virtual ~ShapeDrawBitmapCommand() = default;
+			ShapeDrawBitmapCommand(const ShapeDrawBitmapCommand&) = default;
+			ShapeDrawBitmapCommand(ShapeDrawBitmapCommand&&) = default;
+			ShapeDrawBitmapCommand& operator=(const ShapeDrawBitmapCommand&) = default;
+			ShapeDrawBitmapCommand& operator=(ShapeDrawBitmapCommand&&) = default;
 
 		public:
-			uint8_t texture_index = 0;
-			SWFVector<ShapeDrawBitmapCommandVertex> vertices;
-			SWFVector<uint16_t> triangle_indices;
+			uint32_t texture_index = 0;
+			SWFVector<ShapeDrawBitmapCommandVertex, uint32_t> vertices;
+			SWFVector<uint32_t, uint32_t> triangle_indices;
 
 		public:
 			void create_triangle_indices(bool advanced);

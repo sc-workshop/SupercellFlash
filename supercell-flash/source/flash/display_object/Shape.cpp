@@ -35,7 +35,7 @@ namespace sc
 				case TAG_SHAPE_DRAW_BITMAP_COMMAND_2:
 				case TAG_SHAPE_DRAW_BITMAP_COMMAND_3:
 					commands[commands_total].load(swf, command_tag);
-					vertices_count += commands[commands_total].vertices.size();
+					vertices_count += (uint8_t)commands[commands_total].vertices.size();
 					if (vertices_count < vertices_total)
 					{
 						throw Exception("Trying to load too many vertices");
@@ -53,7 +53,12 @@ namespace sc
 
 		void Shape::save(SupercellSWF& swf) const
 		{
-			uint16_t commands_count = static_cast<uint16_t>(commands.size());
+			if (commands.size() >= std::numeric_limits<uint16_t>().max())
+			{
+				throw Exception("Too many Shape commands in shape %i", id);
+			}
+
+			uint16_t commands_count = (uint16_t)commands.size();
 
 			swf.stream.write_unsigned_short(id);
 			swf.stream.write_unsigned_short(commands_count);

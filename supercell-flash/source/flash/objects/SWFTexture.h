@@ -17,6 +17,10 @@ namespace sc
 		public:
 			SWFTexture() {};
 			virtual ~SWFTexture() = default;
+			SWFTexture(const SWFTexture&) = default;
+			SWFTexture(SWFTexture&&) = default;
+			SWFTexture& operator=(const SWFTexture&) = default;
+			SWFTexture& operator=(SWFTexture&&) = default;
 
 		public:
 			enum class Filter : uint8_t

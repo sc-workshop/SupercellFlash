@@ -140,10 +140,10 @@ namespace sc
 
 				if (matrices_vector)
 				{
-					uint32_t matrices_count = matrices_vector->size();
+					uint16_t matrices_count = (uint16_t)matrices_vector->size();
 					bank.matrices.reserve(matrices_count);
 
-					for (uint32_t m = 0; matrices_count > m; m++)
+					for (uint16_t m = 0; matrices_count > m; m++)
 					{
 						auto matrix_data = matrices_vector->Get(m);
 						Matrix2D& matrix = bank.matrices.emplace_back();
@@ -154,10 +154,10 @@ namespace sc
 
 				if (colors_vector)
 				{
-					uint32_t colors_count = colors_vector->size();
+					uint16_t colors_count = (uint16_t)colors_vector->size();
 					bank.color_transforms.reserve(colors_count);
 
-					for (uint32_t c = 0; colors_count > c; c++)
+					for (uint16_t c = 0; colors_count > c; c++)
 					{
 						auto color_data = colors_vector->Get(c);
 						ColorTransform& color = bank.color_transforms.emplace_back();
@@ -183,9 +183,9 @@ namespace sc
 			}
 
 			auto strings_vector = storage->strings();
-			uint32_t export_names_count = exports_ids->size();
+			uint16_t export_names_count = (uint16_t)exports_ids->size();
 			exports.reserve(export_names_count);
-			for (uint32_t i = 0; export_names_count > i; i++)
+			for (uint16_t i = 0; export_names_count > i; i++)
 			{
 				ExportName& export_name = exports.emplace_back();
 				export_name.id = exports_ids->Get(i);
@@ -205,10 +205,10 @@ namespace sc
 			if (!textfields_vector) return;
 
 			auto strings_vector = storage->strings();
-			uint32_t textfields_count = textfields_vector->size();
+			uint16_t textfields_count = (uint16_t)textfields_vector->size();
 			textfields.reserve(textfields_count);
 
-			for (uint32_t i = 0; textfields_count > i; i++)
+			for (uint16_t i = 0; textfields_count > i; i++)
 			{
 				auto textfield_data = textfields_vector->Get(i);
 				TextField& textfield = textfields.emplace_back();
@@ -250,10 +250,10 @@ namespace sc
 
 			auto shape_vertex_buffer = storage->shapes_bitmap_poins();
 
-			uint32_t shapes_count = shapes_vector->size();
+			uint16_t shapes_count = (uint16_t)shapes_vector->size();
 			shapes.reserve(shapes_count);
 
-			for (uint32_t i = 0; shapes_count > i; i++)
+			for (uint16_t i = 0; shapes_count > i; i++)
 			{
 				auto shape_data = shapes_vector->Get(i);
 				Shape& shape = shapes.emplace_back();
@@ -299,14 +299,14 @@ namespace sc
 			auto movieclips_vector = movieclips_data->movieclips();
 			if (!movieclips_vector) return;
 
-			uint32_t movieclips_count = movieclips_vector->size();
+			uint16_t movieclips_count = (uint16_t)movieclips_vector->size();
 			movieclips.reserve(movieclips_count);
 
 			auto strings_vector = storage->strings();
 			auto movieclip_elements_vector = storage->movieclips_frame_elements();
 			auto rectangles_vector = storage->rectangles();
 
-			for (uint32_t i = 0; movieclips_count > i; i++)
+			for (uint16_t i = 0; movieclips_count > i; i++)
 			{
 				auto movieclip_data = movieclips_vector->Get(i);
 				MovieClip& movieclip = movieclips.emplace_back();
@@ -315,7 +315,7 @@ namespace sc
 				movieclip.frame_rate = movieclip_data->framerate();
 
 				movieclip.bank_index = movieclip_data->matrix_bank_index();
-				movieclip.unknown_flag = movieclip_data->unknown_bool();
+				movieclip.unknown_flag = (bool)movieclip_data->unknown_bool();
 
 				{
 					auto scaling_grid = movieclip_data->scaling_grid_index();
@@ -341,17 +341,17 @@ namespace sc
 					continue;
 				}
 
-				uint32_t children_count = children_ids_vector->size();
+				uint16_t children_count = (uint16_t)children_ids_vector->size();
 				movieclip.instances.resize(children_count);
 
-				for (uint32_t c = 0; children_count > c; c++)
+				for (uint16_t c = 0; children_count > c; c++)
 				{
 					movieclip.instances[c].id = children_ids_vector->Get(c);
 				}
 
 				if (children_blending_vector)
 				{
-					for (uint32_t c = 0; children_blending_vector->size() > c && children_count > c; c++)
+					for (uint16_t c = 0; children_blending_vector->size() > c && children_count > c; c++)
 					{
 						movieclip.instances[c].blend_mode = (DisplayObjectInstance::BlendMode)children_blending_vector->Get(c);
 					}
@@ -359,7 +359,7 @@ namespace sc
 
 				if (children_names_vector)
 				{
-					for (uint32_t c = 0; children_names_vector->size() > c && children_count > c; c++)
+					for (uint16_t c = 0; children_names_vector->size() > c && children_count > c; c++)
 					{
 						movieclip.instances[c].name = SWFString(
 							strings_vector->Get(
@@ -370,10 +370,10 @@ namespace sc
 				}
 
 				auto frames_vector = movieclip_data->frames();
-				uint32_t frames_count = movieclip_data->frames_count();
+				uint16_t frames_count = (uint16_t)movieclip_data->frames_count();
 				movieclip.frames.reserve(frames_count);
 
-				for (uint32_t f = 0; frames_count > f; f++)
+				for (uint16_t f = 0; frames_count > f; f++)
 				{
 					auto frame_data = frames_vector->Get(f);
 					MovieClipFrame& frame = movieclip.frames.emplace_back();
@@ -416,10 +416,10 @@ namespace sc
 			auto modifiers_vector = modifiers_data->modifiers();
 			if (!modifiers_vector) return;
 
-			uint32_t modifiers_count = modifiers_vector->size();
+			uint16_t modifiers_count = (uint16_t)modifiers_vector->size();
 			movieclip_modifiers.reserve(modifiers_count);
 
-			for (uint32_t i = 0; modifiers_count > i; i++)
+			for (uint16_t i = 0; modifiers_count > i; i++)
 			{
 				auto modifier_data = modifiers_vector->Get(i);
 				MovieClipModifier& modifier = movieclip_modifiers.emplace_back();
@@ -429,7 +429,7 @@ namespace sc
 			}
 		}
 
-		void SupercellSWF::load_sc2_textures(const SC2::DataStorage* storage, const uint8_t* data)
+		void SupercellSWF::load_sc2_textures(const SC2::DataStorage*, const uint8_t* data)
 		{
 			auto textures_data = SC2::GetTextures(data);
 
@@ -619,6 +619,17 @@ namespace sc
 		void SupercellSWF::save(const fs::path& filepath, Signature signature)
 		{
 			current_file = filepath;
+
+			if (matrixBanks.size() > std::numeric_limits<uint16_t>().max())
+			{
+				throw Exception("Too many matrix banks in use");
+			}
+
+			if (textures.size() > std::numeric_limits<uint8_t>().max())
+			{
+				throw Exception("Too many textures in use");
+			}
+
 			if (matrixBanks.size() == 0) {
 				matrixBanks.resize(1);
 			}

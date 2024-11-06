@@ -11,13 +11,12 @@ namespace sc
 		{
 		public:
 			Matrix2D() {};
-			virtual ~Matrix2D() = default;
 
 		public:
-			virtual void load(SupercellSWF& swf, uint8_t tag);
-			virtual void save(SupercellSWF& swf) const;
+			void load(SupercellSWF& swf, uint8_t tag);
+			void save(SupercellSWF& swf) const;
 
-			virtual uint8_t tag(SupercellSWF& swf) const;
+			uint8_t tag(SupercellSWF& swf) const;
 
 		public:
 			bool operator==(const Matrix2D& matrix) const;

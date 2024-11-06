@@ -13,9 +13,13 @@ namespace sc
 		public:
 			Shape() {};
 			virtual ~Shape() = default;
+			Shape(const Shape&) = default;
+			Shape(Shape&&) = default;
+			Shape& operator=(const Shape&) = default;
+			Shape& operator=(Shape&&) = default;
 
 		public:
-			SWFVector<ShapeDrawBitmapCommand> commands;
+			SWFVector<ShapeDrawBitmapCommand, uint32_t> commands;
 
 		public:
 			void load(SupercellSWF& swf, uint8_t tag);

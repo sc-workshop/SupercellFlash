@@ -30,6 +30,7 @@ namespace sc
 						custom_properties.emplace_back(
 							std::make_any<bool>(swf.stream.read_bool())
 						);
+						break;
 					default:
 						throw Exception("Unknown or unsupported custom property");
 					}
@@ -174,7 +175,7 @@ namespace sc
 			{
 				swf.stream.write_unsigned_byte(TAG_MATRIX_BANK_INDEX);
 				swf.stream.write_int(1);
-				swf.stream.write_unsigned_byte(bank_index);
+				swf.stream.write_unsigned_byte((uint8_t)bank_index);
 			}
 
 			for (const MovieClipFrame& frame : frames)

@@ -13,6 +13,10 @@ namespace sc
 		public:
 			MovieClipModifier() {};
 			virtual ~MovieClipModifier() = default;
+			MovieClipModifier(const MovieClipModifier&) = default;
+			MovieClipModifier(MovieClipModifier&&) = default;
+			MovieClipModifier& operator=(const MovieClipModifier&) = default;
+			MovieClipModifier& operator=(MovieClipModifier&&) = default;
 
 		public:
 			enum class Type : uint8_t

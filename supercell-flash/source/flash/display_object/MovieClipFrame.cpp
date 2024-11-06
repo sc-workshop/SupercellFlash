@@ -12,7 +12,7 @@ namespace sc
 
 		void MovieClipFrame::save(SupercellSWF& swf) const
 		{
-			swf.stream.write_unsigned_short(elements_count);
+			swf.stream.write_unsigned_short((uint16_t)elements_count);
 			swf.stream.write_string(label);
 		}
 
