@@ -322,6 +322,7 @@ namespace sc
 				movieclip.frame_rate = movieclip_data->framerate();
 
 				movieclip.bank_index = movieclip_data->matrix_bank_index();
+				movieclip.unknown_flag = movieclip_data->unknown_bool();
 
 				{
 					auto scaling_grid = movieclip_data->scaling_grid_index();
@@ -342,7 +343,7 @@ namespace sc
 				auto children_names_vector = movieclip_data->children_name_ref_ids();
 
 				uint32_t children_count = children_ids_vector->size();
-				movieclip.instances.reserve(children_count);
+				movieclip.instances.resize(children_count);
 
 				for (uint32_t i = 0; children_count > i; i++)
 				{
@@ -363,7 +364,7 @@ namespace sc
 					);
 				}
 
-				
+
 				auto frames_vector = movieclip_data->frames();
 				uint32_t frames_count = movieclip_data->frames_count();
 				movieclip.frames.reserve(frames_count);
@@ -419,6 +420,7 @@ namespace sc
 			load_sc2_export_names(data_storage);
 			load_sc2_textfields(data_storage);
 			load_sc2_shapes(data_storage);
+			load_sc2_movieclip(data_storage);
 		}
 
 		bool SupercellSWF::load_tags()

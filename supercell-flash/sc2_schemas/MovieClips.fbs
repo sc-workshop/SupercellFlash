@@ -26,7 +26,7 @@ table MovieClip
     framerate: ubyte;
 
     // Count of frames in MovieClip // idk what this is doing here but ok :\
-    frames_count: uint;
+    frames_count: ushort;
 
     // Also known as tag 49
     unknown_bool: ubyte;
