@@ -169,11 +169,9 @@ namespace sc
 			}
 		}
 
-		void SupercellSWF::load_sc2_export_names(const SC2::DataStorage* storage)
+		void SupercellSWF::load_sc2_export_names(const SC2::DataStorage* storage, const uint8_t* data)
 		{
-			uint32_t exports_data_size = stream.read_unsigned_int();
-
-			auto exports_data = SC2::GetExportNames((char*)stream.data() + stream.position());
+			auto exports_data = SC2::GetExportNames(data);
 			auto exports_ids = exports_data->object_ids();
 			auto exports_name_ref_ids = exports_data->name_ref_ids();
 
@@ -197,14 +195,11 @@ namespace sc
 					)->c_str()
 				);
 			}
-
-			stream.seek(exports_data_size, sc::Stream::SeekMode::Add);
 		}
 
-		void SupercellSWF::load_sc2_textfields(const SC2::DataStorage* storage)
+		void SupercellSWF::load_sc2_textfields(const SC2::DataStorage* storage, const uint8_t* data)
 		{
-			uint32_t textfield_data_size = stream.read_unsigned_int();
-			auto textfields_data = SC2::GetTextFields((char*)stream.data() + stream.position());
+			auto textfields_data = SC2::GetTextFields(data);
 
 			auto textfields_vector = textfields_data->textfields();
 			if (!textfields_vector) return;
@@ -244,14 +239,11 @@ namespace sc
 
 				textfield.font_size = textfield_data->font_size();
 			}
-
-			stream.seek(textfield_data_size, sc::Stream::SeekMode::Add);
 		}
 
-		void SupercellSWF::load_sc2_shapes(const SC2::DataStorage* storage)
+		void SupercellSWF::load_sc2_shapes(const SC2::DataStorage* storage, const uint8_t* data)
 		{
-			uint32_t shapes_data_size = stream.read_unsigned_int();
-			auto shapes_data = SC2::GetShapes((char*)stream.data() + stream.position());
+			auto shapes_data = SC2::GetShapes(data);
 
 			auto shapes_vector = shapes_data->shapes();
 			if (!shapes_vector) return;
@@ -296,14 +288,11 @@ namespace sc
 					}
 				}
 			}
-
-			stream.seek(shapes_data_size, sc::Stream::SeekMode::Add);
 		}
 
-		void SupercellSWF::load_sc2_movieclip(const SC2::DataStorage* storage)
+		void SupercellSWF::load_sc2_movieclip(const SC2::DataStorage* storage, const uint8_t* data)
 		{
-			uint32_t movieclips_data_size = stream.read_unsigned_int();
-			auto movieclips_data = SC2::GetMovieClips((char*)stream.data() + stream.position());
+			auto movieclips_data = SC2::GetMovieClips(data);
 
 			auto movieclips_vector = movieclips_data->movieclips();
 			if (!movieclips_vector) return;
@@ -405,14 +394,11 @@ namespace sc
 					elements_offset += sizeof(MovieClipFrameElement);
 				}
 			}
-
-			stream.seek(movieclips_data_size, sc::Stream::SeekMode::Add);
 		}
 
-		void SupercellSWF::load_sc2_movieclip_modifiers(const SC2::DataStorage*)
+		void SupercellSWF::load_sc2_movieclip_modifiers(const SC2::DataStorage*, const uint8_t* data)
 		{
-			uint32_t modifiers_data_size = stream.read_unsigned_int();
-			auto modifiers_data = SC2::GetMovieClipModifiers((char*)stream.data() + stream.position());
+			auto modifiers_data = SC2::GetMovieClipModifiers(data);
 
 			auto modifiers_vector = modifiers_data->modifiers();
 			if (!modifiers_vector) return;
@@ -428,14 +414,11 @@ namespace sc
 				modifier.id = modifier_data->id();
 				modifier.type = (MovieClipModifier::Type)modifier_data->type();
 			}
-
-			stream.seek(modifiers_data_size, sc::Stream::SeekMode::Add);
 		}
 
-		void SupercellSWF::load_sc2_textures(const SC2::DataStorage* storage)
+		void SupercellSWF::load_sc2_textures(const SC2::DataStorage* storage, const uint8_t* data)
 		{
-			uint32_t textures_data_size = stream.read_unsigned_int();
-			auto textures_data = SC2::GetTextures((char*)stream.data() + stream.position());
+			auto textures_data = SC2::GetTextures(data);
 
 			auto textures_vector = textures_data->textures();
 			if (!textures_vector) return;
@@ -452,8 +435,6 @@ namespace sc
 				sc::MemoryStream texture_stream((uint8_t*)texture_data->data()->data(), texture_data->data()->size());
 				texture.load_from_khronos_texture(texture_stream);
 			}
-
-			stream.seek(textures_data_size, sc::Stream::SeekMode::Add);
 		}
 
 		void SupercellSWF::load_sc2()
@@ -466,12 +447,12 @@ namespace sc
 
 			load_sc2_matrix_banks(data_storage);
 
-			load_sc2_export_names(data_storage);
-			load_sc2_textfields(data_storage);
-			load_sc2_shapes(data_storage);
-			load_sc2_movieclip(data_storage);
-			load_sc2_movieclip_modifiers(data_storage);
-			load_sc2_textures(data_storage);
+			load_sc2_chunk(data_storage, &load_sc2_export_names);
+			load_sc2_chunk(data_storage, &load_sc2_textfields);
+			load_sc2_chunk(data_storage, &load_sc2_shapes);
+			load_sc2_chunk(data_storage, &load_sc2_movieclip);
+			load_sc2_chunk(data_storage, &load_sc2_movieclip_modifiers);
+			load_sc2_chunk(data_storage, &load_sc2_textures);
 		}
 
 		bool SupercellSWF::load_tags()
