@@ -33,12 +33,12 @@ table MovieClip
 
     // Array of children ids
     children_ids: [ushort];
+
+     // Array of children name reference ids
+    children_name_ref_ids: [uint];
     
     // Array of children blend modes
     children_blending: [ubyte];
-
-    // Array of children name reference ids
-    children_name_ref_ids: [uint];
 
     // MovieClip frames
     frames: [MovieClipFrame];
