@@ -335,6 +335,12 @@ namespace sc
 				auto children_blending_vector = movieclip_data->children_blending();
 				auto children_names_vector = movieclip_data->children_name_ref_ids();
 
+				if (!children_ids_vector)
+				{
+					// No need to process frames or something else if movieclip have no childrens
+					return;
+				}
+
 				uint32_t children_count = children_ids_vector->size();
 				movieclip.instances.resize(children_count);
 
