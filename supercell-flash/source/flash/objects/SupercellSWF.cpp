@@ -9,6 +9,8 @@
 #include "SC2/TextFields_generated.h"
 #include "SC2/Shapes_generated.h"
 #include "SC2/MovieClips_generated.h"
+#include "SC2/MovieClipModifiers_generated.h"
+#include "SC2/Textures_generated.h"
 
 namespace fs = std::filesystem;
 
@@ -407,6 +409,53 @@ namespace sc
 			stream.seek(movieclips_data_size, sc::Stream::SeekMode::Add);
 		}
 
+		void SupercellSWF::load_sc2_movieclip_modifiers(const SC2::DataStorage*)
+		{
+			uint32_t modifiers_data_size = stream.read_unsigned_int();
+			auto modifiers_data = SC2::GetMovieClipModifiers((char*)stream.data() + stream.position());
+
+			auto modifiers_vector = modifiers_data->modifiers();
+			if (!modifiers_vector) return;
+
+			uint32_t modifiers_count = modifiers_vector->size();
+			movieclip_modifiers.reserve(modifiers_count);
+
+			for (uint32_t i = 0; modifiers_count > i; i++)
+			{
+				auto modifier_data = modifiers_vector->Get(i);
+				MovieClipModifier& modifier = movieclip_modifiers.emplace_back();
+
+				modifier.id = modifier_data->id();
+				modifier.type = (MovieClipModifier::Type)modifier_data->type();
+			}
+
+			stream.seek(modifiers_data_size, sc::Stream::SeekMode::Add);
+		}
+
+		void SupercellSWF::load_sc2_textures(const SC2::DataStorage* storage)
+		{
+			uint32_t textures_data_size = stream.read_unsigned_int();
+			auto textures_data = SC2::GetTextures((char*)stream.data() + stream.position());
+
+			auto textures_vector = textures_data->textures();
+			if (!textures_vector) return;
+
+			uint32_t texture_count = textures_vector->size();
+
+			for (uint32_t i = 0; texture_count > i; i++)
+			{
+				auto texture_set_data = textures_vector->Get(i);
+				auto texture_data = low_memory_usage_mode && texture_set_data->lowres() ? texture_set_data->lowres() : texture_set_data->highres();
+				SWFTexture& texture = textures.emplace_back();
+
+				// Hardcode Khronos texture for now
+				sc::MemoryStream texture_stream((uint8_t*)texture_data->data()->data(), texture_data->data()->size());
+				texture.load_from_khronos_texture(texture_stream);
+			}
+
+			stream.seek(textures_data_size, sc::Stream::SeekMode::Add);
+		}
+
 		void SupercellSWF::load_sc2()
 		{
 			stream.seek(0);
@@ -421,6 +470,8 @@ namespace sc
 			load_sc2_textfields(data_storage);
 			load_sc2_shapes(data_storage);
 			load_sc2_movieclip(data_storage);
+			load_sc2_movieclip_modifiers(data_storage);
+			load_sc2_textures(data_storage);
 		}
 
 		bool SupercellSWF::load_tags()

@@ -97,6 +97,8 @@ namespace sc
 			void load_sc2_textfields(const SC2::DataStorage* storage);
 			void load_sc2_shapes(const SC2::DataStorage* storage);
 			void load_sc2_movieclip(const SC2::DataStorage* storage);
+			void load_sc2_movieclip_modifiers(const SC2::DataStorage* storage);
+			void load_sc2_textures(const SC2::DataStorage* storage);
 		};
 	}
 }
