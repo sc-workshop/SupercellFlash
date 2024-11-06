@@ -8,6 +8,7 @@
 #include "SC2/ExportNames_generated.h"
 #include "SC2/TextFields_generated.h"
 #include "SC2/Shapes_generated.h"
+#include "SC2/MovieClips_generated.h"
 
 namespace fs = std::filesystem;
 
@@ -230,10 +231,9 @@ namespace sc
 				textfield.font_color = textfield_data->font_color();
 				textfield.outline_color = textfield_data->outline_color();
 
-				uint32_t text_ref_id = textfield_data->text_ref_id();
 				textfield.text = SWFString(
 					strings_vector->Get(
-						text_ref_id
+						textfield_data->text_ref_id()
 					)->c_str()
 				);
 
@@ -296,6 +296,114 @@ namespace sc
 			}
 
 			stream.seek(shapes_data_size, sc::Stream::SeekMode::Add);
+		}
+
+		void SupercellSWF::load_sc2_movieclip(const SC2::DataStorage* storage)
+		{
+			uint32_t movieclips_data_size = stream.read_unsigned_int();
+			auto movieclips_data = SC2::GetMovieClips((char*)stream.data() + stream.position());
+
+			auto movieclips_vector = movieclips_data->movieclips();
+			if (!movieclips_vector) return;
+
+			uint32_t movieclips_count = movieclips_vector->size();
+			movieclips.reserve(movieclips_count);
+
+			auto strings_vector = storage->strings();
+			auto movieclip_elements_vector = storage->movieclips_frame_elements();
+			auto rectangles_vector = storage->rectangles();
+
+			for (uint32_t i = 0; movieclips_count > i; i++)
+			{
+				auto movieclip_data = movieclips_vector->Get(i);
+				MovieClip& movieclip = movieclips.emplace_back();
+
+				movieclip.id = movieclip_data->id();
+				movieclip.frame_rate = movieclip_data->framerate();
+
+				movieclip.bank_index = movieclip_data->matrix_bank_index();
+
+				{
+					auto scaling_grid = movieclip_data->scaling_grid_index();
+					if (scaling_grid.has_value())
+					{
+						auto rectangle = rectangles_vector->Get(scaling_grid.value());
+						movieclip.scaling_grid = RectF(
+							rectangle->left(),
+							rectangle->top(),
+							rectangle->right(),
+							rectangle->bottom()
+						);
+					}
+				}
+
+				auto children_ids_vector = movieclip_data->children_ids();
+				auto children_blending_vector = movieclip_data->children_blending();
+				auto children_names_vector = movieclip_data->children_name_ref_ids();
+
+				uint32_t children_count = children_ids_vector->size();
+				movieclip.instances.reserve(children_count);
+
+				for (uint32_t i = 0; children_count > i; i++)
+				{
+					movieclip.instances[i].id = children_ids_vector->Get(i);
+				}
+
+				for (uint32_t i = 0; children_blending_vector->size() > i && children_count > i; i++)
+				{
+					movieclip.instances[i].blend_mode = (DisplayObjectInstance::BlendMode)children_blending_vector->Get(i);
+				}
+
+				for (uint32_t i = 0; children_names_vector->size() > i && children_count > i; i++)
+				{
+					movieclip.instances[i].name = SWFString(
+						strings_vector->Get(
+							children_names_vector->Get(i)
+						)->c_str()
+					);
+				}
+
+				
+				auto frames_vector = movieclip_data->frames();
+				uint32_t frames_count = movieclip_data->frames_count();
+				movieclip.frames.reserve(frames_count);
+
+				for (uint32_t f = 0; frames_count > f; f++)
+				{
+					auto frame_data = frames_vector->Get(f);
+					MovieClipFrame& frame = movieclip.frames.emplace_back();
+
+					frame.elements_count = frame_data->used_transform();
+					frame.label = SWFString(
+						strings_vector->Get(
+							frame_data->label_ref_id()
+						)->c_str()
+					);
+				}
+
+				uint32_t elements_count = 0;
+				uint32_t elements_offset = movieclip_data->frame_elements_offset();
+				for (MovieClipFrame& frame : movieclip.frames)
+				{
+					elements_count += frame.elements_count;
+				}
+
+				movieclip.frame_elements.reserve(elements_count);
+
+				for (uint32_t e = 0; elements_count > i; i++)
+				{
+					const uint8_t* element_data = movieclip_elements_vector->data() + elements_offset;
+					MovieClipFrameElement& element = movieclip.frame_elements.emplace_back();
+
+					element.instance_index = *(const uint16_t*)element_data;
+					element.matrix_index = *(const uint16_t*)(element_data + sizeof(uint16_t));
+					element.colorTransform_index = *(const uint16_t*)(element_data + sizeof(uint16_t) * 2);
+
+					elements_offset += sizeof(MovieClipFrameElement);
+				}
+			}
+
+			stream.seek(movieclips_data_size, sc::Stream::SeekMode::Add);
 		}
 
 		void SupercellSWF::load_sc2()
