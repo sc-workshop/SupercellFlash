@@ -40,11 +40,11 @@ table MovieClip
     // Array of children name reference ids
     children_name_ref_ids: [uint];
 
-    // Byte offset to frame elements in DataStorage MovieClip frame elements buffer
-    frame_elements_offset: uint;
-
     // MovieClip frames
     frames: [MovieClipFrame];
+
+    // Byte offset to frame elements in DataStorage MovieClip frame elements buffer
+    frame_elements_offset: uint;
 
     // Index of target bank with transformations
     matrix_bank_index: uint;
