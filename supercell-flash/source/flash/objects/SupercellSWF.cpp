@@ -286,6 +286,8 @@ namespace sc
 						vertex.u = (float)(*(const uint16_t*)(vertex_data + (sizeof(float) * 2))) / 0xFFFF;
 						vertex.v = (float)(*(const uint16_t*)(vertex_data + (sizeof(float) * 2) + sizeof(uint16_t))) / 0xFFFF;
 					}
+
+					command.create_triangle_indices(true);
 				}
 			}
 		}

@@ -23,6 +23,8 @@ namespace sc
 				vertex.u = (float)swf.stream.read_unsigned_short() / 65535.0f;
 				vertex.v = (float)swf.stream.read_unsigned_short() / 65535.0f;
 			}
+
+			create_triangle_indices(false);
 		}
 
 		void ShapeDrawBitmapCommand::save(SupercellSWF& swf) const
@@ -42,6 +44,36 @@ namespace sc
 			{
 				swf.stream.write_unsigned_short((uint16_t)(vertex.u * 65535.0f));
 				swf.stream.write_unsigned_short((uint16_t)(vertex.v * 65535.0f));
+			}
+		}
+
+		void ShapeDrawBitmapCommand::create_triangle_indices(bool advanced)
+		{
+			uint16_t triangles_count = vertices.size() - 2;
+
+			triangle_indices.resize(triangles_count * 3);
+			for (uint16_t i = 0; triangles_count > i; i++)
+			{
+				if (advanced)
+				{
+					triangle_indices[i * 3] = i;
+					triangle_indices[i * 3 + 1] = i + 1;
+					triangle_indices[i * 3 + 2] = i + 1;
+				}
+				else
+				{
+					triangle_indices[i * 3] = 0;
+					triangle_indices[i * 3 + 1] = i + 1;
+					triangle_indices[i * 3 + 2] = i + 2;
+				}
+			}
+
+			for (uint16_t i = 0; triangle_indices.size() > i; i++)
+			{
+				if (triangle_indices[i] >= vertices.size())
+				{
+					triangle_indices[i] = 0;
+				}
 			}
 		}
 

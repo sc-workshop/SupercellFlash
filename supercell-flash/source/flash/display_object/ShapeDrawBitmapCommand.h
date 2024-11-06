@@ -25,6 +25,10 @@ namespace sc
 		public:
 			uint8_t texture_index = 0;
 			SWFVector<ShapeDrawBitmapCommandVertex> vertices;
+			SWFVector<uint16_t> triangle_indices;
+
+		public:
+			void create_triangle_indices(bool advanced);
 
 		public:
 			virtual void load(SupercellSWF& swf, uint8_t tag);
