@@ -43,7 +43,7 @@ table MovieClip
     // MovieClip frames
     frames: [MovieClipFrame];
 
-    // Byte offset to frame elements in DataStorage MovieClip frame elements buffer
+    // Ushort offset to frame elements in DataStorage MovieClip frame elements buffer
     frame_elements_offset: uint;
 
     // Index of target bank with transformations

@@ -336,26 +336,26 @@ namespace sc
 				uint32_t children_count = children_ids_vector->size();
 				movieclip.instances.resize(children_count);
 
-				for (uint32_t i = 0; children_count > i; i++)
+				for (uint32_t c = 0; children_count > c; c++)
 				{
-					movieclip.instances[i].id = children_ids_vector->Get(i);
+					movieclip.instances[c].id = children_ids_vector->Get(c);
 				}
 
 				if (children_blending_vector)
 				{
-					for (uint32_t i = 0; children_blending_vector->size() > i && children_count > i; i++)
+					for (uint32_t c = 0; children_blending_vector->size() > c && children_count > c; c++)
 					{
-						movieclip.instances[i].blend_mode = (DisplayObjectInstance::BlendMode)children_blending_vector->Get(i);
+						movieclip.instances[c].blend_mode = (DisplayObjectInstance::BlendMode)children_blending_vector->Get(c);
 					}
 				}
 
 				if (children_names_vector)
 				{
-					for (uint32_t i = 0; children_names_vector->size() > i && children_count > i; i++)
+					for (uint32_t c = 0; children_names_vector->size() > c && children_count > c; c++)
 					{
-						movieclip.instances[i].name = SWFString(
+						movieclip.instances[c].name = SWFString(
 							strings_vector->Get(
-								children_names_vector->Get(i)
+								children_names_vector->Get(c)
 							)->c_str()
 						);
 					}
@@ -379,7 +379,7 @@ namespace sc
 				}
 
 				uint32_t elements_count = 0;
-				uint32_t elements_offset = movieclip_data->frame_elements_offset();
+				uint32_t elements_offset = movieclip_data->frame_elements_offset() * sizeof(uint16_t);
 				for (MovieClipFrame& frame : movieclip.frames)
 				{
 					elements_count += frame.elements_count;
@@ -387,7 +387,7 @@ namespace sc
 
 				movieclip.frame_elements.reserve(elements_count);
 
-				for (uint32_t e = 0; elements_count > i; i++)
+				for (uint32_t e = 0; elements_count > e; e++)
 				{
 					const uint8_t* element_data = movieclip_elements_vector->data() + elements_offset;
 					MovieClipFrameElement& element = movieclip.frame_elements.emplace_back();

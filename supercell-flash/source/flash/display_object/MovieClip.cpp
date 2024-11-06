@@ -138,6 +138,7 @@ namespace sc
 					{
 					case 0:
 						swf.stream.write_bool(std::any_cast<bool>(custom_property));
+						break;
 					default:
 						break;
 					}
