@@ -119,6 +119,7 @@ namespace sc
 
 			if (swf.save_custom_property)
 			{
+				swf.stream.write_unsigned_byte(custom_properties.size());
 				for (std::any custom_property : custom_properties)
 				{
 					uint8_t property_type = 0xFF;
