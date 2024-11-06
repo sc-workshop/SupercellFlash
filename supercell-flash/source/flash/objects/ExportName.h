@@ -6,7 +6,7 @@ namespace sc {
 	namespace flash {
 		struct ExportName
 		{
-			ExportName() {};
+			ExportName() : id(0) {};
 			virtual ~ExportName() = default;
 
 			SWFString name;

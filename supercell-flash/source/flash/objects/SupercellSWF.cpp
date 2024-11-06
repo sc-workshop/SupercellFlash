@@ -222,10 +222,10 @@ namespace sc
 					)->c_str()
 				);
 
-				textfield.left = textfield_data->bound().left();
-				textfield.right = textfield_data->bound().right();
-				textfield.top = textfield_data->bound().top();
-				textfield.bottom = textfield_data->bound().bottom();
+				textfield.left = textfield_data->left();
+				textfield.right = textfield_data->right();
+				textfield.top = textfield_data->top();
+				textfield.bottom = textfield_data->bottom();
 
 				textfield.font_color = textfield_data->font_color();
 				textfield.outline_color = textfield_data->outline_color();

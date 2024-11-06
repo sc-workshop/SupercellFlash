@@ -1,4 +1,3 @@
-include "Types.fbs";
 namespace sc.flash.SC2;
 
 // A TextField is used to display text or simply as a bound
@@ -13,7 +12,11 @@ struct TextField
     // Font Name Reference Id
     font_name_ref_id: uint;
 
-    bound: Typing.Rect;
+    // Bound
+    left: short;
+    top: short;
+    right: short;
+    bottom: short;
 
     // Color of text
     font_color: uint;
