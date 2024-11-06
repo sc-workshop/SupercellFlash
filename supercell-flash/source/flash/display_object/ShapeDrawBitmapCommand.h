@@ -7,6 +7,9 @@ namespace sc
 	namespace flash {
 		class SupercellSWF;
 
+		typedef SWFVector<ShapeDrawBitmapCommandVertex, uint32_t> ShapeDrawBitmapCommandVertexArray;
+		typedef SWFVector<uint32_t, uint32_t> ShapeDrawBitmapCommandTrianglesArray;
+
 		struct ShapeDrawBitmapCommandVertex
 		{
 			float x;
@@ -28,8 +31,8 @@ namespace sc
 
 		public:
 			uint32_t texture_index = 0;
-			SWFVector<ShapeDrawBitmapCommandVertex, uint32_t> vertices;
-			SWFVector<uint32_t, uint32_t> triangle_indices;
+			ShapeDrawBitmapCommandVertexArray vertices;
+			ShapeDrawBitmapCommandTrianglesArray triangle_indices;
 
 		public:
 			void create_triangle_indices(bool advanced);

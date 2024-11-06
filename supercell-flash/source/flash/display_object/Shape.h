@@ -8,6 +8,8 @@
 namespace sc
 {
 	namespace flash {
+		typedef SWFVector<ShapeDrawBitmapCommand, uint32_t> ShapeDrawBitmapCommandArray;
+
 		class Shape : public DisplayObject
 		{
 		public:
@@ -19,7 +21,7 @@ namespace sc
 			Shape& operator=(Shape&&) = default;
 
 		public:
-			SWFVector<ShapeDrawBitmapCommand, uint32_t> commands;
+			ShapeDrawBitmapCommandArray commands;
 
 		public:
 			void load(SupercellSWF& swf, uint8_t tag);

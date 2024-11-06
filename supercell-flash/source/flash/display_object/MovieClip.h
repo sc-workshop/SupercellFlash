@@ -16,6 +16,10 @@ namespace sc
 	namespace flash {
 		class SupercellSWF;
 
+		typedef SWFVector<MovieClipFrameElement, uint32_t> MovieClipFrameElementsArray;
+		typedef SWFVector<DisplayObjectInstance> MovieClipChildrensArray;
+		typedef SWFVector<MovieClipFrame> MovieClipFrameArray;
+
 		struct MovieClipFrameElement
 		{
 			uint16_t instance_index;
@@ -60,9 +64,9 @@ namespace sc
 			MovieClip& operator=(MovieClip&&) = default;
 
 		public:
-			SWFVector<MovieClipFrameElement, uint32_t> frame_elements;
-			SWFVector<DisplayObjectInstance> instances;
-			SWFVector<MovieClipFrame> frames;
+			MovieClipFrameElementsArray frame_elements;
+			MovieClipChildrensArray childrens;
+			MovieClipFrameArray frames;
 
 		public:
 			uint8_t frame_rate = 24;
