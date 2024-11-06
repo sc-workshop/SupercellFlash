@@ -230,9 +230,10 @@ namespace sc
 				textfield.font_color = textfield_data->font_color();
 				textfield.outline_color = textfield_data->outline_color();
 
+				uint32_t text_ref_id = textfield_data->text_ref_id();
 				textfield.text = SWFString(
 					strings_vector->Get(
-						textfield_data->text_ref_id()
+						text_ref_id
 					)->c_str()
 				);
 
@@ -270,7 +271,7 @@ namespace sc
 				uint32_t commands_count = commands_vector->size();
 				shape.commands.reserve(commands_count);
 
-				for (uint32_t c = 0; commands_count > i; i++)
+				for (uint32_t c = 0; commands_count > c; c++)
 				{
 					auto command_data = commands_vector->Get(c);
 					ShapeDrawBitmapCommand& command = shape.commands.emplace_back();
@@ -278,15 +279,15 @@ namespace sc
 
 					uint32_t vertex_count = command_data->points_count();
 					command.vertices.reserve(vertex_count);
-					
+
 					uint32_t vertex_offset = command_data->points_offset();
-					for (uint32_t v = 0; vertex_count > i; i++)
+					for (uint32_t v = 0; vertex_count > v; v++)
 					{
 						const uint8_t* vertex_data = shape_vertex_buffer->data() + ((vertex_offset + v) * 12);
 						ShapeDrawBitmapCommandVertex& vertex = command.vertices.emplace_back();
 
-						vertex.x = (*(const float*)vertex_data) / 20;
-						vertex.y = (*(const float*)(vertex_data + sizeof(float))) / 20;
+						vertex.x = *(const float*)vertex_data;
+						vertex.y = *(const float*)(vertex_data + sizeof(float));
 
 						vertex.u = (float)(*(const uint16_t*)(vertex_data + (sizeof(float) * 2))) / 0xFFFF;
 						vertex.v = (float)(*(const uint16_t*)(vertex_data + (sizeof(float) * 2) + sizeof(uint16_t))) / 0xFFFF;
