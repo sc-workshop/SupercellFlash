@@ -7,6 +7,7 @@
 #include "SC2/DataStorage_generated.h"
 #include "SC2/ExportNames_generated.h"
 #include "SC2/TextFields_generated.h"
+#include "SC2/Shapes_generated.h"
 
 namespace fs = std::filesystem;
 
@@ -244,6 +245,58 @@ namespace sc
 			stream.seek(textfield_data_size, sc::Stream::SeekMode::Add);
 		}
 
+		void SupercellSWF::load_sc2_shapes(const SC2::DataStorage* storage)
+		{
+			uint32_t shapes_data_size = stream.read_unsigned_int();
+			auto shapes_data = SC2::GetShapes((char*)stream.data() + stream.position());
+
+			auto shapes_vector = shapes_data->shapes();
+			if (!shapes_vector) return;
+
+			auto shape_vertex_buffer = storage->shapes_bitmap_poins();
+
+			uint32_t shapes_count = shapes_vector->size();
+			shapes.reserve(shapes_count);
+
+			for (uint32_t i = 0; shapes_count > i; i++)
+			{
+				auto shape_data = shapes_vector->Get(i);
+				Shape& shape = shapes.emplace_back();
+				shape.id = shape_data->id();
+
+				auto commands_vector = shape_data->commands();
+				if (!commands_vector) continue;
+
+				uint32_t commands_count = commands_vector->size();
+				shape.commands.reserve(commands_count);
+
+				for (uint32_t c = 0; commands_count > i; i++)
+				{
+					auto command_data = commands_vector->Get(c);
+					ShapeDrawBitmapCommand& command = shape.commands.emplace_back();
+					command.texture_index = command_data->texture_index();
+
+					uint32_t vertex_count = command_data->points_count();
+					command.vertices.reserve(vertex_count);
+					
+					uint32_t vertex_offset = command_data->points_offset();
+					for (uint32_t v = 0; vertex_count > i; i++)
+					{
+						const uint8_t* vertex_data = shape_vertex_buffer->data() + ((vertex_offset + v) * 12);
+						ShapeDrawBitmapCommandVertex& vertex = command.vertices.emplace_back();
+
+						vertex.x = (*(const float*)vertex_data) / 20;
+						vertex.y = (*(const float*)(vertex_data + sizeof(float))) / 20;
+
+						vertex.u = (float)(*(const uint16_t*)(vertex_data + (sizeof(float) * 2))) / 0xFFFF;
+						vertex.v = (float)(*(const uint16_t*)(vertex_data + (sizeof(float) * 2) + sizeof(uint16_t))) / 0xFFFF;
+					}
+				}
+			}
+
+			stream.seek(shapes_data_size, sc::Stream::SeekMode::Add);
+		}
+
 		void SupercellSWF::load_sc2()
 		{
 			stream.seek(0);
@@ -255,6 +308,8 @@ namespace sc
 			load_sc2_matrix_banks(data_storage);
 
 			load_sc2_export_names(data_storage);
+			load_sc2_textfields(data_storage);
+			load_sc2_shapes(data_storage);
 		}
 
 		bool SupercellSWF::load_tags()

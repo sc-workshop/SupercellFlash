@@ -95,6 +95,7 @@ namespace sc
 
 			void load_sc2_export_names(const SC2::DataStorage* storage);
 			void load_sc2_textfields(const SC2::DataStorage* storage);
+			void load_sc2_shapes(const SC2::DataStorage* storage);
 		};
 	}
 }
