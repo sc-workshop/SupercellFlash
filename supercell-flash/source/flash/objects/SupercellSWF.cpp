@@ -341,20 +341,25 @@ namespace sc
 					movieclip.instances[i].id = children_ids_vector->Get(i);
 				}
 
-				for (uint32_t i = 0; children_blending_vector->size() > i && children_count > i; i++)
+				if (children_blending_vector)
 				{
-					movieclip.instances[i].blend_mode = (DisplayObjectInstance::BlendMode)children_blending_vector->Get(i);
+					for (uint32_t i = 0; children_blending_vector->size() > i && children_count > i; i++)
+					{
+						movieclip.instances[i].blend_mode = (DisplayObjectInstance::BlendMode)children_blending_vector->Get(i);
+					}
 				}
 
-				for (uint32_t i = 0; children_names_vector->size() > i && children_count > i; i++)
+				if (children_names_vector)
 				{
-					movieclip.instances[i].name = SWFString(
-						strings_vector->Get(
-							children_names_vector->Get(i)
-						)->c_str()
-					);
+					for (uint32_t i = 0; children_names_vector->size() > i && children_count > i; i++)
+					{
+						movieclip.instances[i].name = SWFString(
+							strings_vector->Get(
+								children_names_vector->Get(i)
+							)->c_str()
+						);
+					}
 				}
-
 
 				auto frames_vector = movieclip_data->frames();
 				uint32_t frames_count = movieclip_data->frames_count();
@@ -447,12 +452,12 @@ namespace sc
 
 			load_sc2_matrix_banks(data_storage);
 
-			load_sc2_chunk(data_storage, &load_sc2_export_names);
-			load_sc2_chunk(data_storage, &load_sc2_textfields);
-			load_sc2_chunk(data_storage, &load_sc2_shapes);
-			load_sc2_chunk(data_storage, &load_sc2_movieclip);
-			load_sc2_chunk(data_storage, &load_sc2_movieclip_modifiers);
-			load_sc2_chunk(data_storage, &load_sc2_textures);
+			load_sc2_chunk(data_storage, &SupercellSWF::load_sc2_export_names);
+			load_sc2_chunk(data_storage, &SupercellSWF::load_sc2_textfields);
+			load_sc2_chunk(data_storage, &SupercellSWF::load_sc2_shapes);
+			load_sc2_chunk(data_storage, &SupercellSWF::load_sc2_movieclip);
+			load_sc2_chunk(data_storage, &SupercellSWF::load_sc2_movieclip_modifiers);
+			load_sc2_chunk(data_storage, &SupercellSWF::load_sc2_textures);
 		}
 
 		bool SupercellSWF::load_tags()
