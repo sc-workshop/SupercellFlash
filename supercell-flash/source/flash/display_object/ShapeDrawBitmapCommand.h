@@ -7,9 +7,6 @@ namespace sc
 	namespace flash {
 		class SupercellSWF;
 
-		typedef SWFVector<ShapeDrawBitmapCommandVertex, uint32_t> ShapeDrawBitmapCommandVertexArray;
-		typedef SWFVector<uint32_t, uint32_t> ShapeDrawBitmapCommandTrianglesArray;
-
 		struct ShapeDrawBitmapCommandVertex
 		{
 			float x;
@@ -18,6 +15,9 @@ namespace sc
 			float u;
 			float v;
 		};
+
+		typedef SWFVector<ShapeDrawBitmapCommandVertex, uint32_t> ShapeDrawBitmapCommandVertexArray;
+		typedef SWFVector<uint32_t, uint32_t> ShapeDrawBitmapCommandTrianglesArray;
 
 		class ShapeDrawBitmapCommand
 		{

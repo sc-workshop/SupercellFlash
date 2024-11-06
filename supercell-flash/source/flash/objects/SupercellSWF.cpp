@@ -342,18 +342,18 @@ namespace sc
 				}
 
 				uint16_t children_count = (uint16_t)children_ids_vector->size();
-				movieclip.instances.resize(children_count);
+				movieclip.childrens.resize(children_count);
 
 				for (uint16_t c = 0; children_count > c; c++)
 				{
-					movieclip.instances[c].id = children_ids_vector->Get(c);
+					movieclip.childrens[c].id = children_ids_vector->Get(c);
 				}
 
 				if (children_blending_vector)
 				{
 					for (uint16_t c = 0; children_blending_vector->size() > c && children_count > c; c++)
 					{
-						movieclip.instances[c].blend_mode = (DisplayObjectInstance::BlendMode)children_blending_vector->Get(c);
+						movieclip.childrens[c].blend_mode = (DisplayObjectInstance::BlendMode)children_blending_vector->Get(c);
 					}
 				}
 
@@ -361,7 +361,7 @@ namespace sc
 				{
 					for (uint16_t c = 0; children_names_vector->size() > c && children_count > c; c++)
 					{
-						movieclip.instances[c].name = SWFString(
+						movieclip.childrens[c].name = SWFString(
 							strings_vector->Get(
 								children_names_vector->Get(c)
 							)->c_str()

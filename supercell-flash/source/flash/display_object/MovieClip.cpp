@@ -50,24 +50,24 @@ namespace sc
 			}
 
 			uint16_t instance_count = swf.stream.read_unsigned_short();
-			instances.resize(instance_count);
+			childrens.resize(instance_count);
 
 			for (int16_t i = 0; i < instance_count; i++)
 			{
-				instances[i].id = swf.stream.read_unsigned_short();
+				childrens[i].id = swf.stream.read_unsigned_short();
 			}
 
 			if (tag == TAG_MOVIE_CLIP_3 || tag >= TAG_MOVIE_CLIP_5)
 			{
 				for (int16_t i = 0; i < instance_count; i++)
 				{
-					instances[i].blend_mode = (DisplayObjectInstance::BlendMode)swf.stream.read_unsigned_byte();
+					childrens[i].blend_mode = (DisplayObjectInstance::BlendMode)swf.stream.read_unsigned_byte();
 				}
 			}
 
 			for (int16_t i = 0; i < instance_count; i++)
 			{
-				swf.stream.read_string(instances[i].name);
+				swf.stream.read_string(childrens[i].name);
 			}
 
 			uint16_t frames_total = 0;
@@ -154,21 +154,21 @@ namespace sc
 				swf.stream.write_unsigned_short(element.colorTransform_index);
 			}
 
-			swf.stream.write_short(instances.size());
+			swf.stream.write_short(childrens.size());
 
-			for (const DisplayObjectInstance& instance : instances)
+			for (const DisplayObjectInstance& children : childrens)
 			{
-				swf.stream.write_unsigned_short(instance.id);
+				swf.stream.write_unsigned_short(children.id);
 			}
 
-			for (const DisplayObjectInstance& instance : instances)
+			for (const DisplayObjectInstance& children : childrens)
 			{
-				swf.stream.write_unsigned_byte((uint8_t)instance.blend_mode);
+				swf.stream.write_unsigned_byte((uint8_t)children.blend_mode);
 			}
 
-			for (const DisplayObjectInstance& instance : instances)
+			for (const DisplayObjectInstance& children : childrens)
 			{
-				swf.stream.write_string(instance.name);
+				swf.stream.write_string(children.name);
 			}
 
 			if (bank_index != 0)

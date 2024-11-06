@@ -16,10 +16,6 @@ namespace sc
 	namespace flash {
 		class SupercellSWF;
 
-		typedef SWFVector<MovieClipFrameElement, uint32_t> MovieClipFrameElementsArray;
-		typedef SWFVector<DisplayObjectInstance> MovieClipChildrensArray;
-		typedef SWFVector<MovieClipFrame> MovieClipFrameArray;
-
 		struct MovieClipFrameElement
 		{
 			uint16_t instance_index;
@@ -52,6 +48,10 @@ namespace sc
 			BlendMode blend_mode = BlendMode::Normal;
 			SWFString name;
 		};
+
+		typedef SWFVector<MovieClipFrameElement, uint32_t> MovieClipFrameElementsArray;
+		typedef SWFVector<DisplayObjectInstance> MovieClipChildrensArray;
+		typedef SWFVector<MovieClipFrame> MovieClipFrameArray;
 
 		class MovieClip : public DisplayObject
 		{
