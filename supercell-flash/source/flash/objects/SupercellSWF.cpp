@@ -338,7 +338,7 @@ namespace sc
 				if (!children_ids_vector)
 				{
 					// No need to process frames or something else if movieclip have no childrens
-					return;
+					continue;
 				}
 
 				uint32_t children_count = children_ids_vector->size();
