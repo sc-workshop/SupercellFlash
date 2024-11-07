@@ -37,21 +37,21 @@ struct Matrix2x3
 // Used for transforming Display Objects color
 struct ColorTransform
 {
-    // Red Addition
-    r_add: ubyte;
-    // Green Addition
-    g_add: ubyte;
-    // Blue Addition
-    b_add: ubyte;
-
-    // Alpha Multiply
-    alpha: ubyte;
-
     // Red Multiply
     r_mul: ubyte;
     // Greenn Multiply
     g_mul: ubyte;
     // Blue Multiply
     b_mul: ubyte;
+
+    // Alpha Multiply
+    alpha: ubyte;
+
+    // Red Addition
+    r_add: ubyte;
+    // Green Addition
+    g_add: ubyte;
+    // Blue Addition
+    b_add: ubyte;
 }
 
