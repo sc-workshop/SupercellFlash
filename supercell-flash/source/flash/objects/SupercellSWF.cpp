@@ -73,7 +73,7 @@ namespace sc
 			}
 			else
 			{
-				stream.seek(0);
+				file.seek(0);
 				Decompressor::decompress(file, stream);
 				return load_sc1(is_texture);
 			}
