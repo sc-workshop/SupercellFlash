@@ -1,0 +1,48 @@
+namespace sc.flash.SC2;
+
+// A TextField is used to display text or simply as a bound
+// Inherited from DisplayObject
+struct TextField
+{
+    // Display Object Id
+    id: ushort;
+
+    unk1: ushort;
+
+    // Font Name Reference Id
+    font_name_ref_id: uint;
+
+    // Bound
+    left: short;
+    top: short;
+    right: short;
+    bottom: short;
+
+    // Color of text
+    font_color: uint;
+
+    // Color of text outline
+    outline_color: uint;
+
+    // Placeholder text reference Id
+    text_ref_id: uint;
+
+    unk2: uint; // Maybe typography path
+
+    styles: ubyte;
+    align: ubyte;
+
+    // Size of text
+    font_size: ubyte;
+
+    unk3: ubyte;
+    unk4: uint;
+}
+
+// Third chunk. Contains TextField structures
+table TextFields
+{
+    textfields: [TextField];
+}
+
+root_type TextFields;

@@ -1,16 +1,25 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(SupercellFlash)
+# workspace
+project(supercell-sdk)
 
-include(cmake/SupercellFlash.cmake)
+# options
+option(SC_FLASH_BUILD_TOOLS "Build tools of supercell::flash library" ON)
 
-option(SC_FLASH_TEST "Build SC Flash Test" OFF)
-option(SC_FLASH_TEXTURE_TOOL "Build SC Flash Texture Tool" OFF)
+# includes
+include(FetchContent)
 
-if(${SC_FLASH_TEST})
-    include(cmake/SupercellFlashTest.cmake)
+set(SC_SERIALIZATION_DEPENDENCIES ON)
+if(SC_FLASH_BUILD_TOOLS)
+    set(SC_CLI_DEPENDENCIES ON)
 endif()
 
-if(${SC_FLASH_TEXTURE_TOOL})
-    include(cmake/SupercellFlashTextureTool.cmake)
+include(cmake/dependencies.cmake)
+
+# projects
+add_subdirectory(supercell-flash)
+
+if(SC_FLASH_BUILD_TOOLS)
+    add_subdirectory(tools/test-tool)
+    add_subdirectory(tools/texture-tool)
 endif()

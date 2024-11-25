@@ -1,0 +1,40 @@
+include "Types.fbs";
+namespace sc.flash.SC2;
+
+// A table that represents a "bank" that contains matrices and color transformations arrays
+table MatrixBank
+{
+    matrices: [Typing.Matrix2x3];
+    colors: [Typing.ColorTransform];
+}
+
+// The very first chunk that contains all important binary data such as strings, shapes points, MovieClip frame elements
+table DataStorage
+{
+    /// An array of strings that objects from other chunks access by their number 
+    /// Example: strings[ref_id - 1]
+    strings: [string];
+
+
+    unk2: [ubyte]; // most likely custom properties
+    unk3: [ubyte];
+
+    // An array of rectangles that is currently only used for MovieClip Scaling Grids.
+    // Objects can be accessed by their index
+    rectangles: [Typing.Rect];
+
+    // Raw buffer that represents array of MovieClipFrameElement.
+    // MovieClipFrameElement structure is accessible by byte offset in MovieClip
+    // Example: MovieClipFrameElement* element = movieclips_frame_elements + ref_offset;
+    movieclips_frame_elements: [ubyte];
+
+    // Raw buffer that represents array of ShapeDrawBitmapCommandVertex.
+    // Objects can be accessed by index of ShapeDrawBitmapCommandVertex structure
+    // Example: ShapeDrawBitmapCommandVertex* vertex = shapes_bitmap_poins + (sizeof(shapes_bitmap_poins) * ref_index)
+    shapes_bitmap_poins: [ubyte];
+
+    // An array of small transform bank objects
+    matrix_banks: [MatrixBank];
+}
+
+root_type DataStorage;

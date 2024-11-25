@@ -1,0 +1,33 @@
+namespace sc.flash.SC2;
+
+// Basic texture info and data
+table TextureData
+{
+    flags: uint;
+    
+    type: ubyte; // ScPixel ?
+
+    // Texture Width
+    width: ushort;
+
+    // Texture Height
+    height: ushort;
+
+    // Texture Data
+    data: [ubyte];
+}
+
+// Each set can have a texture and optionally a lowres variant which is 2 times smaller
+table TextureSet
+{
+    lowres: TextureData;
+    highres: TextureData (required);
+}
+
+// Texture atlases on which sprites are placed
+table Textures 
+{
+    textures: [TextureSet];
+}
+
+root_type Textures;

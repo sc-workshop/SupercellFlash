@@ -1,0 +1,20 @@
+namespace sc.flash.SC2;
+
+// A modifier is an object that currently serves as a mask for Movie Clips. 
+// When objects are drawn, modifiers set desired state in stencil buffer in frame, achieving masking
+struct MovieClipModifier
+{
+    // DisplayObject id
+    id: ushort;
+
+    // Type of modifier
+    // Just tags from sc1
+    type: ubyte;
+}
+
+table MovieClipModifiers
+{
+    modifiers: [MovieClipModifier];
+}
+
+root_type MovieClipModifiers;
