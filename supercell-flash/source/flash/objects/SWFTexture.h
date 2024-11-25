@@ -62,6 +62,7 @@ namespace sc
 			void linear(bool status);
 
 			const wk::Image* image() const;
+			const wk::Ref<wk::RawImage> raw_image() const;
 
 		public:
 			/// <summary>

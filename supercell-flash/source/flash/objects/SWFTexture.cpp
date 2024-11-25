@@ -144,6 +144,26 @@ namespace sc
 			return m_image.get();
 		}
 
+		const wk::Ref<wk::RawImage> SWFTexture::raw_image() const
+		{
+			auto image = m_image.get();
+			auto texture = CreateRef<wk::RawImage>(image->width(), image->height(), image->depth());
+
+			if (m_encoding == TextureEncoding::KhronosTexture)
+			{
+				CompressedImage* compressed_image = (CompressedImage*)m_image.get();
+				MemoryStream texture_data(texture->data(), texture->data_length());
+				compressed_image->decompress_data(texture_data);
+			}
+			else
+			{
+				RawImage* raw_image = (RawImage*)m_image.get();
+				raw_image->copy(*texture);
+			}
+
+			return texture;
+		}
+
 		void SWFTexture::load(SupercellSWF& swf, uint8_t tag, bool has_data)
 		{
 			bool has_khronos_texture = false;
