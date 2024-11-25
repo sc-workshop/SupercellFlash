@@ -10,7 +10,7 @@ namespace sc
 {
 	namespace flash {
 		using namespace sc::compression::flash;
-		class SWFStream : public BufferStream
+		class SWFStream : public wk::BufferStream
 		{
 		public:
 			SWFStream() {};
@@ -24,7 +24,7 @@ namespace sc
 			{
 				clear();
 
-				InputFileStream file(path);
+				wk::InputFileStream file(path);
 				Decompressor::decompress(file, *this);
 
 				seek(0);
@@ -32,7 +32,7 @@ namespace sc
 
 			void save_file(const std::filesystem::path& path, Signature signature)
 			{
-				OutputFileStream file(path);
+				wk::OutputFileStream file(path);
 
 				Compressor::Context context;
 				context.signature = signature;

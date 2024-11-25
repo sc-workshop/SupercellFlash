@@ -31,7 +31,7 @@ namespace sc
 		{
 			if (vertices.size() >= std::numeric_limits<uint8_t>().max())
 			{
-				throw Exception("Too many vertices in shape draw command");
+				throw wk::Exception("Too many vertices in shape draw command");
 			}
 
 			uint8_t verticesCount = static_cast<uint8_t>(vertices.size());

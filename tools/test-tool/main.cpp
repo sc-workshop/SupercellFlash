@@ -8,6 +8,7 @@
 using namespace std;
 using namespace std::chrono;
 using namespace sc::flash;
+using namespace wk;
 
 namespace fs = std::filesystem;
 
@@ -30,7 +31,7 @@ int main(int argc, char* argv[])
 
 	/* Loading test */
 	time_point loading_start = high_resolution_clock::now();
-	sc::Timer loading;
+	Timer loading;
 	SupercellSWF swf;
 	swf.load(filepath);
 
@@ -43,7 +44,7 @@ int main(int argc, char* argv[])
 	try {
 		swf.save(folder / filepath.stem().concat("_new").concat(filepath.extension().string()), Signature::Zstandard);
 	}
-	catch (const sc::Exception& err) {
+	catch (const wk::Exception& err) {
 		cout << "Error. " << endl << "Message: " << err.what() << endl;
 	}
 

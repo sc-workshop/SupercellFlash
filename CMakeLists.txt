@@ -9,10 +9,12 @@ option(SC_FLASH_BUILD_TOOLS "Build tools of supercell::flash library" ON)
 # includes
 include(FetchContent)
 
-set(SC_SERIALIZATION_DEPENDENCIES ON)
 if(SC_FLASH_BUILD_TOOLS)
-    set(SC_CLI_DEPENDENCIES ON)
+    set(WK_CLI_DEPENDENCIES ON)
+    set(WK_SERIALIZATION_JSON ON)
 endif()
+
+set(WK_SERIALIZATION_FLATBUFFER ON)
 
 include(cmake/dependencies.cmake)
 

@@ -26,7 +26,7 @@ namespace sc
 			public:
 				SWFString name;
 				uint8_t texture_index;
-				SWFVector<Point_t<uint16_t>> vertices;
+				SWFVector<wk::Point_t<uint16_t>> vertices;
 			};
 
 		private:

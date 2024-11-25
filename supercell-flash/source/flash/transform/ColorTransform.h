@@ -15,8 +15,8 @@ namespace sc
 		public:
 			uint8_t alpha = 255;
 
-			ColorRGB add{ 0, 0, 0 };
-			ColorRGB multiply{ 255, 255, 255 };
+			wk::ColorRGB add{ 0, 0, 0 };
+			wk::ColorRGB multiply{ 255, 255, 255 };
 
 		public:
 			void load(SupercellSWF& swf);

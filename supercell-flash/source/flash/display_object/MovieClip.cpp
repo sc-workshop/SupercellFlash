@@ -11,7 +11,7 @@ namespace sc
 			unknown_flag = tag == TAG_MOVIE_CLIP_5;
 
 			if (tag == TAG_MOVIE_CLIP || tag == TAG_MOVIE_CLIP_4)
-				throw Exception("TAG_MOVIE_CLIP and TAG_MOVIE_CLIP_4 is unsupported");
+				throw wk::Exception("TAG_MOVIE_CLIP and TAG_MOVIE_CLIP_4 is unsupported");
 
 			uint16_t frame_count = swf.stream.read_unsigned_short();
 			frames.resize(frame_count);
@@ -32,7 +32,7 @@ namespace sc
 						);
 						break;
 					default:
-						throw Exception("Unknown or unsupported custom property");
+						throw wk::Exception("Unknown or unsupported custom property");
 					}
 				}
 			}
@@ -80,7 +80,7 @@ namespace sc
 					break;
 
 				if (frame_tag_length < 0)
-					throw Exception("Negative tag length");
+					throw wk::Exception("Negative tag length");
 
 				switch (frame_tag)
 				{
@@ -91,7 +91,7 @@ namespace sc
 
 				case TAG_SCALING_GRID:
 				{
-					RectF grid;
+					wk::RectF grid;
 					grid.x = swf.stream.read_twip();
 					grid.y = swf.stream.read_twip();
 					grid.width = swf.stream.read_twip();
@@ -106,7 +106,7 @@ namespace sc
 					break;
 
 				default:
-					swf.stream.seek(frame_tag_length, Stream::SeekMode::Add);
+					swf.stream.seek(frame_tag_length, wk::Stream::SeekMode::Add);
 					break;
 				}
 			}
@@ -131,7 +131,7 @@ namespace sc
 					}
 					else
 					{
-						throw Exception("Unknown or unsupported custom property type");
+						throw wk::Exception("Unknown or unsupported custom property type");
 					}
 
 					swf.stream.write_unsigned_byte(property_type);

@@ -47,7 +47,7 @@ namespace sc
 
 		public:
 			static const SWFVector<PixelFormat, uint8_t> pixel_format_table;
-			static const SWFVector<Image::PixelDepth, uint8_t> pixel_depth_table;
+			static const SWFVector<wk::Image::PixelDepth, uint8_t> pixel_depth_table;
 
 		public:
 			TextureEncoding encoding();
@@ -61,7 +61,7 @@ namespace sc
 			void pixel_format(PixelFormat format);
 			void linear(bool status);
 
-			const Image* image() const;
+			const wk::Image* image() const;
 
 		public:
 			/// <summary>
@@ -76,13 +76,13 @@ namespace sc
 			static void make_linear_data(uint8_t* inout_data, uint8_t* output_data, uint16_t width, uint16_t height, PixelFormat type, bool is_raw);
 
 		public:
-			void load_from_image(RawImage& image);
-			void load_from_buffer(Stream& data, uint16_t width, uint16_t height, PixelFormat format, bool has_data = true);
-			void load_from_khronos_texture(Stream& data);
-			void load_from_compressed_khronos_texture(Stream& data);
+			void load_from_image(wk::RawImage& image);
+			void load_from_buffer(wk::Stream& data, uint16_t width, uint16_t height, PixelFormat format, bool has_data = true);
+			void load_from_khronos_texture(wk::Stream& data);
+			void load_from_compressed_khronos_texture(wk::Stream& data);
 
 		protected:
-			Ref<Image> m_image = nullptr;
+			wk::Ref<wk::Image> m_image = nullptr;
 			bool m_linear = true;
 			PixelFormat m_pixel_format = PixelFormat::RGBA8;
 			TextureEncoding m_encoding = TextureEncoding::Raw;
@@ -94,7 +94,7 @@ namespace sc
 		public:
 			virtual void load(SupercellSWF& swf, uint8_t tag, bool use_external_texture);
 			virtual void save(SupercellSWF& swf, bool has_data, bool is_lowres) const;
-			virtual void save_buffer(Stream& stream, bool is_lowres) const;
+			virtual void save_buffer(wk::Stream& stream, bool is_lowres) const;
 			virtual uint8_t tag(SupercellSWF& swf, bool has_data = false) const;
 		};
 	}

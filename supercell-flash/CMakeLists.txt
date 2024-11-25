@@ -5,12 +5,11 @@ file(GLOB_RECURSE SOURCES source/*.cpp source/*.hpp)
 file(GLOB SC2_SCHEMAS sc2_schemas/*.fbs)
 
 # choosing build type
-if(SC_BUILD_SHARED)
+if(WK_BUILD_SHARED)
     # shared library
     set(TARGET supercell-flash-shared)
     add_library(${TARGET} SHARED)
     
-
 else()
     # static library
     set(TARGET supercell-flash-static)
@@ -26,7 +25,7 @@ target_sources(${TARGET} PRIVATE ${HEADERS} ${SOURCES})
 # include directories
 target_include_directories(${TARGET} PUBLIC source)
 
-target_link_libraries(${TARGET} PUBLIC supercell::core)
+target_link_libraries(${TARGET} PUBLIC wk::core)
 target_link_libraries(${TARGET} PUBLIC supercell::compression)
 target_link_libraries(${TARGET} PUBLIC supercell::texture)
 
@@ -46,4 +45,4 @@ target_link_libraries(${TARGET}
 )
 
 # setup project
-sc_project_setup(${TARGET})
+wk_project_setup(${TARGET})

@@ -73,7 +73,7 @@ namespace sc
 
 			uint32_t bank_index = 0;
 
-			std::optional<sc::RectF> scaling_grid;
+			std::optional<wk::RectF> scaling_grid;
 
 			SWFVector<std::any, uint8_t> custom_properties;
 

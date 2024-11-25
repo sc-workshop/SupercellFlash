@@ -7,6 +7,7 @@
 using namespace std;
 using namespace std::chrono;
 using namespace sc::sctex;
+using namespace wk;
 
 namespace fs = std::filesystem;
 
@@ -51,7 +52,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	sc::Timer operation_timer;
+	Timer operation_timer;
 
 	try
 	{
@@ -118,7 +119,7 @@ int main(int argc, char* argv[])
 
 		cout << "Operation took: " << operation_timer.elapsed() / 60000 << " seconds";
 	}
-	catch (sc::Exception& error)
+	catch (wk::Exception& error)
 	{
 		std::cout << error.what() << std::endl;
 		return 1;

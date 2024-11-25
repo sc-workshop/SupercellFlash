@@ -8,6 +8,6 @@ namespace sc
 	namespace flash
 	{
 		template<typename T, typename S = uint16_t>
-		using SWFVector = std::vector<T, STL::MemoryPoolAllocator<T, S> >;
+		using SWFVector = std::vector<T, wk::STL::MemoryPoolAllocator<T, S> >;
 	}
 }

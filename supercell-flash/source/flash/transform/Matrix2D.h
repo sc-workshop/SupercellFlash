@@ -7,7 +7,7 @@ namespace sc
 	namespace flash {
 		class SupercellSWF;
 
-		struct Matrix2D : public sc::Matrix2D
+		struct Matrix2D : public wk::Matrix2D
 		{
 		public:
 			Matrix2D() {};

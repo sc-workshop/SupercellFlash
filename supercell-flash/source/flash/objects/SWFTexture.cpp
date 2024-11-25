@@ -4,6 +4,7 @@
 
 using namespace sc::texture;
 using namespace sc::compression;
+using namespace wk;
 
 namespace sc
 {
@@ -48,8 +49,8 @@ namespace sc
 			if (status == m_linear) return;
 			if (m_encoding != TextureEncoding::Raw) return;
 
-			uint8_t* buffer = sc::Memory::allocate(m_image->data_length());
-			sc::Memory::copy(m_image->data(), buffer, m_image->data_length());
+			uint8_t* buffer = wk::Memory::allocate(m_image->data_length());
+			wk::Memory::copy(m_image->data(), buffer, m_image->data_length());
 
 			make_linear_data(
 				buffer, m_image->data(),
@@ -411,14 +412,14 @@ namespace sc
 							if (!is_raw) { // blocks to image
 								uint32_t block_target = pixel_index * pixel_size;
 
-								sc::Memory::copy<uint8_t>(inout_data + block_target, output_data + target, pixel_size);
+								wk::Memory::copy<uint8_t>(inout_data + block_target, output_data + target, pixel_size);
 							}
 							else { // image to blocks
 								uint32_t block_pixel_x = pixel_index % width;
 								uint32_t block_pixel_y = static_cast<uint32_t>(pixel_index / width);
 								uint32_t block_target = (block_pixel_y * width + block_pixel_x) * pixel_size;
 
-								sc::Memory::copy<uint8_t>(output_data + block_target, inout_data + target, pixel_size);
+								wk::Memory::copy<uint8_t>(output_data + block_target, inout_data + target, pixel_size);
 							}
 
 							pixel_index++;

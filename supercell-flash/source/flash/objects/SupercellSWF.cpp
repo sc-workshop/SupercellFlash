@@ -46,7 +46,7 @@ namespace sc
 				}
 				else
 				{
-					throw Exception("Failed to load external texture file");
+					throw wk::Exception("Failed to load external texture file");
 				}
 			}
 
@@ -57,13 +57,13 @@ namespace sc
 		{
 			stream.clear();
 
-			InputFileStream file(filepath);
+			wk::InputFileStream file(filepath);
 			if (file.read_short() == SC_MAGIC && file.read_unsigned_int() == 5)
 			{
 				uint32_t metadata_size = file.read_unsigned_int();
 
 				// TODO: Metadata
-				file.seek(metadata_size, sc::Stream::SeekMode::Add);
+				file.seek(metadata_size, wk::Stream::SeekMode::Add);
 
 				ZstdDecompressor decompressor;
 				decompressor.decompress(file, stream);
@@ -102,7 +102,7 @@ namespace sc
 				uint16_t colors_count = stream.read_unsigned_short();
 				matrixBanks.resize(1, MatrixBank(matrices_count, colors_count));
 
-				stream.seek(5, Stream::SeekMode::Add); // unused
+				stream.seek(5, wk::Stream::SeekMode::Add); // unused
 
 				uint16_t exports_count = stream.read_unsigned_short();
 				exports.resize(exports_count);
@@ -179,7 +179,7 @@ namespace sc
 			if (!exports_ids || !exports_name_ref_ids) return;
 			if (exports_ids->size() != exports_name_ref_ids->size())
 			{
-				throw Exception();
+				throw wk::Exception();
 			}
 
 			auto strings_vector = storage->strings();
@@ -322,7 +322,7 @@ namespace sc
 					if (scaling_grid.has_value())
 					{
 						auto rectangle = rectangles_vector->Get(scaling_grid.value());
-						movieclip.scaling_grid = RectF(
+						movieclip.scaling_grid = wk::RectF(
 							rectangle->left(),
 							rectangle->top(),
 							rectangle->right(),
@@ -445,7 +445,7 @@ namespace sc
 				SWFTexture& texture = textures.emplace_back();
 
 				// Hardcode Khronos texture for now
-				sc::MemoryStream texture_stream((uint8_t*)texture_data->data()->data(), texture_data->data()->size());
+				wk::MemoryStream texture_stream((uint8_t*)texture_data->data()->data(), texture_data->data()->size());
 				texture.load_from_khronos_texture(texture_stream);
 			}
 		}
@@ -456,7 +456,7 @@ namespace sc
 
 			uint32_t data_storage_size = stream.read_unsigned_int();
 			auto data_storage = SC2::GetDataStorage((char*)stream.data() + stream.position());
-			stream.seek(data_storage_size, sc::Stream::SeekMode::Add);
+			stream.seek(data_storage_size, wk::Stream::SeekMode::Add);
 
 			load_sc2_matrix_banks(data_storage);
 
@@ -490,7 +490,7 @@ namespace sc
 					break;
 
 				if (tag_length < 0)
-					throw Exception("Negative tag length");
+					throw wk::Exception("Negative tag length");
 
 				switch (tag)
 				{
@@ -522,7 +522,7 @@ namespace sc
 				case TAG_TEXTURE_9:
 				case TAG_TEXTURE_10:
 					if (textures.size() < textures_loaded) {
-						throw Exception("Trying to load too many textures");
+						throw wk::Exception("Trying to load too many textures");
 					}
 
 					textures[textures_loaded].load(*this, tag, !has_external_texture);
@@ -545,7 +545,7 @@ namespace sc
 				case TAG_SHAPE:
 				case TAG_SHAPE_2:
 					if (shapes.size() < shapes_loaded) {
-						throw Exception("Trying to load too many Shapes");
+						throw wk::Exception("Trying to load too many Shapes");
 					}
 
 					shapes[shapes_loaded].load(*this, tag);
@@ -561,7 +561,7 @@ namespace sc
 				case TAG_TEXT_FIELD_7:
 				case TAG_TEXT_FIELD_8:
 					if (textfields.size() < textfields_loaded) {
-						throw Exception("Trying to load too many TextFields");
+						throw wk::Exception("Trying to load too many TextFields");
 					}
 
 					textfields[textfields_loaded].load(*this, tag);
@@ -597,7 +597,7 @@ namespace sc
 				case TAG_MOVIE_CLIP_5:
 				case TAG_MOVIE_CLIP_6:
 					if (movieclips.size() < movieclips_loaded) {
-						throw Exception("Trying to load too many MovieClips");
+						throw wk::Exception("Trying to load too many MovieClips");
 					}
 
 					movieclips[movieclips_loaded].load(*this, tag);
@@ -605,7 +605,7 @@ namespace sc
 					break;
 
 				default:
-					stream.seek(tag_length, Stream::SeekMode::Add);
+					stream.seek(tag_length, wk::Stream::SeekMode::Add);
 					break;
 				}
 			}
@@ -622,12 +622,12 @@ namespace sc
 
 			if (matrixBanks.size() > std::numeric_limits<uint16_t>().max())
 			{
-				throw Exception("Too many matrix banks in use");
+				throw wk::Exception("Too many matrix banks in use");
 			}
 
 			if (textures.size() > std::numeric_limits<uint8_t>().max())
 			{
-				throw Exception("Too many textures in use");
+				throw wk::Exception("Too many textures in use");
 			}
 
 			if (matrixBanks.size() == 0) {
@@ -807,10 +807,10 @@ namespace sc
 						stream.write_string(texture_path);
 					}
 
-					BufferStream input_data;
+					wk::BufferStream input_data;
 					texture.save_buffer(input_data, is_lowres);
 
-					OutputFileStream output_file(output_filepath);
+					wk::OutputFileStream output_file(output_filepath);
 
 					ZstdCompressor::Props props;
 					ZstdCompressor cctx(props);
@@ -834,7 +834,7 @@ namespace sc
 				}
 			}
 
-			throw new Exception("Failed to get Display Object");
+			throw new wk::Exception("Failed to get Display Object");
 		}
 
 		DisplayObject& SupercellSWF::GetDisplayObjectByID(uint16_t id)
@@ -871,7 +871,7 @@ namespace sc
 				}
 			}
 
-			throw new Exception("Failed to get Display Object");
+			throw new wk::Exception("Failed to get Display Object");
 		}
 
 		MovieClip& SupercellSWF::GetDisplayObjectByName(SWFString& name)
@@ -885,7 +885,7 @@ namespace sc
 				}
 			}
 
-			throw new Exception("Failed to get Display Object");
+			throw new wk::Exception("Failed to get Display Object");
 		}
 	}
 }

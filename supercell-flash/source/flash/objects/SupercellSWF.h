@@ -101,7 +101,7 @@ namespace sc
 			{
 				uint32_t data_size = stream.read_unsigned_int();
 				(this->*reader)(storage, (uint8_t*)stream.data() + stream.position());
-				stream.seek(data_size, sc::Stream::SeekMode::Add);
+				stream.seek(data_size, wk::Stream::SeekMode::Add);
 			};
 
 			void load_sc2_export_names(const SC2::DataStorage* storage, const uint8_t*);

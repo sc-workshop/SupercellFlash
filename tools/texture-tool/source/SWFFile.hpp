@@ -39,11 +39,11 @@ namespace sc
 			return  true;
 		}
 
-		void DecodePixel(uint8_t* pixel_data, const Image::PixelDepthInfo& pixel_info, uint8_t& r_channel, uint8_t& g_channel, uint8_t& b_channel, uint8_t& a_channel)
+		void DecodePixel(uint8_t* pixel_data, const wk::Image::PixelDepthInfo& pixel_info, uint8_t& r_channel, uint8_t& g_channel, uint8_t& b_channel, uint8_t& a_channel)
 		{
 			uint32_t pixel_buffer = 0;
 
-			sc::Memory::copy(
+			wk::Memory::copy(
 				pixel_data,
 				(uint8_t*)(&pixel_buffer),
 				pixel_info.byte_count
@@ -96,7 +96,7 @@ namespace sc
 			}
 		}
 
-		void EncodePixel(uint8_t* pixel_data, const Image::PixelDepthInfo& pixel_info, const uint8_t r_channel, const uint8_t g_channel, const uint8_t b_channel, const uint8_t a_channel)
+		void EncodePixel(uint8_t* pixel_data, const wk::Image::PixelDepthInfo& pixel_info, const uint8_t r_channel, const uint8_t g_channel, const uint8_t b_channel, const uint8_t a_channel)
 		{
 			uint32_t pixel_buffer = 0;
 
@@ -132,18 +132,18 @@ namespace sc
 				}
 			}
 
-			sc::Memory::copy(
+			wk::Memory::copy(
 				(uint8_t*)&pixel_buffer,
 				pixel_data,
 				pixel_info.byte_count
 			);
 		}
 
-		void PremultiplyToStraight(RawImage& image)
+		void PremultiplyToStraight(wk::RawImage& image)
 		{
 			uint64_t pixel_count = image.width() * image.height();
 
-			const Image::PixelDepthInfo& pixel_info = Image::PixelDepthTable[(uint16_t)image.depth()];
+			const wk::Image::PixelDepthInfo& pixel_info = wk::Image::PixelDepthTable[(uint16_t)image.depth()];
 
 			for (uint64_t pixel_index = 0; pixel_count > pixel_index; pixel_index++)
 			{
@@ -168,11 +168,11 @@ namespace sc
 			}
 		}
 
-		void StraightToPremultiply(RawImage& image)
+		void StraightToPremultiply(wk::RawImage& image)
 		{
 			uint64_t pixel_count = image.width() * image.height();
 
-			const Image::PixelDepthInfo& pixel_info = Image::PixelDepthTable[(uint16_t)image.depth()];
+			const wk::Image::PixelDepthInfo& pixel_info = wk::Image::PixelDepthTable[(uint16_t)image.depth()];
 
 			for (uint64_t pixel_index = 0; pixel_count > pixel_index; pixel_index++)
 			{
@@ -284,7 +284,7 @@ namespace sc
 						for (uint16_t i = 0; exports_count > i; i++)
 						{
 							uint8_t length = stream.read_unsigned_byte();
-							stream.seek(length, sc::Stream::SeekMode::Add);
+							stream.seek(length, wk::Stream::SeekMode::Add);
 						}
 
 						load_texures_from_binary();
@@ -304,7 +304,7 @@ namespace sc
 						break;
 
 					if (tag_length < 0)
-						throw Exception("Negative tag length");
+						throw wk::Exception("Negative tag length");
 
 					switch (tag)
 					{
@@ -322,7 +322,7 @@ namespace sc
 						break;
 
 					default:
-						stream.seek(tag_length, sc::Stream::SeekMode::Add);
+						stream.seek(tag_length, wk::Stream::SeekMode::Add);
 						break;
 					}
 				}
@@ -445,24 +445,24 @@ namespace sc
 					// Texture Image
 					std::filesystem::path basename = output_path.stem();
 					std::filesystem::path output_image_path = output_path / basename.concat("_").concat(std::to_string(i)).concat(".png");
-					OutputFileStream output_image(output_image_path);
+					wk::OutputFileStream output_image(output_image_path);
 
-					stb::ImageFormat format = stb::ImageFormat::PNG;
+					wk::stb::ImageFormat format = wk::stb::ImageFormat::PNG;
 
 					switch (texture.encoding())
 					{
 					case SWFTexture::TextureEncoding::KhronosTexture:
 					{
-						RawImage image(
+						wk::RawImage image(
 							texture.image()->width(), texture.image()->height(),
 							texture.image()->depth()
 						);
 
-						sc::MemoryStream image_data(image.data(), image.data_length());
+						wk::MemoryStream image_data(image.data(), image.data_length());
 						((sc::texture::KhronosTexture*)(texture.image()))->decompress_data(image_data);
 
 						PremultiplyToStraight(image);
-						stb::write_image(image, format, output_image);
+						wk::stb::write_image(image, format, output_image);
 					}
 					break;
 
@@ -470,9 +470,9 @@ namespace sc
 					{
 						texture.linear(true);
 
-						sc::RawImage& image = *(sc::RawImage*)(texture.image());
+						wk::RawImage& image = *(wk::RawImage*)(texture.image());
 						PremultiplyToStraight(image);
-						stb::write_image(
+						wk::stb::write_image(
 							image,
 							format,
 							output_image
@@ -489,7 +489,7 @@ namespace sc
 
 				std::string serialized_data = texture_infos.dump(4);
 
-				OutputFileStream file_info(output_path / output_path.stem().concat(".json"));
+				wk::OutputFileStream file_info(output_path / output_path.stem().concat(".json"));
 				file_info.write(serialized_data.data(), serialized_data.size());
 			}
 
@@ -530,12 +530,12 @@ namespace sc
 				for (uint16_t i = 0; texture_images_paths.size() > i; i++)
 				{
 					// Image Loading
-					RawImage* image = nullptr;
-					InputFileStream image_file(texture_images_paths[i]);
-					stb::load_image(image_file, &image);
+					wk::RawImage* image = nullptr;
+					wk::InputFileStream image_file(texture_images_paths[i]);
+					wk::stb::load_image(image_file, &image);
 					StraightToPremultiply(*image);
 
-					MemoryStream image_data(image->data(), image->data_length());
+					wk::MemoryStream image_data(image->data(), image->data_length());
 
 					// Image Converting
 					SWFTexture texture;

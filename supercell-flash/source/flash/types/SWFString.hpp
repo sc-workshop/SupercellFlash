@@ -2,9 +2,9 @@
 
 #include <string>
 
-#include <core/memory/memory.h>
-#include <core/memory/ref.h>
-#include <core/io/stream.h>
+#include "core/memory/memory.h"
+#include "core/memory/ref.h"
+#include "core/io/stream.h"
 
 namespace sc
 {
@@ -21,9 +21,9 @@ namespace sc
 				m_length = string_size >= 0xFE ? 0xFE : static_cast<uint8_t>(string_size);
 				if (!m_length) return;
 
-				char* data_ptr = sc::Memory::allocate<char>(m_length + 1);
-				m_data = Ref<char>(data_ptr);
-				sc::Memory::copy(data, data_ptr, m_length);
+				char* data_ptr = wk::Memory::allocate<char>(m_length + 1);
+				m_data = wk::Ref<char>(data_ptr);
+				wk::Memory::copy(data, data_ptr, m_length);
 				*(data_ptr + m_length) = '\0';
 			}
 
@@ -32,10 +32,10 @@ namespace sc
 				m_length = string.length() >= 0xFE ? 0xFE : static_cast<uint8_t>(string.length());
 				if (!m_length) return;
 
-				char* data_ptr = sc::Memory::allocate<char>(m_length + 1);
-				m_data = Ref<char>(data_ptr);
+				char* data_ptr = wk::Memory::allocate<char>(m_length + 1);
+				m_data = wk::Ref<char>(data_ptr);
 
-				sc::Memory::copy(string.c_str(), data_ptr, m_length + 1);
+				wk::Memory::copy(string.c_str(), data_ptr, m_length + 1);
 			}
 			SWFString& operator=(const SWFString&) = default;
 
@@ -44,10 +44,10 @@ namespace sc
 				m_length = string.length();
 				if (!m_length) return;
 
-				char* data_ptr = sc::Memory::allocate<char>(m_length + 1);
-				m_data = Ref<char>(data_ptr);
+				char* data_ptr = wk::Memory::allocate<char>(m_length + 1);
+				m_data = wk::Ref<char>(data_ptr);
 
-				sc::Memory::copy(string.data(), data_ptr, m_length + 1);
+				wk::Memory::copy(string.data(), data_ptr, m_length + 1);
 			}
 
 			~SWFString()
@@ -143,7 +143,7 @@ namespace sc
 					return;
 				}
 
-				char* new_data = sc::Memory::allocate<char>(new_length + 1);
+				char* new_data = wk::Memory::allocate<char>(new_length + 1);
 
 				for (uint8_t i = 0; new_length > i; i++)
 				{
@@ -152,7 +152,7 @@ namespace sc
 				*(new_data + new_length) = '\0';
 
 				clear();
-				m_data = Ref<char>(new_data);
+				m_data = wk::Ref<char>(new_data);
 				m_length = new_length;
 			}
 
@@ -167,7 +167,7 @@ namespace sc
 			}
 
 		private:
-			Ref<char> m_data = nullptr;
+			wk::Ref<char> m_data = nullptr;
 			uint8_t m_length = 0;
 		};
 	}

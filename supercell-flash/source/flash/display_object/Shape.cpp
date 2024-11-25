@@ -24,7 +24,7 @@ namespace sc
 				int32_t command_tag_length = swf.stream.read_int();
 
 				if (command_tag_length < 0)
-					throw Exception("Negative tag length");
+					throw wk::Exception("Negative tag length");
 
 				if (command_tag == TAG_END)
 					break;
@@ -38,14 +38,14 @@ namespace sc
 					vertices_count += (uint8_t)commands[commands_total].vertices.size();
 					if (vertices_count < vertices_total)
 					{
-						throw Exception("Trying to load too many vertices");
+						throw wk::Exception("Trying to load too many vertices");
 					}
 
 					commands_total++;
 					break;
 
 				default:
-					swf.stream.seek(command_tag_length, Stream::SeekMode::Add);
+					swf.stream.seek(command_tag_length, wk::Stream::SeekMode::Add);
 					break;
 				}
 			}
@@ -55,7 +55,7 @@ namespace sc
 		{
 			if (commands.size() >= std::numeric_limits<uint16_t>().max())
 			{
-				throw Exception("Too many Shape commands in shape %i", id);
+				throw wk::Exception("Too many Shape commands in shape %i", id);
 			}
 
 			uint16_t commands_count = (uint16_t)commands.size();
