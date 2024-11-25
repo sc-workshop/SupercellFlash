@@ -89,6 +89,8 @@ namespace sc
 			// Saves custom properties in MovieClips
 			bool save_custom_property = true;
 
+			bool save_as_sc2 = false;
+
 			bool low_memory_usage_mode = false;
 
 			SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;

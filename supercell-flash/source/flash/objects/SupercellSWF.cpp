@@ -68,6 +68,7 @@ namespace sc
 				ZstdDecompressor decompressor;
 				decompressor.decompress(file, stream);
 
+				save_as_sc2 = true;
 				load_sc2();
 				return false;
 			}

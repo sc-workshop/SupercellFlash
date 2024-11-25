@@ -82,6 +82,26 @@ namespace sc
 			}
 		}
 
+		void ShapeDrawBitmapCommand::sort_advanced_vertices()
+		{
+			ShapeDrawBitmapCommandVertexArray temp = vertices;
+			ShapeDrawBitmapCommandTrianglesArray indices;
+			indices.reserve(vertices.size());
+
+			indices.push_back(0);
+			for (uint16_t i = 1; i < floor((float)vertices.size() / 2) * 2; i += 2) {
+				indices.push_back(i);
+			}
+			for (uint16_t i = (uint16_t)floor(((float)vertices.size() - 1) / 2) * 2; i > 0; i -= 2) {
+				indices.push_back(i);
+			}
+
+			for (uint16_t i = 0; vertices.size() > i; i++)
+			{
+				vertices[i] = temp[indices[i]];
+			}
+		}
+
 		uint8_t ShapeDrawBitmapCommand::tag(SupercellSWF&) const
 		{
 			return TAG_SHAPE_DRAW_BITMAP_COMMAND_3;
