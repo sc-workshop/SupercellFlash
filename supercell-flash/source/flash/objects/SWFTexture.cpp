@@ -146,8 +146,7 @@ namespace sc
 
 		const wk::Ref<wk::RawImage> SWFTexture::raw_image() const
 		{
-			auto image = m_image.get();
-			auto texture = CreateRef<wk::RawImage>(image->width(), image->height(), image->depth());
+			Ref<wk::RawImage> texture = CreateRef<wk::RawImage>(m_image->width(), m_image->height(), m_image->depth());
 
 			if (m_encoding == TextureEncoding::KhronosTexture)
 			{
@@ -159,6 +158,10 @@ namespace sc
 			{
 				RawImage* raw_image = (RawImage*)m_image.get();
 				raw_image->copy(*texture);
+				if (!m_linear)
+				{
+					make_linear_data(raw_image->data(), texture->data(), texture->width(), texture->height(), m_pixel_format, false);
+				}
 			}
 
 			return texture;
