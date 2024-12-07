@@ -1,5 +1,7 @@
 #include "MatrixBank.h"
 
+#include <execution>
+
 #define floatEqual(a,b) (fabs(a - b) <= ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * 0.001))
 
 namespace sc {
@@ -22,16 +24,16 @@ namespace sc {
 				return true;
 			}
 
-			for (uint16_t i = 0; matrices.size() > i; i++) {
-				const Matrix2D& other = matrices[i];
-
-				if (other == matrix) {
-					index = i;
-					return true;
-				}
+			auto result = std::find(std::execution::par_unseq, matrices.begin(), matrices.end(), matrix);
+			if (result == matrices.end())
+			{
+				return false;
 			}
-
-			return false;
+			else
+			{
+				index = std::distance(matrices.begin(), result);
+				return true;
+			}
 		};
 
 		bool MatrixBank::get_colorTransform_index(const ColorTransform& color, uint16_t& index) const
@@ -47,16 +49,16 @@ namespace sc {
 				return true;
 			}
 
-			for (uint16_t i = 0; color_transforms.size() > i; i++) {
-				const ColorTransform& other = color_transforms[i];
-
-				if (other == color) {
-					index = i;
-					return true;
-				}
+			auto result = std::find(std::execution::par_unseq, color_transforms.begin(), color_transforms.end(), color);
+			if (result == color_transforms.end())
+			{
+				return false;
 			}
-
-			return false;
+			else
+			{
+				index = std::distance(color_transforms.begin(), result);
+				return true;
+			}
 		}
 
 		uint8_t MatrixBank::tag(SupercellSWF&) const

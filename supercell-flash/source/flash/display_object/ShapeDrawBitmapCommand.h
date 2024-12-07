@@ -14,6 +14,8 @@ namespace sc
 
 			float u;
 			float v;
+
+			bool operator==(const ShapeDrawBitmapCommandVertex& other) const;
 		};
 
 		typedef SWFVector<ShapeDrawBitmapCommandVertex, uint32_t> ShapeDrawBitmapCommandVertexArray;
@@ -45,6 +47,9 @@ namespace sc
 			virtual void save(SupercellSWF& swf) const;
 
 			virtual uint8_t tag(SupercellSWF& swf) const;
+
+		public:
+			bool operator==(const ShapeDrawBitmapCommand& other) const;
 		};
 	}
 }

@@ -106,5 +106,15 @@ namespace sc
 		{
 			return TAG_SHAPE_DRAW_BITMAP_COMMAND_3;
 		}
+
+		bool ShapeDrawBitmapCommandVertex::operator==(const ShapeDrawBitmapCommandVertex& other) const
+		{
+			return x == other.x && y == other.y && u == other.u && v == other.v;
+		}
+
+		bool ShapeDrawBitmapCommand::operator==(const ShapeDrawBitmapCommand& other) const
+		{
+			return texture_index == other.texture_index && vertices == other.vertices;
+		}
 	}
 }
