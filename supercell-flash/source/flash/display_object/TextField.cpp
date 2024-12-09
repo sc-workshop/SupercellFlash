@@ -208,6 +208,7 @@ namespace sc
 
 		void TextField::load_sc2(SupercellSWF& swf, const SC2::DataStorage* storage, const uint8_t* data)
 		{
+			using Style = SC2::TextFieldStyle;
 			auto textfields_data = SC2::GetTextFields(data);
 
 			auto textfields_vector = textfields_data->textfields();
@@ -229,6 +230,14 @@ namespace sc
 					)->c_str()
 				);
 
+				textfield.is_bold = (textfield_data->styles() & (uint8_t)Style::bold) > 0;
+				textfield.is_italic = (textfield_data->styles() & (uint8_t)Style::italic) > 0;
+				textfield.is_multiline = (textfield_data->styles() & (uint8_t)Style::is_multiline) > 0;
+				textfield.is_outlined = (textfield_data->styles() & (uint8_t)Style::has_outline) > 0;
+				textfield.unknown_flag3 = (textfield_data->styles() & (uint8_t)Style::unknown_flag3) > 0;
+				textfield.unknown_flag = (textfield_data->styles() & (uint8_t)Style::unknown_flag) > 0;
+				textfield.auto_kern = (textfield_data->styles() & (uint8_t)Style::auto_kern) > 0;
+
 				textfield.left = textfield_data->left();
 				textfield.right = textfield_data->right();
 				textfield.top = textfield_data->top();
@@ -243,10 +252,17 @@ namespace sc
 					)->c_str()
 				);
 
+				textfield.typography_file = SWFString(
+					strings_vector->Get(
+						textfield_data->typography_ref_id()
+					)->c_str()
+				);
+
 				textfield.font_vertical_align = TextField::get_vertical_align(textfield_data->align());
 				textfield.font_horizontal_align = TextField::get_horizontal_align(textfield_data->align());
 
 				textfield.font_size = textfield_data->font_size();
+				textfield.unknown_short = textfield_data->unknown_short();
 			}
 		}
 	}
