@@ -5,7 +5,10 @@
 
 #include "flash/types/SWFContainer.hpp"
 
-#define SWFTEXTURE_BLOCK_SIZE 32
+constexpr auto SWFTEXTURE_BLOCK_SIZE = 32;
+
+#include "flash/SC2/DataStorage_generated.h"
+#include "flash/SC2/Textures_generated.h"
 
 namespace sc
 {
@@ -97,6 +100,9 @@ namespace sc
 			virtual void save(SupercellSWF& swf, bool has_data, bool is_lowres) const;
 			virtual void save_buffer(wk::Stream& stream, bool is_lowres) const;
 			virtual uint8_t tag(SupercellSWF& swf, bool has_data = false) const;
+
+		public:
+			static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
 		};
 	}
 }

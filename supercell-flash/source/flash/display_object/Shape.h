@@ -5,10 +5,13 @@
 
 #include "flash/types/SWFContainer.hpp"
 
+#include "flash/SC2/DataStorage_generated.h"
+#include "flash/SC2/Shapes_generated.h"
+
 namespace sc
 {
 	namespace flash {
-		typedef SWFVector<ShapeDrawBitmapCommand, uint32_t> ShapeDrawBitmapCommandArray;
+		using ShapeDrawBitmapCommandArray = SWFVector<ShapeDrawBitmapCommand, uint32_t>;
 
 		class Shape : public DisplayObject
 		{
@@ -30,6 +33,10 @@ namespace sc
 			virtual uint8_t tag(SupercellSWF& swf) const;
 
 			virtual bool is_shape() const;
+
+			bool operator==(const Shape& other) const;
+		public:
+			static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
 		};
 	}
 }

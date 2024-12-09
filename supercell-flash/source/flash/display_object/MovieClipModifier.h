@@ -3,6 +3,9 @@
 #include "DisplayObject.h"
 #include "flash/flash_tags.h"
 
+#include "flash/SC2/DataStorage_generated.h"
+#include "flash/SC2/MovieClipModifiers_generated.h"
+
 namespace sc
 {
 	namespace flash {
@@ -36,6 +39,9 @@ namespace sc
 			virtual uint8_t tag(SupercellSWF& swf) const;
 
 			virtual bool is_modifier() const;
+
+		public:
+			static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
 		};
 	}
 }

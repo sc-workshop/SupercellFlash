@@ -29,9 +29,9 @@ target_link_libraries(${TARGET} PUBLIC wk::core)
 target_link_libraries(${TARGET} PUBLIC supercell::compression)
 target_link_libraries(${TARGET} PUBLIC supercell::texture)
 
-flatbuffers_generate_headers(
+wk_flatbuffers_generate_headers(
     TARGET SC2_API
-    INCLUDE_PREFIX SC2
+    INCLUDE_PREFIX flash/SC2
     SCHEMAS ${SC2_SCHEMAS}
     FLAGS --cpp-std=c++17
 )
@@ -41,7 +41,7 @@ set_target_properties(${TARGET} PROPERTIES
 )
 
 target_link_libraries(${TARGET}
-    PRIVATE SC2_API
+    PUBLIC SC2_API
 )
 
 # setup project

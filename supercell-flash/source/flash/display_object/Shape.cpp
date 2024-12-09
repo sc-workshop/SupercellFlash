@@ -91,5 +91,61 @@ namespace sc
 		{
 			return true;
 		}
+
+		bool Shape::operator==(const Shape& other) const
+		{
+			return id == other.id && commands == other.commands;
+		}
+
+		void Shape::load_sc2(SupercellSWF& swf, const SC2::DataStorage* storage, const uint8_t* data)
+		{
+			auto shapes_data = SC2::GetShapes(data);
+
+			auto shapes_vector = shapes_data->shapes();
+			if (!shapes_vector) return;
+
+			auto shape_vertex_buffer = storage->shapes_bitmap_poins();
+
+			uint16_t shapes_count = (uint16_t)shapes_vector->size();
+			swf.shapes.reserve(shapes_count);
+
+			for (uint16_t i = 0; shapes_count > i; i++)
+			{
+				auto shape_data = shapes_vector->Get(i);
+				Shape& shape = swf.shapes.emplace_back();
+				shape.id = shape_data->id();
+
+				auto commands_vector = shape_data->commands();
+				if (!commands_vector) continue;
+
+				uint32_t commands_count = commands_vector->size();
+				shape.commands.reserve(commands_count);
+
+				for (uint32_t c = 0; commands_count > c; c++)
+				{
+					auto command_data = commands_vector->Get(c);
+					ShapeDrawBitmapCommand& command = shape.commands.emplace_back();
+					command.texture_index = command_data->texture_index();
+
+					uint32_t vertex_count = command_data->points_count();
+					command.vertices.reserve(vertex_count);
+
+					uint32_t vertex_offset = command_data->points_offset();
+					for (uint32_t v = 0; vertex_count > v; v++)
+					{
+						const uint8_t* vertex_data = shape_vertex_buffer->data() + ((vertex_offset + v) * 12);
+						ShapeDrawBitmapCommandVertex& vertex = command.vertices.emplace_back();
+
+						vertex.x = *(const float*)vertex_data;
+						vertex.y = *(const float*)(vertex_data + sizeof(float));
+
+						vertex.u = (float)(*(const uint16_t*)(vertex_data + (sizeof(float) * 2))) / 0xFFFF;
+						vertex.v = (float)(*(const uint16_t*)(vertex_data + (sizeof(float) * 2) + sizeof(uint16_t))) / 0xFFFF;
+					}
+
+					command.create_triangle_indices(true);
+				}
+			}
+		}
 	}
 }

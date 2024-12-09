@@ -213,5 +213,122 @@ namespace sc
 		{
 			return true;
 		}
+
+		void MovieClip::load_sc2(SupercellSWF& swf, const SC2::DataStorage* storage, const uint8_t* data)
+		{
+			auto movieclips_data = SC2::GetMovieClips(data);
+
+			auto movieclips_vector = movieclips_data->movieclips();
+			if (!movieclips_vector) return;
+
+			uint16_t movieclips_count = (uint16_t)movieclips_vector->size();
+			swf.movieclips.reserve(movieclips_count);
+
+			auto strings_vector = storage->strings();
+			auto movieclip_elements_vector = storage->movieclips_frame_elements();
+			auto rectangles_vector = storage->rectangles();
+
+			for (uint16_t i = 0; movieclips_count > i; i++)
+			{
+				auto movieclip_data = movieclips_vector->Get(i);
+				MovieClip& movieclip = swf.movieclips.emplace_back();
+
+				movieclip.id = movieclip_data->id();
+				movieclip.frame_rate = movieclip_data->framerate();
+
+				movieclip.bank_index = movieclip_data->matrix_bank_index();
+				movieclip.unknown_flag = (bool)movieclip_data->unknown_bool();
+
+				{
+					auto scaling_grid = movieclip_data->scaling_grid_index();
+					if (scaling_grid.has_value())
+					{
+						auto rectangle = rectangles_vector->Get(scaling_grid.value());
+						movieclip.scaling_grid = wk::RectF(
+							rectangle->left(),
+							rectangle->top(),
+							rectangle->right(),
+							rectangle->bottom()
+						);
+					}
+				}
+
+				auto children_ids_vector = movieclip_data->children_ids();
+				auto children_blending_vector = movieclip_data->children_blending();
+				auto children_names_vector = movieclip_data->children_name_ref_ids();
+
+				if (!children_ids_vector)
+				{
+					// No need to process frames or something else if movieclip have no childrens
+					continue;
+				}
+
+				uint16_t children_count = (uint16_t)children_ids_vector->size();
+				movieclip.childrens.resize(children_count);
+
+				for (uint16_t c = 0; children_count > c; c++)
+				{
+					movieclip.childrens[c].id = children_ids_vector->Get(c);
+				}
+
+				if (children_blending_vector)
+				{
+					for (uint16_t c = 0; children_blending_vector->size() > c && children_count > c; c++)
+					{
+						movieclip.childrens[c].blend_mode = (DisplayObjectInstance::BlendMode)children_blending_vector->Get(c);
+					}
+				}
+
+				if (children_names_vector)
+				{
+					for (uint16_t c = 0; children_names_vector->size() > c && children_count > c; c++)
+					{
+						movieclip.childrens[c].name = SWFString(
+							strings_vector->Get(
+								children_names_vector->Get(c)
+							)->c_str()
+						);
+					}
+				}
+
+				auto frames_vector = movieclip_data->frames();
+				uint16_t frames_count = (uint16_t)movieclip_data->frames_count();
+				movieclip.frames.reserve(frames_count);
+
+				for (uint16_t f = 0; frames_count > f; f++)
+				{
+					auto frame_data = frames_vector->Get(f);
+					MovieClipFrame& frame = movieclip.frames.emplace_back();
+
+					frame.elements_count = frame_data->used_transform();
+					frame.label = SWFString(
+						strings_vector->Get(
+							frame_data->label_ref_id()
+						)->c_str()
+					);
+				}
+
+				uint32_t elements_count = 0;
+				uint32_t elements_offset = movieclip_data->frame_elements_offset() * sizeof(uint16_t);
+				for (MovieClipFrame& frame : movieclip.frames)
+				{
+					elements_count += frame.elements_count;
+				}
+
+				movieclip.frame_elements.reserve(elements_count);
+
+				for (uint32_t e = 0; elements_count > e; e++)
+				{
+					const uint8_t* element_data = movieclip_elements_vector->data() + elements_offset;
+					MovieClipFrameElement& element = movieclip.frame_elements.emplace_back();
+
+					element.instance_index = *(const uint16_t*)element_data;
+					element.matrix_index = *(const uint16_t*)(element_data + sizeof(uint16_t));
+					element.colorTransform_index = *(const uint16_t*)(element_data + sizeof(uint16_t) * 2);
+
+					elements_offset += sizeof(MovieClipFrameElement);
+				}
+			}
+		}
 	}
 }

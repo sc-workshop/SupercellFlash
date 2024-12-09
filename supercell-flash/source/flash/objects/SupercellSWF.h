@@ -97,21 +97,12 @@ namespace sc
 			SWFString low_resolution_suffix = LOWRES_DEFAULT_SUFFIX;
 
 		private:
-			void load_sc2_matrix_banks(const SC2::DataStorage* storage);
-
-			void load_sc2_chunk(const SC2::DataStorage* storage, void (SupercellSWF::* reader)(const SC2::DataStorage* storage, const uint8_t*))
+			void inline load_sc2_chunk(const SC2::DataStorage* storage, const std::function<void(SupercellSWF&, const SC2::DataStorage*, const uint8_t*)>& reader)
 			{
 				uint32_t data_size = stream.read_unsigned_int();
-				(this->*reader)(storage, (uint8_t*)stream.data() + stream.position());
+				reader(*this, storage, (uint8_t*)stream.data() + stream.position());
 				stream.seek(data_size, wk::Stream::SeekMode::Add);
 			};
-
-			void load_sc2_export_names(const SC2::DataStorage* storage, const uint8_t*);
-			void load_sc2_textfields(const SC2::DataStorage* storage, const uint8_t*);
-			void load_sc2_shapes(const SC2::DataStorage* storage, const uint8_t*);
-			void load_sc2_movieclip(const SC2::DataStorage* storage, const uint8_t*);
-			void load_sc2_movieclip_modifiers(const SC2::DataStorage* storage, const uint8_t*);
-			void load_sc2_textures(const SC2::DataStorage* storage, const uint8_t*);
 		};
 	}
 }

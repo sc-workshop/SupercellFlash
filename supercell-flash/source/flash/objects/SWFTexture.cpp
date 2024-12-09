@@ -501,5 +501,27 @@ namespace sc
 
 			return tag;
 		}
+
+		void SWFTexture::load_sc2(SupercellSWF& swf, const SC2::DataStorage* storage, const uint8_t* data)
+		{
+			auto textures_data = SC2::GetTextures(data);
+
+			auto textures_vector = textures_data->textures();
+			if (!textures_vector) return;
+
+			uint32_t texture_count = textures_vector->size();
+
+			for (uint32_t i = 0; texture_count > i; i++)
+			{
+				auto texture_set_data = textures_vector->Get(i);
+				auto texture_data = swf.low_memory_usage_mode && texture_set_data->lowres() ? texture_set_data->lowres() : texture_set_data->highres();
+				SWFTexture& texture = swf.textures.emplace_back();
+
+				// Hardcode Khronos texture for now
+				wk::MemoryStream texture_stream((uint8_t*)texture_data->data()->data(), texture_data->data()->size());
+				texture.load_from_khronos_texture(texture_stream);
+			}
+		}
+
 	}
 }

@@ -109,12 +109,34 @@ namespace sc
 
 		bool ShapeDrawBitmapCommandVertex::operator==(const ShapeDrawBitmapCommandVertex& other) const
 		{
-			return x == other.x && y == other.y && u == other.u && v == other.v;
+			return uv_equal(other) && xy_equal(other);
+		}
+
+		bool ShapeDrawBitmapCommandVertex::uv_equal(const ShapeDrawBitmapCommandVertex& other) const
+		{
+			return u == other.u && v == other.v;
+		}
+
+		bool ShapeDrawBitmapCommandVertex::xy_equal(const ShapeDrawBitmapCommandVertex& other) const
+		{
+			return x == other.x && x == other.y;
 		}
 
 		bool ShapeDrawBitmapCommand::operator==(const ShapeDrawBitmapCommand& other) const
 		{
-			return texture_index == other.texture_index && vertices == other.vertices;
+			if (texture_index != other.texture_index) return false;
+
+			if (triangle_indices != other.triangle_indices) return false;
+
+			for (uint32_t i = 0; other.triangle_indices.size() > i; i++)
+			{
+				const ShapeDrawBitmapCommandVertex& v1 = vertices[i];
+				const ShapeDrawBitmapCommandVertex& v2 = vertices[i];
+
+				if (!(v1 == v2)) return false;
+			}
+
+			return true;
 		}
 	}
 }

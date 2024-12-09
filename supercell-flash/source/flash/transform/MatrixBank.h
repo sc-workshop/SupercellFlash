@@ -5,9 +5,13 @@
 #include "ColorTransform.h"
 #include "flash/types/SWFContainer.hpp"
 
+#include "flash/SC2/DataStorage_generated.h"
+
 namespace sc
 {
 	namespace flash {
+		class SupercellSWF;
+
 		struct MatrixBank
 		{
 		public:
@@ -27,6 +31,9 @@ namespace sc
 			bool get_colorTransform_index(const ColorTransform& color, uint16_t& index) const;
 
 			virtual uint8_t tag(SupercellSWF& swf) const;
+
+		public:
+			static void load(SupercellSWF&, const SC2::DataStorage*);
 		};
 	}
 }

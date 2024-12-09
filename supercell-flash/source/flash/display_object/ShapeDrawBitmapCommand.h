@@ -16,6 +16,8 @@ namespace sc
 			float v;
 
 			bool operator==(const ShapeDrawBitmapCommandVertex& other) const;
+			bool uv_equal(const ShapeDrawBitmapCommandVertex& other) const;
+			bool xy_equal(const ShapeDrawBitmapCommandVertex& other) const;
 		};
 
 		typedef SWFVector<ShapeDrawBitmapCommandVertex, uint32_t> ShapeDrawBitmapCommandVertexArray;

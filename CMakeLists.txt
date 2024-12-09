@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 project(supercell-sdk)
 
 # options
-option(SC_FLASH_BUILD_TOOLS "Build tools of supercell::flash library" ON)
+option(SC_FLASH_BUILD_TOOLS "Build tools of supercell::flash library" OFF)
 
 # includes
 include(FetchContent)

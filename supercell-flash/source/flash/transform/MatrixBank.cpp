@@ -1,4 +1,5 @@
 #include "MatrixBank.h"
+#include "flash/objects/SupercellSWF.h"
 
 #include <execution>
 
@@ -65,5 +66,53 @@ namespace sc {
 		{
 			return TAG_MATRIX_BANK;
 		};
+
+		void MatrixBank::load(SupercellSWF& swf, const SC2::DataStorage* storage)
+		{
+			auto matrix_banks_vector = storage->matrix_banks();
+			// Return if empty
+			if (!matrix_banks_vector) return;
+
+			uint32_t matrix_bank_count = matrix_banks_vector->size();
+			swf.matrixBanks.reserve(matrix_bank_count);
+
+			for (uint32_t i = 0; matrix_bank_count > i; i++)
+			{
+				auto bank_data = matrix_banks_vector->Get(i);
+				MatrixBank& bank = swf.matrixBanks.emplace_back();
+
+				auto matrices_vector = bank_data->matrices();
+				auto colors_vector = bank_data->colors();
+
+				if (matrices_vector)
+				{
+					uint16_t matrices_count = (uint16_t)matrices_vector->size();
+					bank.matrices.reserve(matrices_count);
+
+					for (uint16_t m = 0; matrices_count > m; m++)
+					{
+						auto matrix_data = matrices_vector->Get(m);
+						Matrix2D& matrix = bank.matrices.emplace_back();
+						matrix.a = matrix_data->a(); matrix.b = matrix_data->b(); matrix.c = matrix_data->c(); matrix.d = matrix_data->d();
+						matrix.tx = matrix_data->tx(); matrix.ty = matrix_data->ty();
+					}
+				}
+
+				if (colors_vector)
+				{
+					uint16_t colors_count = (uint16_t)colors_vector->size();
+					bank.color_transforms.reserve(colors_count);
+
+					for (uint16_t c = 0; colors_count > c; c++)
+					{
+						auto color_data = colors_vector->Get(c);
+						ColorTransform& color = bank.color_transforms.emplace_back();
+						color.add.r = color_data->r_add(); color.add.g = color_data->g_add(); color.add.b = color_data->b_add();
+						color.multiply.r = color_data->r_mul(); color.multiply.g = color_data->g_mul(); color.multiply.b = color_data->b_mul();
+						color.alpha = color_data->alpha();
+					}
+				}
+			}
+		}
 	}
 }
