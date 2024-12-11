@@ -215,10 +215,26 @@ namespace sc
 		public:
 			SWFFile() {};
 
-			// If the file is a real texture, only the texture tags are loaded, otherwise the entire file is loaded.
 			SWFFile(std::filesystem::path path, bool load_all = false)
 			{
 				current_file = path;
+
+				wk::InputFileStream file(path);
+				if (SupercellSWF::IsSC2(file))
+				{
+					std::cout << "File is loaded as a SC2" << std::endl;
+					load_sc2(file);
+				}
+				else
+				{
+					load_sc1(path, load_all);
+				}
+			}
+
+		public:
+			// If the file is a real texture, only the texture tags are loaded, otherwise the entire file is loaded.
+			void load_sc1(std::filesystem::path path, bool load_all = false)
+			{
 				stream.open_file(path);
 
 				// Path Check
@@ -292,7 +308,6 @@ namespace sc
 				}
 			}
 
-		public:
 			void load_texures_from_binary()
 			{
 				while (true)

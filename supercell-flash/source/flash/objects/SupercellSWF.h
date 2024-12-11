@@ -52,11 +52,10 @@ namespace sc
 
 		public:
 			virtual void load(const std::filesystem::path& filePath);
-
-
 			bool load_internal(const std::filesystem::path& filepath, bool is_texture);
 
 			bool load_sc1(bool is_texture);
+			void load_sc2(wk::Stream& stream);
 			void load_sc2();
 
 			virtual void save(const fs::path& filepath, Signature signature);
@@ -96,6 +95,9 @@ namespace sc
 
 			SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;
 			SWFString low_resolution_suffix = LOWRES_DEFAULT_SUFFIX;
+
+		public:
+			static inline bool IsSC2(wk::Stream& stream);
 		};
 	}
 }

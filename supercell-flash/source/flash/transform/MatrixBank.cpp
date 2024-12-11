@@ -32,7 +32,7 @@ namespace sc {
 			}
 			else
 			{
-				index = std::distance(matrices.begin(), result);
+				index = (uint16_t)std::distance(matrices.begin(), result);
 				return true;
 			}
 		};
@@ -57,7 +57,7 @@ namespace sc {
 			}
 			else
 			{
-				index = std::distance(color_transforms.begin(), result);
+				index = (uint16_t)std::distance(color_transforms.begin(), result);
 				return true;
 			}
 		}

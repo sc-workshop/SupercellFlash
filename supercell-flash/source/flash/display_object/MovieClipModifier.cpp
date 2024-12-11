@@ -25,7 +25,7 @@ namespace sc {
 			return true;
 		}
 
-		void MovieClipModifier::load_sc2(SupercellSWF& swf, const SC2::DataStorage* storage, const uint8_t* data)
+		void MovieClipModifier::load_sc2(SupercellSWF& swf, const SC2::DataStorage*, const uint8_t* data)
 		{
 			auto modifiers_data = SC2::GetMovieClipModifiers(data);
 

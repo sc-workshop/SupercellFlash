@@ -50,18 +50,9 @@ namespace sc
 			stream.clear();
 
 			wk::InputFileStream file(filepath);
-			if (file.read_short() == SC_MAGIC && file.read_unsigned_int() == 5)
+			if (SupercellSWF::IsSC2(file))
 			{
-				uint32_t metadata_size = file.read_unsigned_int();
-
-				// TODO: Metadata
-				file.seek(metadata_size, wk::Stream::SeekMode::Add);
-
-				ZstdDecompressor decompressor;
-				decompressor.decompress(file, stream);
-
-				save_as_sc2 = true;
-				load_sc2();
+				load_sc2(file);
 				return false;
 			}
 			else
@@ -70,6 +61,20 @@ namespace sc
 				Decompressor::decompress(file, stream);
 				return load_sc1(is_texture);
 			}
+		}
+
+		void SupercellSWF::load_sc2(wk::Stream& input)
+		{
+			uint32_t metadata_size = input.read_unsigned_int();
+
+			// TODO: Metadata
+			input.seek(metadata_size, wk::Stream::SeekMode::Add);
+
+			ZstdDecompressor decompressor;
+			decompressor.decompress(input, stream);
+
+			save_as_sc2 = true;
+			load_sc2();
 		}
 
 		bool SupercellSWF::load_sc1(bool is_texture)
@@ -124,12 +129,13 @@ namespace sc
 
 			MatrixBank::load(*this, data_storage);
 
-			using SC2 = SupercellSWF2CompileTable;
-			SC2::load_chunk(*this, data_storage, ExportName::load_sc2);
-			SC2::load_chunk(*this, data_storage, Shape::load_sc2);
-			SC2::load_chunk(*this, data_storage, MovieClip::load_sc2);
-			SC2::load_chunk(*this, data_storage, MovieClipModifier::load_sc2);
-			SC2::load_chunk(*this, data_storage, SWFTexture::load_sc2);
+			using SC2T = SupercellSWF2CompileTable;
+			SC2T::load_chunk(*this, data_storage, ExportName::load_sc2);
+			SC2T::load_chunk(*this, data_storage, TextField::load_sc2);
+			SC2T::load_chunk(*this, data_storage, Shape::load_sc2);
+			SC2T::load_chunk(*this, data_storage, MovieClip::load_sc2);
+			SC2T::load_chunk(*this, data_storage, MovieClipModifier::load_sc2);
+			SC2T::load_chunk(*this, data_storage, SWFTexture::load_sc2);
 		}
 
 		bool SupercellSWF::load_tags()
@@ -575,6 +581,11 @@ namespace sc
 			}
 
 			throw new wk::Exception("Failed to get Display Object");
+		}
+
+		bool SupercellSWF::IsSC2(wk::Stream& stream)
+		{
+			return stream.read_short() == SC_MAGIC && stream.read_unsigned_int() == 5;
 		}
 	}
 }

@@ -502,7 +502,7 @@ namespace sc
 			return tag;
 		}
 
-		void SWFTexture::load_sc2(SupercellSWF& swf, const SC2::DataStorage* storage, const uint8_t* data)
+		void SWFTexture::load_sc2(SupercellSWF& swf, const SC2::DataStorage*, const uint8_t* data)
 		{
 			auto textures_data = SC2::GetTextures(data);
 

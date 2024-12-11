@@ -37,7 +37,7 @@ namespace sc::flash
 			auto it = std::find(std::execution::par_unseq, strings.begin(), strings.end(), target);
 			if (it != strings.end())
 			{
-				return std::distance(strings.begin(), it);
+				return (uint32_t)std::distance(strings.begin(), it);
 			}
 			else
 			{
