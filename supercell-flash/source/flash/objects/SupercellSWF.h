@@ -97,7 +97,7 @@ namespace sc
 			SWFString low_resolution_suffix = LOWRES_DEFAULT_SUFFIX;
 
 		public:
-			static inline bool IsSC2(wk::Stream& stream);
+			static bool IsSC2(wk::Stream& stream);
 		};
 	}
 }
