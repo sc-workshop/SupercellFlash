@@ -57,11 +57,12 @@ namespace sc
 			bool load_internal(const std::filesystem::path& filepath, bool is_texture);
 
 			bool load_sc1(bool is_texture);
-
 			void load_sc2();
 
 			virtual void save(const fs::path& filepath, Signature signature);
 			void save_internal(bool is_texture, bool is_lowres);
+
+			virtual void save_sc2(const fs::path& filepath) const;
 
 			SWFStream stream;
 
@@ -95,14 +96,6 @@ namespace sc
 
 			SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;
 			SWFString low_resolution_suffix = LOWRES_DEFAULT_SUFFIX;
-
-		private:
-			void inline load_sc2_chunk(const SC2::DataStorage* storage, const std::function<void(SupercellSWF&, const SC2::DataStorage*, const uint8_t*)>& reader)
-			{
-				uint32_t data_size = stream.read_unsigned_int();
-				reader(*this, storage, (uint8_t*)stream.data() + stream.position());
-				stream.seek(data_size, wk::Stream::SeekMode::Add);
-			};
 		};
 	}
 }

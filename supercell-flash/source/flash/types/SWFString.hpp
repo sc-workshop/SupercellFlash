@@ -156,7 +156,7 @@ namespace sc
 				m_length = new_length;
 			}
 
-			bool operator==(SWFString& other) const
+			bool operator==(const SWFString& other) const
 			{
 				return compare(other.data(), other.length()) == 0;
 			}

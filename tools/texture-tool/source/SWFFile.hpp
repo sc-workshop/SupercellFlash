@@ -458,7 +458,7 @@ namespace sc
 							texture.image()->depth()
 						);
 
-						wk::MemoryStream image_data(image.data(), image.data_length());
+						wk::SharedMemoryStream image_data(image.data(), image.data_length());
 						((sc::texture::KhronosTexture*)(texture.image()))->decompress_data(image_data);
 
 						PremultiplyToStraight(image);
@@ -535,7 +535,7 @@ namespace sc
 					wk::stb::load_image(image_file, &image);
 					StraightToPremultiply(*image);
 
-					wk::MemoryStream image_data(image->data(), image->data_length());
+					wk::SharedMemoryStream image_data(image->data(), image->data_length());
 
 					// Image Converting
 					SWFTexture texture;

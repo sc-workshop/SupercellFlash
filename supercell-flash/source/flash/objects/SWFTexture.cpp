@@ -77,7 +77,7 @@ namespace sc
 			case SWFTexture::TextureEncoding::KhronosTexture:
 			{
 				CompressedImage* texture = (CompressedImage*)m_image.get();
-				MemoryStream image_data(temp_image->data(), temp_image->data_length());
+				wk::SharedMemoryStream image_data(temp_image->data(), temp_image->data_length());
 				texture->decompress_data(image_data);
 			}
 			break;
@@ -151,7 +151,7 @@ namespace sc
 			if (m_encoding == TextureEncoding::KhronosTexture)
 			{
 				CompressedImage* compressed_image = (CompressedImage*)m_image.get();
-				MemoryStream texture_data(texture->data(), texture->data_length());
+				wk::SharedMemoryStream texture_data(texture->data(), texture->data_length());
 				compressed_image->decompress_data(texture_data);
 			}
 			else
@@ -217,7 +217,7 @@ namespace sc
 			{
 				if (has_khronos_texture)
 				{
-					MemoryStream khronos_texture_data((uint8_t*)swf.stream.data() + swf.stream.position(), khronos_texture_length);
+					wk::SharedMemoryStream khronos_texture_data((uint8_t*)swf.stream.data() + swf.stream.position(), khronos_texture_length);
 					load_from_khronos_texture(khronos_texture_data);
 					swf.stream.seek(khronos_texture_length, Stream::SeekMode::Add);
 					return;
@@ -286,7 +286,7 @@ namespace sc
 				if (is_lowres)
 				{
 					RawImage texture(image->width(), image->height(), image->depth());
-					MemoryStream texture_data(texture.data(), texture.data_length());
+					wk::SharedMemoryStream texture_data(texture.data(), texture.data_length());
 					image->decompress_data(texture_data);
 
 					RawImage lowres_texture(
@@ -335,7 +335,7 @@ namespace sc
 		void SWFTexture::load_from_image(RawImage& image)
 		{
 			SWFTexture::PixelFormat image_format{};
-			Ref<Stream> image_data = CreateRef<MemoryStream>(image.data(), image.data_length());
+			Ref<Stream> image_data = CreateRef<SharedMemoryStream>(image.data(), image.data_length());
 
 			switch (image.depth())
 			{
@@ -518,7 +518,7 @@ namespace sc
 				SWFTexture& texture = swf.textures.emplace_back();
 
 				// Hardcode Khronos texture for now
-				wk::MemoryStream texture_stream((uint8_t*)texture_data->data()->data(), texture_data->data()->size());
+				wk::SharedMemoryStream texture_stream((uint8_t*)texture_data->data()->data(), texture_data->data()->size());
 				texture.load_from_khronos_texture(texture_stream);
 			}
 		}

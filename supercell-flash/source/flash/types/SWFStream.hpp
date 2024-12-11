@@ -41,6 +41,25 @@ namespace sc
 				Compressor::compress(*this, file, context);
 				clear();
 			}
+
+			void save_sc2_file(const std::filesystem::path& path)
+			{
+				wk::OutputFileStream file(path);
+
+				file.write_unsigned_int(5);
+				file.write_unsigned_int(0);
+
+				seek(0);
+
+				ZstdCompressor::Props props;
+				props.compression_level = 20;
+				props.checksum_flag = false;
+				props.content_size_flag = true;
+
+				ZstdCompressor compressor(props);
+				compressor.compress(*this, file);
+				clear();
+			}
 #pragma endregion
 
 #pragma region Writing Functions

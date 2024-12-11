@@ -1,4 +1,5 @@
 #include "SupercellSWF.h"
+#include "SupercellSWF2.h"
 
 #include "flash/flash_tags.h"
 #include <cmath>
@@ -123,11 +124,12 @@ namespace sc
 
 			MatrixBank::load(*this, data_storage);
 
-			load_sc2_chunk(data_storage, ExportName::load_sc2);
-			load_sc2_chunk(data_storage, Shape::load_sc2);
-			load_sc2_chunk(data_storage, MovieClip::load_sc2);
-			load_sc2_chunk(data_storage, MovieClipModifier::load_sc2);
-			load_sc2_chunk(data_storage, SWFTexture::load_sc2);
+			using SC2 = SupercellSWF2CompileTable;
+			SC2::load_chunk(*this, data_storage, ExportName::load_sc2);
+			SC2::load_chunk(*this, data_storage, Shape::load_sc2);
+			SC2::load_chunk(*this, data_storage, MovieClip::load_sc2);
+			SC2::load_chunk(*this, data_storage, MovieClipModifier::load_sc2);
+			SC2::load_chunk(*this, data_storage, SWFTexture::load_sc2);
 		}
 
 		bool SupercellSWF::load_tags()
@@ -483,6 +485,31 @@ namespace sc
 				texture.save(*this, has_data, is_lowres);
 				stream.write_tag_final(position);
 			}
+		}
+
+		void SupercellSWF::save_sc2(const fs::path& filepath) const
+		{
+			SupercellSWF2CompileTable table;
+
+			size_t movieclip_frame_elements_size = 0;
+			for (const MovieClip& movie : movieclips)
+			{
+				movieclip_frame_elements_size += movie.frame_elements.size() * sizeof(MovieClipFrameElement);
+			}
+
+			size_t shape_commands_size = 0;
+			for (const Shape& shape : shapes)
+			{
+				for (const ShapeDrawBitmapCommand& command : shape.commands)
+				{
+					shape_commands_size += command.vertices.size() * ((sizeof(float) * 2) + (sizeof(uint16_t) * 2));
+				}
+			}
+
+			table.frame_elements.reserve(movieclip_frame_elements_size);
+			table.bitmaps.reserve(shape_commands_size);
+
+
 		}
 #pragma endregion
 
