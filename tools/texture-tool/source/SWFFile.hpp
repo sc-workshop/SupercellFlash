@@ -545,9 +545,9 @@ namespace sc
 				for (uint16_t i = 0; texture_images_paths.size() > i; i++)
 				{
 					// Image Loading
-					wk::RawImage* image = nullptr;
+					wk::Ref<wk::RawImage> image;
 					wk::InputFileStream image_file(texture_images_paths[i]);
-					wk::stb::load_image(image_file, &image);
+					wk::stb::load_image(image_file, image);
 					StraightToPremultiply(*image);
 
 					wk::SharedMemoryStream image_data(image->data(), image->data_length());
