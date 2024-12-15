@@ -27,7 +27,10 @@ table FileDescriptor
     header_offset: uint; 
 
     // Offset to ExportNames table. But it is probably also used to read all subsequent tables
-    resources_offset: uint; 
+    resources_offset: uint;
+
+    // Length of texture chunk buffer
+    textures_length: uint;
 
     // Export names hash array
     exports: [ExportNameHash];
