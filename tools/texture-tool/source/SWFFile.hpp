@@ -474,7 +474,7 @@ namespace sc
 						);
 
 						wk::SharedMemoryStream image_data(image.data(), image.data_length());
-						((sc::texture::KhronosTexture*)(texture.image()))->decompress_data(image_data);
+						((sc::texture::KhronosTexture*)(texture.image().get()))->decompress_data(image_data);
 
 						PremultiplyToStraight(image);
 						wk::stb::write_image(image, format, output_image);
@@ -485,7 +485,7 @@ namespace sc
 					{
 						texture.linear(true);
 
-						wk::RawImage& image = *(wk::RawImage*)(texture.image());
+						wk::RawImage& image = *(wk::RawImage*)(texture.image().get());
 						PremultiplyToStraight(image);
 						wk::stb::write_image(
 							image,
