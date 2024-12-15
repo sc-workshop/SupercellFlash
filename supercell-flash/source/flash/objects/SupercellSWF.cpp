@@ -4,6 +4,8 @@
 #include "flash/flash_tags.h"
 #include <cmath>
 
+#include "flash/SC2/FileDescriptor_generated.h"
+
 namespace fs = std::filesystem;
 
 namespace sc
@@ -65,16 +67,60 @@ namespace sc
 
 		void SupercellSWF::load_sc2(wk::Stream& input)
 		{
-			uint32_t metadata_size = input.read_unsigned_int();
+			uint32_t header_offset = 0;
+			uint32_t resources_offset = 0;
 
-			// TODO: Metadata
-			input.seek(metadata_size, wk::Stream::SeekMode::Add);
+			// Descriptor
+			{
+				uint32_t descriptor_size = input.read_unsigned_int();
+				wk::MemoryStream descriptor_data(descriptor_size);
+				input.read(descriptor_data.data(), descriptor_data.length());
 
-			ZstdDecompressor decompressor;
-			decompressor.decompress(input, stream);
+				const SC2::FileDescriptor* descriptor = SC2::GetFileDescriptor(descriptor_data.data());
 
-			save_as_sc2 = true;
-			load_sc2();
+				assert(descriptor->unk1() == 1 && descriptor->unk2() == 1);
+
+				uint32_t shape_count = descriptor->shape_count();
+				shapes.resize(shape_count);
+
+				uint32_t movies_count = descriptor->movie_clips_count();
+				movieclips.resize(movies_count);
+
+				uint32_t texture_count = descriptor->texture_count();
+				textures.resize(texture_count);
+
+				uint32_t textFields_count = descriptor->text_fields_count();
+				textfields.resize(textFields_count);
+
+				header_offset = descriptor->header_offset();
+				resources_offset = descriptor->resources_offset();
+
+				auto export_names_hash = descriptor->exports();
+				if (export_names_hash)
+				{
+					exports.resize(export_names_hash->size());
+
+					for (uint32_t i = 0; export_names_hash->size() > i; i++)
+					{
+						auto export_name_data = export_names_hash->Get(i);
+						ExportName& export_name = exports.emplace_back();
+						export_name.name = SWFString(
+							export_name_data->name()->data(), 
+							export_name_data->name()->size()
+						);
+						export_name.hash.resize(export_name_data->hash()->size());
+						wk::Memory::copy(export_name_data->hash()->data(), export_name.hash.data(), export_name.hash.size());
+					}
+				}
+			}
+
+			// Compressed buffer
+			{
+				ZstdDecompressor decompressor;
+				decompressor.decompress(input, stream);
+			}
+
+			load_sc2_internal(header_offset, resources_offset);
 		}
 
 		bool SupercellSWF::load_sc1(bool is_texture)
@@ -103,39 +149,49 @@ namespace sc
 				stream.seek(5, wk::Stream::SeekMode::Add); // unused
 
 				uint16_t exports_count = stream.read_unsigned_short();
-				exports.resize(exports_count);
+				exports.reserve(exports_count);
 
-				for (ExportName& export_name : exports)
+				SWFVector<uint16_t> export_ids;
+				export_ids.resize(exports_count);
+
+				for (uint16_t i = 0; exports_count > i; i++)
 				{
-					export_name.id = stream.read_unsigned_short();
+					export_ids.push_back(stream.read_unsigned_short());
 				}
 
-				for (ExportName& export_name : exports)
+				for (uint16_t i = 0; exports_count > i; i++)
 				{
-					stream.read_string(export_name.name);
+					SWFString name;
+					stream.read_string(name);
+
+					CreateExportName(name, export_ids[i]);
 				}
 			}
 
 			return load_tags();
 		}
 
-		void SupercellSWF::load_sc2()
+		void SupercellSWF::load_sc2_internal(uint32_t header_offset, uint32_t resources_offset)
 		{
-			stream.seek(0);
-
-			uint32_t data_storage_size = stream.read_unsigned_int();
-			auto data_storage = SC2::GetDataStorage((char*)stream.data() + stream.position());
-			stream.seek(data_storage_size, wk::Stream::SeekMode::Add);
-
-			MatrixBank::load(*this, data_storage);
-
-			using SC2T = SupercellSWF2CompileTable;
-			SC2T::load_chunk(*this, data_storage, ExportName::load_sc2);
-			SC2T::load_chunk(*this, data_storage, TextField::load_sc2);
-			SC2T::load_chunk(*this, data_storage, Shape::load_sc2);
-			SC2T::load_chunk(*this, data_storage, MovieClip::load_sc2);
-			SC2T::load_chunk(*this, data_storage, MovieClipModifier::load_sc2);
-			SC2T::load_chunk(*this, data_storage, SWFTexture::load_sc2);
+			const SC2::DataStorage* storage = nullptr;
+			{
+				stream.seek(header_offset);
+				uint32_t data_storage_size = stream.read_unsigned_int();
+				storage = SC2::GetDataStorage((char*)stream.data() + stream.position());
+				stream.seek(data_storage_size, wk::Stream::SeekMode::Add);
+				MatrixBank::load(*this, storage);
+			}
+			
+			{
+				stream.seek(resources_offset);
+				using Table = SupercellSWF2CompileTable;
+				Table::load_chunk(*this, storage, ExportName::load_sc2);
+				Table::load_chunk(*this, storage, TextField::load_sc2);
+				Table::load_chunk(*this, storage, Shape::load_sc2);
+				Table::load_chunk(*this, storage, MovieClip::load_sc2);
+				Table::load_chunk(*this, storage, MovieClipModifier::load_sc2);
+				Table::load_chunk(*this, storage, SWFTexture::load_sc2);
+			}
 		}
 
 		bool SupercellSWF::load_tags()
@@ -290,20 +346,6 @@ namespace sc
 		{
 			current_file = filepath;
 
-			if (matrixBanks.size() > std::numeric_limits<uint16_t>().max())
-			{
-				throw wk::Exception("Too many matrix banks in use");
-			}
-
-			if (textures.size() > std::numeric_limits<uint8_t>().max())
-			{
-				throw wk::Exception("Too many textures in use");
-			}
-
-			if (matrixBanks.size() == 0) {
-				matrixBanks.resize(1);
-			}
-
 			save_internal(false, false);
 			stream.save_file(filepath, signature);
 
@@ -330,19 +372,64 @@ namespace sc
 		{
 			if (!is_texture)
 			{
-				stream.write_unsigned_short(shapes.size());
-				stream.write_unsigned_short(movieclips.size());
-				stream.write_unsigned_short(textures.size());
-				stream.write_unsigned_short(textfields.size());
+				// Export names
+				if (exports.size() >= std::numeric_limits<uint16_t>().max())
+				{
+					throw wk::Exception("Too many export names in use!");
+				}
 
-				stream.write_unsigned_short(matrixBanks[0].matrices.size());
-				stream.write_unsigned_short(matrixBanks[0].color_transforms.size());
+				// Matrix banks
+				if (matrixBanks.size() > std::numeric_limits<uint16_t>().max())
+				{
+					throw wk::Exception("Too many matrix banks in use!");
+				}
+
+				// Textures
+				if (textures.size() > std::numeric_limits<uint8_t>().max())
+				{
+					throw wk::Exception("Too many textures in use!");
+				}
+
+				// Shapes
+				if (shapes.size() >= std::numeric_limits<uint16_t>().max())
+				{
+					throw wk::Exception("Too many shapes in use!");
+				}
+
+				// Movieclips
+				if (movieclips.size() >= std::numeric_limits<uint16_t>().max())
+				{
+					throw wk::Exception("Too many movieclips in use!");
+				}
+
+				// Textfields
+				if (textfields.size() >= std::numeric_limits<uint16_t>().max())
+				{
+					throw wk::Exception("Too many textfields in use!");
+				}
+
+				stream.write_unsigned_short((uint16_t)shapes.size());
+				stream.write_unsigned_short((uint16_t)movieclips.size());
+				stream.write_unsigned_short((uint16_t)textures.size());
+				stream.write_unsigned_short((uint16_t)textfields.size());
+
+				uint16_t matrices_count = 0;
+				uint16_t colors_count = 0;
+
+				if (!matrixBanks.empty())
+				{
+					matrices_count = matrixBanks[0].matrices.size();
+					colors_count = matrixBanks[0].color_transforms.size();
+				}
+
+				stream.write_unsigned_short(matrices_count);
+				stream.write_unsigned_short(colors_count);
 
 				// unused 5 bytes
 				stream.write_unsigned_byte(0);
 				stream.write_int(0);
 
-				stream.write_unsigned_short(exports.size());
+				stream.write_unsigned_short((uint16_t)exports.size());
 
 				for (const ExportName& export_name : exports)
 				{
@@ -456,7 +543,7 @@ namespace sc
 				SWFTexture& texture = textures[i];
 
 				size_t position = stream.write_tag_header(texture.tag(*this, has_data));
-				if (use_external_texture_files && has_data)
+				if (compress_external_textures && has_data)
 				{
 					texture.encoding(SWFTexture::TextureEncoding::KhronosTexture);
 
@@ -519,17 +606,30 @@ namespace sc
 		}
 #pragma endregion
 
-		uint16_t SupercellSWF::GetDisplayObjectID(SWFString& name)
+		ExportName* SupercellSWF::GetExportName(SWFString& name)
 		{
-			for (ExportName& exportName : exports)
-			{
-				if (exportName.name == name)
+			auto& it = std::find_if(std::execution::par_unseq, exports.begin(), exports.end(), [&name](const ExportName& other)
 				{
-					return exportName.id;
-				}
+					return other.name == name;
+				});
+
+			if (it != exports.end())
+			{
+				return &(*it);
 			}
 
-			throw new wk::Exception("Failed to get Display Object");
+			return nullptr;
+		}
+
+		uint16_t SupercellSWF::GetDisplayObjectID(SWFString& name)
+		{
+			auto export_name = GetExportName(name);
+			if (export_name)
+			{
+				return export_name->id;
+			}
+
+			throw new wk::Exception("Failed to get export name \"%s\"", name.data());
 		}
 
 		DisplayObject& SupercellSWF::GetDisplayObjectByID(uint16_t id)
@@ -581,6 +681,21 @@ namespace sc
 			}
 
 			throw new wk::Exception("Failed to get Display Object");
+		}
+
+		void SupercellSWF::CreateExportName(SWFString& name, uint16_t id)
+		{
+			auto possible_name = GetExportName(name);
+			if (possible_name)
+			{
+				possible_name->id = id;
+			}
+			else
+			{
+				ExportName& export_name = exports.emplace_back();
+				export_name.name = name;
+				export_name.id = id;
+			}
 		}
 
 		bool SupercellSWF::IsSC2(wk::Stream& stream)

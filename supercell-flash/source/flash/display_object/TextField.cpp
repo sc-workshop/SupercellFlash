@@ -221,7 +221,7 @@ namespace sc
 			for (uint16_t i = 0; textfields_count > i; i++)
 			{
 				auto textfield_data = textfields_vector->Get(i);
-				TextField& textfield = swf.textfields.emplace_back();
+				TextField& textfield = swf.textfields[i];
 
 				textfield.id = textfield_data->id();
 				textfield.font_name = SWFString(

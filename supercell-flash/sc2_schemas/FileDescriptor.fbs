@@ -1,0 +1,36 @@
+namespace sc.flash.SC2;
+
+// A table that represents a hash of export names that is most likely used when compiling SC to speed up some processes like sprite packaging
+table ExportNameHash
+{
+    // Export name it self
+    name: string;
+
+    // Export name hash. Usually contains 16 bytes hash.
+    hash: [ubyte];
+}
+
+// A table that describes some properties of SC2 file that help to make some optimizations when loading decompressed file content
+table FileDescriptor
+{
+    unk1: uint; // Always 1
+    unk2: uint; // Always 1
+    
+    shape_count: uint;
+    movie_clips_count: uint;
+    texture_count: uint;
+    text_fields_count: uint;
+    
+    unk3: uint; // Always 0
+
+    // Offset to DataStorage table?
+    header_offset: uint; 
+
+    // Offset to ExportNames table. But it is probably also used to read all subsequent tables
+    resources_offset: uint; 
+
+    // Export names hash array
+    exports: [ExportNameHash];
+}
+
+root_type FileDescriptor;

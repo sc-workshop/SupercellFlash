@@ -231,7 +231,7 @@ namespace sc
 			for (uint16_t i = 0; movieclips_count > i; i++)
 			{
 				auto movieclip_data = movieclips_vector->Get(i);
-				MovieClip& movieclip = swf.movieclips.emplace_back();
+				MovieClip& movieclip = swf.movieclips[i];
 
 				movieclip.id = movieclip_data->id();
 				movieclip.frame_rate = movieclip_data->framerate();

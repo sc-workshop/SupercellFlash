@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 #include "core/memory/memory.h"
 #include "core/memory/ref.h"
@@ -15,9 +16,18 @@ namespace sc
 		public:
 			SWFString() {};
 
-			SWFString(const char* data)
+			SWFString(const char* data, std::optional<size_t> length = std::nullopt)
 			{
-				size_t string_size = strlen(data);
+				size_t string_size = 0;
+				if (length.has_value())
+				{
+					string_size = length.value();
+				}
+				else
+				{
+					string_size = strlen(data);
+				}
+
 				m_length = string_size >= 0xFE ? 0xFE : static_cast<uint8_t>(string_size);
 				if (!m_length) return;
 

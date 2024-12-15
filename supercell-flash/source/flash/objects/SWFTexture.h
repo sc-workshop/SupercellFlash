@@ -45,7 +45,8 @@ namespace sc
 
 			enum class TextureEncoding : uint8_t {
 				Raw,
-				KhronosTexture
+				KhronosTexture,
+				SupercellTexture,
 			};
 
 		public:
@@ -53,10 +54,10 @@ namespace sc
 			static const SWFVector<wk::Image::PixelDepth, uint8_t> pixel_depth_table;
 
 		public:
-			TextureEncoding encoding();
-			PixelFormat pixel_format();
+			TextureEncoding encoding() const;
+			PixelFormat pixel_format() const;
 
-			bool linear();
+			bool linear() const;
 
 		public:
 
@@ -64,8 +65,13 @@ namespace sc
 			void pixel_format(PixelFormat format);
 			void linear(bool status);
 
-			const wk::Image* image() const;
-			const wk::Ref<wk::RawImage> raw_image() const;
+			const wk::Ref<wk::Image> image() const;
+
+			/// <summary>
+			/// Decodes texture to RawImage
+			/// </summary>
+			/// <returns> Raw texture data without compression or anything like that </returns>
+			wk::Ref<wk::RawImage> raw_image() const;
 
 		public:
 			/// <summary>
@@ -84,6 +90,7 @@ namespace sc
 			void load_from_buffer(wk::Stream& data, uint16_t width, uint16_t height, PixelFormat format, bool has_data = true);
 			void load_from_khronos_texture(wk::Stream& data);
 			void load_from_compressed_khronos_texture(wk::Stream& data);
+			void load_from_supercell_texture(std::filesystem::path path);
 
 		protected:
 			wk::Ref<wk::Image> m_image = nullptr;

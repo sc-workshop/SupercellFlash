@@ -39,7 +39,7 @@ namespace sc
 			Image::PixelDepth::LUMINANCE8 // 10
 		};
 
-		bool SWFTexture::linear()
+		bool SWFTexture::linear() const
 		{
 			return m_linear;
 		}
@@ -61,7 +61,7 @@ namespace sc
 			free(buffer);
 		}
 
-		SWFTexture::TextureEncoding SWFTexture::encoding()
+		SWFTexture::TextureEncoding SWFTexture::encoding() const
 		{
 			return m_encoding;
 		}
@@ -74,6 +74,7 @@ namespace sc
 
 			switch (m_encoding)
 			{
+			case SWFTexture::TextureEncoding::SupercellTexture:
 			case SWFTexture::TextureEncoding::KhronosTexture:
 			{
 				CompressedImage* texture = (CompressedImage*)m_image.get();
@@ -103,6 +104,10 @@ namespace sc
 				m_image = CreateRef<KhronosTexture1>(*temp_image, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
 				break;
 
+			case SWFTexture::TextureEncoding::SupercellTexture:
+				m_image = CreateRef<SupercellTexture>(*temp_image, ScPixel::Type::ASTC_RGBA8_4x4, false);
+				break;
+
 			default:
 				break;
 			}
@@ -110,7 +115,7 @@ namespace sc
 			m_encoding = encoding;
 		};
 
-		SWFTexture::PixelFormat SWFTexture::pixel_format()
+		SWFTexture::PixelFormat SWFTexture::pixel_format() const
 		{
 			return m_pixel_format;
 		}
@@ -135,20 +140,15 @@ namespace sc
 			m_image = texture;
 		}
 
-		const Image* SWFTexture::image() const {
-			if (m_image == nullptr)
-			{
-				throw new Exception("Image is not loaded yet");
-			}
-
-			return m_image.get();
+		const wk::Ref<wk::Image> SWFTexture::image() const {
+			return m_image;
 		}
 
-		const wk::Ref<wk::RawImage> SWFTexture::raw_image() const
+		wk::Ref<wk::RawImage> SWFTexture::raw_image() const
 		{
 			Ref<wk::RawImage> texture = CreateRef<wk::RawImage>(m_image->width(), m_image->height(), m_image->depth());
 
-			if (m_encoding == TextureEncoding::KhronosTexture)
+			if (m_encoding == TextureEncoding::KhronosTexture || m_encoding == TextureEncoding::SupercellTexture)
 			{
 				CompressedImage* compressed_image = (CompressedImage*)m_image.get();
 				wk::SharedMemoryStream texture_data(texture->data(), texture->data_length());
@@ -185,7 +185,7 @@ namespace sc
 
 				if (khronos_texture_length <= 0)
 				{
-					throw std::runtime_error("Khronos Texture has wrong length");
+					throw wk::Exception("Khronos Texture has wrong length");
 				}
 			}
 
@@ -198,16 +198,21 @@ namespace sc
 			if (!external_texture_path.empty())
 			{
 				fs::path texture_path = swf.current_file.parent_path() / fs::path(external_texture_path.data());
-				InputFileStream texture_stream(texture_path);
 
 				fs::path texture_extension = texture_path.extension();
 				if (texture_extension == ".zktx")
 				{
+					InputFileStream texture_stream(texture_path);
 					load_from_compressed_khronos_texture(texture_stream);
 				}
 				else if (texture_extension == ".ktx")
 				{
+					InputFileStream texture_stream(texture_path);
 					load_from_khronos_texture(texture_stream);
+				}
+				else if (texture_extension == ".sctx")
+				{
+					load_from_supercell_texture(texture_path);
 				}
 
 				return;
@@ -265,7 +270,7 @@ namespace sc
 			swf.stream.write_unsigned_short(width);
 			swf.stream.write_unsigned_short(height);
 
-			if (has_data && !swf.use_external_texture_files)
+			if (has_data && !swf.compress_external_textures)
 			{
 				size_t current_position = swf.stream.position();
 				save_buffer(swf.stream, is_lowres);
@@ -398,6 +403,12 @@ namespace sc
 			m_image = CreateRef<KhronosTexture1>(data);
 		}
 
+		void SWFTexture::load_from_supercell_texture(std::filesystem::path path)
+		{
+			m_encoding = TextureEncoding::SupercellTexture;
+			m_image = CreateRef<SupercellTexture>(path);
+		}
+
 		void SWFTexture::load_from_compressed_khronos_texture(Stream& data)
 		{
 			BufferStream texture_data;
@@ -461,7 +472,7 @@ namespace sc
 				return tag;
 			}
 
-			if (swf.use_external_texture_files)
+			if (swf.compress_external_textures)
 			{
 				return TAG_TEXTURE_10;
 			}
@@ -515,7 +526,7 @@ namespace sc
 			{
 				auto texture_set_data = textures_vector->Get(i);
 				auto texture_data = swf.low_memory_usage_mode && texture_set_data->lowres() ? texture_set_data->lowres() : texture_set_data->highres();
-				SWFTexture& texture = swf.textures.emplace_back();
+				SWFTexture& texture = swf.textures[i];
 
 				// Hardcode Khronos texture for now
 				wk::SharedMemoryStream texture_stream((uint8_t*)texture_data->data()->data(), texture_data->data()->size());

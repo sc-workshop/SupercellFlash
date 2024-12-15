@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 			}
 
 			SWFFile file;
-			file.use_external_texture_files = use_external_files;
+			file.compress_external_textures = use_external_files;
 			bool is_dl_file = !dl_file_path.empty() && fs::exists(dl_file_path);
 			if (is_dl_file)
 			{

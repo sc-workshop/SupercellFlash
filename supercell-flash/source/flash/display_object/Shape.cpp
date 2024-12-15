@@ -112,7 +112,7 @@ namespace sc
 			for (uint16_t i = 0; shapes_count > i; i++)
 			{
 				auto shape_data = shapes_vector->Get(i);
-				Shape& shape = swf.shapes.emplace_back();
+				Shape& shape = swf.shapes[i];
 				shape.id = shape_data->id();
 
 				auto commands_vector = shape_data->commands();

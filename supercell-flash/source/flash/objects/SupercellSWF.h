@@ -17,12 +17,12 @@
 #include "flash/display_object/TextField.h"
 #include "flash/display_object/MovieClipModifier.h"
 
-#define MULTIRES_DEFAULT_SUFFIX "_highres"
-#define LOWRES_DEFAULT_SUFFIX "_lowres"
-
 namespace sc
 {
 	namespace flash {
+		constexpr auto MULTIRES_DEFAULT_SUFFIX = "_highres";
+		constexpr auto LOWRES_DEFAULT_SUFFIX = "_lowres";
+
 		namespace SC2
 		{
 			class DataStorage;
@@ -30,6 +30,16 @@ namespace sc
 
 		class SupercellSWF
 		{
+			// Type traits
+		public:
+			using ExportsArray = SWFVector<ExportName, uint32_t>;
+			using MatrixBankArray = SWFVector<MatrixBank, uint32_t>;
+			using TextureArray = SWFVector<SWFTexture, uint32_t>;
+			using ShapeArray = SWFVector<Shape, uint32_t>;
+			using MovieClipArray = SWFVector<MovieClip, uint32_t>;
+			using TextFieldArray = SWFVector<TextField, uint32_t>;
+			using ModifiersArray = SWFVector<MovieClipModifier>;
+
 		public:
 			SupercellSWF() {};
 			virtual ~SupercellSWF() = default;
@@ -41,14 +51,14 @@ namespace sc
 		public:
 			fs::path current_file;
 
-			SWFVector<ExportName> exports;
-			SWFVector<MatrixBank, uint32_t> matrixBanks;
+			ExportsArray exports;
+			MatrixBankArray matrixBanks;
 
-			SWFVector<SWFTexture> textures;
-			SWFVector<Shape> shapes;
-			SWFVector<MovieClip> movieclips;
-			SWFVector<TextField> textfields;
-			SWFVector<MovieClipModifier> movieclip_modifiers;
+			TextureArray textures;
+			ShapeArray shapes;
+			MovieClipArray movieclips;
+			TextFieldArray textfields;
+			ModifiersArray movieclip_modifiers;
 
 		public:
 			virtual void load(const std::filesystem::path& filePath);
@@ -56,7 +66,7 @@ namespace sc
 
 			bool load_sc1(bool is_texture);
 			void load_sc2(wk::Stream& stream);
-			void load_sc2();
+			void load_sc2_internal(uint32_t header_offset, uint32_t resources_offset);
 
 			virtual void save(const fs::path& filepath, Signature signature);
 			void save_internal(bool is_texture, bool is_lowres);
@@ -72,25 +82,31 @@ namespace sc
 			void save_textures(bool has_data, bool is_lowres);
 
 		public:
+			ExportName* GetExportName(SWFString& name);
 			uint16_t GetDisplayObjectID(SWFString& name);
 			DisplayObject& GetDisplayObjectByID(uint16_t id);
 			MovieClip& GetDisplayObjectByName(SWFString& name);
+			void CreateExportName(SWFString& name, uint16_t id);
 
 		public:
 			// Saves all textures to _tex.sc if true
 			bool use_external_texture = false;
+
 			bool use_multi_resolution = false;
+
+			// Save low-resolution texture variant
 			bool use_low_resolution = true;
+
+			// Write matrices with greater precision
 			bool use_precision_matrix = false;
 
-			// Saves all textures to zktx files if true and use_external_texture is true
-			bool use_external_texture_files = false;
+			// Compresses ktx/sctx texture files
+			bool compress_external_textures = false;
 
 			// Saves custom properties in MovieClips
 			bool save_custom_property = true;
 
-			bool save_as_sc2 = false;
-
+			// Load only lowres files if available
 			bool low_memory_usage_mode = false;
 
 			SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;
