@@ -73,8 +73,10 @@ namespace sc
 			}
 		}
 
-		void ShapeDrawBitmapCommand::sort_advanced_vertices()
+		void ShapeDrawBitmapCommand::sort_advanced_vertices(bool forward)
 		{
+			if (4 > vertices.size()) return;
+
 			ShapeDrawBitmapCommandVertexArray temp = vertices;
 			ShapeDrawBitmapCommandTrianglesArray indices;
 			indices.reserve(vertices.size());
@@ -89,7 +91,14 @@ namespace sc
 
 			for (uint16_t i = 0; vertices.size() > i; i++)
 			{
-				vertices[i] = temp[indices[i]];
+				if (forward)
+				{
+					vertices[indices[i]] = temp[i];
+				}
+				else
+				{
+					vertices[i] = temp[indices[i]];
+				}
 			}
 		}
 
