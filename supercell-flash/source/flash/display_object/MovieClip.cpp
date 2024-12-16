@@ -147,12 +147,7 @@ namespace sc
 			}
 
 			swf.stream.write_unsigned_int(frame_elements.size());
-			for (const MovieClipFrameElement& element : frame_elements)
-			{
-				swf.stream.write_unsigned_short(element.instance_index);
-				swf.stream.write_unsigned_short(element.matrix_index);
-				swf.stream.write_unsigned_short(element.colorTransform_index);
-			}
+			write_frame_elements_buffer(swf.stream);
 
 			swf.stream.write_short(childrens.size());
 
@@ -328,6 +323,16 @@ namespace sc
 
 					elements_offset += sizeof(MovieClipFrameElement);
 				}
+			}
+		}
+
+		void MovieClip::write_frame_elements_buffer(wk::Stream& stream) const
+		{
+			for (const MovieClipFrameElement& element : frame_elements)
+			{
+				stream.write_unsigned_short(element.instance_index);
+				stream.write_unsigned_short(element.matrix_index);
+				stream.write_unsigned_short(element.colorTransform_index);
 			}
 		}
 	}

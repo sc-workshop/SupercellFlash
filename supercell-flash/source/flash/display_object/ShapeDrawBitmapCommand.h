@@ -1,6 +1,7 @@
 #pragma once
 
 #include "flash/types/SWFContainer.hpp"
+#include "core/io/stream.h"
 
 namespace sc
 {
@@ -9,6 +10,9 @@ namespace sc
 
 		struct ShapeDrawBitmapCommandVertex
 		{
+		public:
+			static const size_t Size = ((sizeof(float) * 2) + (sizeof(uint16_t) * 2));
+		public:
 			float x;
 			float y;
 
@@ -49,6 +53,8 @@ namespace sc
 			virtual void save(SupercellSWF& swf) const;
 
 			virtual uint8_t tag(SupercellSWF& swf) const;
+
+			void write_buffer(wk::Stream& stream, bool normalized = false) const;
 
 		public:
 			bool operator==(const ShapeDrawBitmapCommand& other) const;

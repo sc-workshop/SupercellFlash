@@ -73,7 +73,7 @@ namespace sc
 
 			virtual void save_sc2(const fs::path& filepath) const;
 
-			SWFStream stream;
+			mutable SWFStream stream;
 
 		protected:
 			bool load_tags();
@@ -101,7 +101,10 @@ namespace sc
 			bool use_precision_matrix = false;
 
 			// Compresses ktx/sctx texture files
-			bool compress_external_textures = false;
+			bool compress_external_textures = true;
+
+			// Saves textures to ktx/sctx
+			bool use_external_textures = false;
 
 			// Saves custom properties in MovieClips
 			bool save_custom_property = true;

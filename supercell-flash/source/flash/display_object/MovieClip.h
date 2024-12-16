@@ -91,6 +91,8 @@ namespace sc
 
 			virtual bool is_movieclip() const;
 
+			void write_frame_elements_buffer(wk::Stream& stream) const;
+
 		public:
 			static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
 		};

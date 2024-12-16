@@ -6,6 +6,7 @@
 #include "core/math/rect.h"
 
 #include "flash/SC2/DataStorage_generated.h"
+#include "flash/SC2/FileDescriptor_generated.h"
 
 #include <execution>
 
@@ -16,34 +17,81 @@ namespace sc::flash
 	class SupercellSWF2CompileTable
 	{
 	public:
-		SupercellSWF2CompileTable();
+		using RefT = uint32_t;
+
+		template<typename T>
+		using RefArray = std::vector<T>;
+
+		// font_name, text, style_path
+		using TextfieldRef = std::tuple<RefT, RefT, RefT>;
+
+		// children_names, frame_elements_offset, frame_labels, scaling_grid
+		using MovieClipRef = std::tuple<std::optional<RefArray<RefT>>, RefT, RefArray<RefT>, std::optional<RefT>>;
+
+	public:
+		SupercellSWF2CompileTable(const SupercellSWF& swf);
 
 	public:
 		static void load_chunk(SupercellSWF& swf, const SC2::DataStorage* storage, const std::function<void(SupercellSWF&, const SC2::DataStorage*, const uint8_t*)>& reader);
 
-		template<class T>
-		static void save_chunk(SupercellSWF& swf, flatbuffers::FlatBufferBuilder& builder)
-		{
-			builder.Finish();
-		}
-
 	public:
+		// Resource palette
 		SWFVector<SWFString> strings;
-		SWFVector<wk::RectF> rectangles;
+		SWFVector<SC2::Typing::Rect> rectangles;
 
-		SWFVector<uint32_t> exports_refs;
+		// Exports
+		RefArray<RefT> exports_ref_indices;
 
-		wk::BufferStream frame_elements;
-		wk::BufferStream bitmaps;
+		// Movieclips
+		wk::BufferStream frame_elements_buffer;
+		RefArray<MovieClipRef> movieclips_ref_indices;
 
+		// Shapes
+		wk::BufferStream bitmaps_buffer;
+		RefArray<RefT> bitmaps_offsets;
+
+		// Textfiels
+		RefArray<TextfieldRef> textfields_ref_indices;
+
+		// Root
 		flatbuffers::FlatBufferBuilder builder;
 
 	public:
 		uint32_t get_string_ref(const SWFString& string);
 		uint32_t get_rect_ref(const wk::RectF& rectangle);
 
-	public:
-		void gather_resources(SupercellSWF& swf);
+	private:
+		template<typename T>
+		size_t flush_builder(flatbuffers::Offset<T> root_off)
+		{
+			builder.FinishSizePrefixed(root_off);
+			auto buffer = builder.GetBufferSpan();
+			size_t buffer_size = buffer.size_bytes();
+			swf.stream.write(buffer.data(), buffer_size);
 
+			builder.Clear();
+
+			return buffer_size;
+		}
+
+		void save_header();
+		void save_exports();
+		void save_textFields();
+		void save_shapes();
+		void save_movieClips();
+		void save_modifiers();
+		uint32_t save_textures();
+
+	public:
+		void gather_resources();
+		void save_buffer();
+		void save_descriptor(wk::Stream& stream);
+
+	private:
+		const SupercellSWF& swf;
+
+		uint32_t header_offset = 0;
+		uint32_t data_offset = 0;
+		uint32_t textures_length = 0;
 	};
 }

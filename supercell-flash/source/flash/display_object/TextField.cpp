@@ -19,12 +19,7 @@ namespace sc
 			is_multiline = swf.stream.read_bool();
 			unknown_flag3 = swf.stream.read_bool();
 
-			uint8_t font_align_flags = swf.stream.read_unsigned_byte();
-			font_horizontal_align = TextField::get_horizontal_align(font_align_flags);
-			font_vertical_align = TextField::get_vertical_align(font_align_flags);
-
-			unknown_align6 = (font_align_flags & (1 << 6)) != 0;
-			unknown_align7 = (font_align_flags & (1 << 7)) != 0;
+			set_align_flags(swf.stream.read_unsigned_byte());
 
 			font_size = swf.stream.read_unsigned_byte();
 
@@ -86,21 +81,7 @@ namespace sc
 			swf.stream.write_bool(is_multiline);
 			swf.stream.write_bool(unknown_flag3);
 
-			uint8_t font_align_flags = 0;
-			if (font_horizontal_align != Align::Left)
-			{
-				font_align_flags |= (1 << (uint8_t)font_horizontal_align);
-			}
-
-			if (font_vertical_align != Align::Left)
-			{
-				font_align_flags |= ((1 << 3) << (uint8_t)font_vertical_align);
-			}
-
-			font_align_flags |= (unknown_align6 << 6);
-			font_align_flags |= (unknown_align7 << 7);
-
-			swf.stream.write_unsigned_byte(font_align_flags);
+			swf.stream.write_unsigned_byte(get_align_flags());
 			swf.stream.write_unsigned_byte(font_size);
 
 			swf.stream.write_short(left);
@@ -230,13 +211,7 @@ namespace sc
 					)->c_str()
 				);
 
-				textfield.is_bold = (textfield_data->styles() & (uint8_t)Style::bold) > 0;
-				textfield.is_italic = (textfield_data->styles() & (uint8_t)Style::italic) > 0;
-				textfield.is_multiline = (textfield_data->styles() & (uint8_t)Style::is_multiline) > 0;
-				textfield.is_outlined = (textfield_data->styles() & (uint8_t)Style::has_outline) > 0;
-				textfield.unknown_flag3 = (textfield_data->styles() & (uint8_t)Style::unknown_flag3) > 0;
-				textfield.unknown_flag = (textfield_data->styles() & (uint8_t)Style::unknown_flag) > 0;
-				textfield.auto_kern = (textfield_data->styles() & (uint8_t)Style::auto_kern) > 0;
+				textfield.set_style_flags(textfield_data->styles());
 
 				textfield.left = textfield_data->left();
 				textfield.right = textfield_data->right();
@@ -258,12 +233,69 @@ namespace sc
 					)->c_str()
 				);
 
-				textfield.font_vertical_align = TextField::get_vertical_align(textfield_data->align());
-				textfield.font_horizontal_align = TextField::get_horizontal_align(textfield_data->align());
+				textfield.set_align_flags(textfield_data->align());
 
 				textfield.font_size = textfield_data->font_size();
 				textfield.unknown_short = textfield_data->unknown_short();
 			}
+		}
+
+		uint8_t TextField::get_style_flags() const
+		{
+			using Style = SC2::TextFieldStyle;
+
+			uint8_t result = 0;
+
+			if (is_bold) result |= (uint8_t)Style::bold;
+			if (is_italic) result |= (uint8_t)Style::italic;
+			if (is_multiline) result |= (uint8_t)Style::is_multiline;
+			if (is_outlined) result |= (uint8_t)Style::has_outline;
+			if (unknown_flag3) result |= (uint8_t)Style::unknown_flag3;
+			if (unknown_flag) result |= (uint8_t)Style::unknown_flag;
+			if (auto_kern) result |= (uint8_t)Style::auto_kern;
+
+			return result;
+		}
+
+		void TextField::set_style_flags(uint8_t style)
+		{
+			using Style = SC2::TextFieldStyle;
+
+			is_bold = (style & (uint8_t)Style::bold) > 0;
+			is_italic = (style & (uint8_t)Style::italic) > 0;
+			is_multiline = (style & (uint8_t)Style::is_multiline) > 0;
+			is_outlined = (style & (uint8_t)Style::has_outline) > 0;
+			unknown_flag3 = (style & (uint8_t)Style::unknown_flag3) > 0;
+			unknown_flag = (style & (uint8_t)Style::unknown_flag) > 0;
+			auto_kern = (style & (uint8_t)Style::auto_kern) > 0;
+		}
+
+		uint8_t TextField::get_align_flags() const
+		{
+			uint8_t result = 0;
+			if (font_horizontal_align != Align::Left)
+			{
+				result |= (1 << (uint8_t)font_horizontal_align);
+			}
+
+			if (font_vertical_align != Align::Left)
+			{
+				result |= ((1 << 3) << (uint8_t)font_vertical_align);
+			}
+
+			result |= (unknown_align6 << 6);
+			result |= (unknown_align7 << 7);
+
+			return result;
+		}
+
+		void TextField::set_align_flags(uint8_t flags)
+		{
+			font_horizontal_align = TextField::get_horizontal_align(flags);
+			font_vertical_align = TextField::get_vertical_align(flags);
+
+			unknown_align6 = (flags & (1 << 6)) != 0;
+			unknown_align7 = (flags & (1 << 7)) != 0;
 		}
 	}
 }

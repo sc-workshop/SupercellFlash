@@ -270,7 +270,7 @@ namespace sc
 			swf.stream.write_unsigned_short(width);
 			swf.stream.write_unsigned_short(height);
 
-			if (has_data && !swf.compress_external_textures)
+			if (has_data && !swf.use_external_textures)
 			{
 				size_t current_position = swf.stream.position();
 				save_buffer(swf.stream, is_lowres);
@@ -472,7 +472,7 @@ namespace sc
 				return tag;
 			}
 
-			if (swf.compress_external_textures)
+			if (swf.use_external_textures)
 			{
 				return TAG_TEXTURE_10;
 			}
@@ -525,6 +525,9 @@ namespace sc
 			for (uint32_t i = 0; texture_count > i; i++)
 			{
 				auto texture_set_data = textures_vector->Get(i);
+				swf.use_low_resolution = texture_set_data->lowres();
+				swf.use_multi_resolution = swf.use_low_resolution;
+				
 				auto texture_data = swf.low_memory_usage_mode && texture_set_data->lowres() ? texture_set_data->lowres() : texture_set_data->highres();
 				SWFTexture& texture = swf.textures[i];
 

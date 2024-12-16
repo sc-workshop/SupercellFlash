@@ -103,7 +103,7 @@ namespace sc
 					for (uint32_t i = 0; export_names_hash->size() > i; i++)
 					{
 						auto export_name_data = export_names_hash->Get(i);
-						ExportName& export_name = exports.emplace_back();
+						ExportName& export_name = exports[i];
 						export_name.name = SWFString(
 							export_name_data->name()->data(), 
 							export_name_data->name()->size()
@@ -543,7 +543,7 @@ namespace sc
 				SWFTexture& texture = textures[i];
 
 				size_t position = stream.write_tag_header(texture.tag(*this, has_data));
-				if (compress_external_textures && has_data)
+				if (use_external_textures && has_data)
 				{
 					texture.encoding(SWFTexture::TextureEncoding::KhronosTexture);
 
@@ -556,7 +556,7 @@ namespace sc
 					}
 					output_filepath += "_";
 					output_filepath += std::to_string(i);
-					output_filepath += ".zktx";
+					output_filepath += compress_external_textures ? ".zktx" : ".ktx";
 
 					{
 						std::string texture_filename = output_filepath.filename().string();
@@ -569,11 +569,18 @@ namespace sc
 
 					wk::OutputFileStream output_file(output_filepath);
 
-					ZstdCompressor::Props props;
-					ZstdCompressor cctx(props);
+					if (compress_external_textures)
+					{
+						ZstdCompressor::Props props;
+						ZstdCompressor cctx(props);
 
-					input_data.seek(0);
-					cctx.compress(input_data, output_file);
+						input_data.seek(0);
+						cctx.compress(input_data, output_file);
+					}
+					else
+					{
+						output_file.write(input_data.data(), input_data.length());
+					}
 				}
 				texture.save(*this, has_data, is_lowres);
 				stream.write_tag_final(position);
@@ -582,33 +589,26 @@ namespace sc
 
 		void SupercellSWF::save_sc2(const fs::path& filepath) const
 		{
-			SupercellSWF2CompileTable table;
+			SupercellSWF2CompileTable table(*this);
+			stream.clear();
+			
+			// Saving all file content to this->stream
+			table.save_buffer();
+			stream.seek(0);
 
-			size_t movieclip_frame_elements_size = 0;
-			for (const MovieClip& movie : movieclips)
-			{
-				movieclip_frame_elements_size += movie.frame_elements.size() * sizeof(MovieClipFrameElement);
-			}
-
-			size_t shape_commands_size = 0;
-			for (const Shape& shape : shapes)
-			{
-				for (const ShapeDrawBitmapCommand& command : shape.commands)
-				{
-					shape_commands_size += command.vertices.size() * ((sizeof(float) * 2) + (sizeof(uint16_t) * 2));
-				}
-			}
-
-			table.frame_elements.reserve(movieclip_frame_elements_size);
-			table.bitmaps.reserve(shape_commands_size);
-
+			// Output stream
+			wk::OutputFileStream file(filepath);
+			file.write_unsigned_short(SC_MAGIC);						// Magic
+			file.write_unsigned_int(5);									// Version
+			table.save_descriptor(file);								// Descriptor
+			Compressor::compress(stream, file, Signature::Zstandard);	// File Content
 
 		}
 #pragma endregion
 
 		ExportName* SupercellSWF::GetExportName(SWFString& name)
 		{
-			auto& it = std::find_if(std::execution::par_unseq, exports.begin(), exports.end(), [&name](const ExportName& other)
+			auto it = std::find_if(std::execution::par_unseq, exports.begin(), exports.end(), [&name](const ExportName& other)
 				{
 					return other.name == name;
 				});

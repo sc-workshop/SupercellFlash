@@ -63,8 +63,8 @@ namespace sc
 		constexpr uint8_t TAG_TEXTURE_9 = 45; // SWFTexture Khronos Texture
 		constexpr uint8_t TAG_TEXT_FIELD_9 = 46; // Typograph
 
-		constexpr uint8_t TAG_TEXTURE_10 = 47; // External ZSTD Compressed Texture File
-		constexpr uint8_t TAG_UNKNOWN_1 = 48; // Some Kind Of Flag
+		constexpr uint8_t TAG_TEXTURE_10 = 47; // External Texture File
+		constexpr uint8_t TAG_STREAMING_TEXTURE_ID_1 = 48; // Some Kind Of Flag
 		constexpr uint8_t TAG_MOVIE_CLIP_6 = 49; // Custom Property Index
 	}
 }

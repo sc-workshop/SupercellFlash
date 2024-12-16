@@ -76,6 +76,12 @@ namespace sc
 
 			virtual bool is_textfield() const;
 
+			uint8_t get_style_flags() const;
+			void set_style_flags(uint8_t style);
+
+			uint8_t get_align_flags() const;
+			void set_align_flags(uint8_t style);
+
 		public:
 			static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
 		};

@@ -21,8 +21,6 @@ namespace sc::flash
 		swf.exports.reserve(export_names_count);
 		for (uint16_t i = 0; export_names_count > i; i++)
 		{
-			ExportName& export_name = swf.exports[i];
-
 			SWFString name(
 				strings_vector->Get(
 					exports_name_ref_ids->Get(i)

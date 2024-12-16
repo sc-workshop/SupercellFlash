@@ -1,5 +1,4 @@
 #include "ShapeDrawBitmapCommand.h"
-
 #include "flash/objects/SupercellSWF.h"
 
 namespace sc
@@ -39,17 +38,9 @@ namespace sc
 			swf.stream.write_unsigned_byte((uint8_t)texture_index);
 			swf.stream.write_unsigned_byte(verticesCount);
 
-			for (const ShapeDrawBitmapCommandVertex& vertex : vertices)
-			{
-				swf.stream.write_twip(vertex.x);
-				swf.stream.write_twip(vertex.y);
-			}
+			swf.stream.reserve(swf.stream.position() + (vertices.size() * ShapeDrawBitmapCommandVertex::Size));
 
-			for (const ShapeDrawBitmapCommandVertex& vertex : vertices)
-			{
-				swf.stream.write_unsigned_short((uint16_t)(vertex.u * 65535.0f));
-				swf.stream.write_unsigned_short((uint16_t)(vertex.v * 65535.0f));
-			}
+			write_buffer(swf.stream);
 		}
 
 		void ShapeDrawBitmapCommand::create_triangle_indices(bool advanced)
@@ -105,6 +96,29 @@ namespace sc
 		uint8_t ShapeDrawBitmapCommand::tag(SupercellSWF&) const
 		{
 			return TAG_SHAPE_DRAW_BITMAP_COMMAND_3;
+		}
+
+		void ShapeDrawBitmapCommand::write_buffer(wk::Stream& stream, bool normalized) const
+		{
+			for (const ShapeDrawBitmapCommandVertex& vertex : vertices)
+			{
+				if (normalized)
+				{
+					stream.write_int((int)(vertex.x / 0.05f));
+					stream.write_int((int)(vertex.y / 0.05f));
+				}
+				else
+				{
+					stream.write_float(vertex.x);
+					stream.write_float(vertex.y);
+				}
+			}
+
+			for (const ShapeDrawBitmapCommandVertex& vertex : vertices)
+			{
+				stream.write_unsigned_short((uint16_t)(vertex.u * 65535.0f));
+				stream.write_unsigned_short((uint16_t)(vertex.v * 65535.0f));
+			}
 		}
 
 		bool ShapeDrawBitmapCommandVertex::operator==(const ShapeDrawBitmapCommandVertex& other) const

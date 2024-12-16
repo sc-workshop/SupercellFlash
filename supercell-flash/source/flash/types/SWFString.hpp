@@ -99,7 +99,7 @@ namespace sc
 			int compare(const char* string, size_t len = 0) const
 			{
 				uint8_t string_size = static_cast<uint8_t>(len);
-				if (string_size == 0)
+				if (string && string_size == 0)
 				{
 					string_size = static_cast<uint8_t>(strlen(string));
 				}
