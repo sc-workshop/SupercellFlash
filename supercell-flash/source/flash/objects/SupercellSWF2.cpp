@@ -62,10 +62,10 @@ namespace sc::flash
 	{
 		// Buffer preparing
 		{
-			size_t movieclip_frame_elements_size = 0;
+			size_t frame_elements_count = 0;
 			for (const MovieClip& movie : swf.movieclips)
 			{
-				movieclip_frame_elements_size += movie.frame_elements.size() * sizeof(MovieClipFrameElement);
+				frame_elements_count += movie.frame_elements.size();
 			}
 
 			size_t shape_commands_size = 0;
@@ -77,7 +77,7 @@ namespace sc::flash
 				}
 			}
 
-			frame_elements_buffer.reserve(movieclip_frame_elements_size);
+			frame_elements_indices.reserve(frame_elements_count);
 			bitmaps_buffer.reserve(shape_commands_size);
 
 			exports_ref_indices.reserve(swf.exports.size());
@@ -115,7 +115,7 @@ namespace sc::flash
 				for (const ShapeDrawBitmapCommand& command : shape.commands)
 				{
 					bitmaps_offsets.push_back(bitmap_points_counter);
-					command.write_buffer(bitmaps_buffer);
+					command.write_buffer(bitmaps_buffer, false, true);
 
 					bitmap_points_counter += command.vertices.size();
 				}
@@ -145,10 +145,14 @@ namespace sc::flash
 						);
 					}
 				}
-				
 
 				RefT frame_elements_offset = frame_elements_counter;
-				movieclip.write_frame_elements_buffer(frame_elements_buffer);
+				for (const MovieClipFrameElement& element : movieclip.frame_elements)
+				{
+					frame_elements_indices.push_back(element.instance_index);
+					frame_elements_indices.push_back(element.matrix_index);
+					frame_elements_indices.push_back(element.colorTransform_index);
+				}
 				frame_elements_counter += movieclip.frame_elements.size() * 3;
 
 				RefArray<RefT> frame_labels;
@@ -181,7 +185,7 @@ namespace sc::flash
 	{
 		Offset<Vector<Offset<String>>> strings_off = 0;
 		Offset<Vector<const SC2::Typing::Rect*>> rects_off = 0;
-		Offset<Vector<uint8_t>> movieclip_frame_elements_off = 0;
+		Offset<Vector<uint16_t>> movieclip_frame_elements_off = 0;
 		Offset<Vector<uint8_t>> shape_bitmaps_off = 0;
 		Offset<Vector<Offset<SC2::MatrixBank>>> banks_off = 0;
 
@@ -208,7 +212,7 @@ namespace sc::flash
 
 		// MovieClip frame elements
 		{
-			movieclip_frame_elements_off = builder.CreateVector((uint8_t*)frame_elements_buffer.data(), frame_elements_buffer.length());
+			movieclip_frame_elements_off = builder.CreateVector(frame_elements_indices);
 		}
 
 		// Shape bitmaps vertices
@@ -406,7 +410,10 @@ namespace sc::flash
 					builder, movieclip.id,
 					export_name_ref,
 					movieclip.frame_rate, movieclip.frames.size(), movieclip.unknown_flag,
-					&children_ids, childrens_names, &children_blending, &frames, 
+					children_ids.empty() ? nullptr : &children_ids, 
+					childrens_names, 
+					children_blending.empty() ? nullptr : &children_blending,
+					frames.empty() ? nullptr : &frames,
 					frame_elements_offset, movieclip.bank_index, scaling_grid
 				);
 				raw_movieclips_off.push_back(movieclip_off);

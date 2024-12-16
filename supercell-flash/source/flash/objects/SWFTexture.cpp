@@ -101,7 +101,7 @@ namespace sc
 				break;
 
 			case SWFTexture::TextureEncoding::KhronosTexture:
-				m_image = CreateRef<KhronosTexture1>(*temp_image, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
+				m_image = CreateRef<KhronosTexture1>(*temp_image, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_6x6);
 				break;
 
 			case SWFTexture::TextureEncoding::SupercellTexture:

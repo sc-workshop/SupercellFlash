@@ -220,7 +220,7 @@ namespace sc
 			swf.movieclips.reserve(movieclips_count);
 
 			auto strings_vector = storage->strings();
-			auto movieclip_elements_vector = storage->movieclips_frame_elements();
+			auto elements_vector = storage->movieclips_frame_elements();
 			auto rectangles_vector = storage->rectangles();
 
 			for (uint16_t i = 0; movieclips_count > i; i++)
@@ -252,19 +252,18 @@ namespace sc
 				auto children_blending_vector = movieclip_data->children_blending();
 				auto children_names_vector = movieclip_data->children_name_ref_ids();
 
-				if (!children_ids_vector)
+				uint16_t children_count = 0;
+				if (children_ids_vector)
 				{
-					// No need to process frames or something else if movieclip have no childrens
-					continue;
-				}
+					children_count = (uint16_t)children_ids_vector->size();
+					movieclip.childrens.resize(children_count);
 
-				uint16_t children_count = (uint16_t)children_ids_vector->size();
-				movieclip.childrens.resize(children_count);
-
-				for (uint16_t c = 0; children_count > c; c++)
-				{
-					movieclip.childrens[c].id = children_ids_vector->Get(c);
+					for (uint16_t c = 0; children_count > c; c++)
+					{
+						movieclip.childrens[c].id = children_ids_vector->Get(c);
+					}
 				}
+				
 
 				if (children_blending_vector)
 				{
@@ -304,24 +303,20 @@ namespace sc
 				}
 
 				uint32_t elements_count = 0;
-				uint32_t elements_offset = movieclip_data->frame_elements_offset() * sizeof(uint16_t);
+				uint32_t elements_offset = movieclip_data->frame_elements_offset();
 				for (MovieClipFrame& frame : movieclip.frames)
 				{
 					elements_count += frame.elements_count;
 				}
 
 				movieclip.frame_elements.reserve(elements_count);
-
 				for (uint32_t e = 0; elements_count > e; e++)
 				{
-					const uint8_t* element_data = movieclip_elements_vector->data() + elements_offset;
 					MovieClipFrameElement& element = movieclip.frame_elements.emplace_back();
 
-					element.instance_index = *(const uint16_t*)element_data;
-					element.matrix_index = *(const uint16_t*)(element_data + sizeof(uint16_t));
-					element.colorTransform_index = *(const uint16_t*)(element_data + sizeof(uint16_t) * 2);
-
-					elements_offset += sizeof(MovieClipFrameElement);
+					element.instance_index = elements_vector->Get(elements_offset++);
+					element.matrix_index = elements_vector->Get(elements_offset++);
+					element.colorTransform_index = elements_vector->Get(elements_offset++);
 				}
 			}
 		}

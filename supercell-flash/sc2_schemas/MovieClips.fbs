@@ -44,7 +44,7 @@ table MovieClip
     frames: [MovieClipFrame];
 
     // Ushort offset to frame elements in DataStorage MovieClip frame elements buffer
-    frame_elements_offset: uint;
+    frame_elements_offset: uint = 0xFFFFFFFF;
 
     // Index of target bank with transformations
     matrix_bank_index: uint;

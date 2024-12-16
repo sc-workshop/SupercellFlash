@@ -43,7 +43,7 @@ namespace sc::flash
 		RefArray<RefT> exports_ref_indices;
 
 		// Movieclips
-		wk::BufferStream frame_elements_buffer;
+		std::vector<uint16_t> frame_elements_indices;
 		RefArray<MovieClipRef> movieclips_ref_indices;
 
 		// Shapes

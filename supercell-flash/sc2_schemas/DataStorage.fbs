@@ -15,7 +15,6 @@ table DataStorage
     /// Example: strings[ref_id - 1]
     strings: [string];
 
-
     unk2: [ubyte]; // most likely custom properties
     unk3: [ubyte];
 
@@ -26,7 +25,7 @@ table DataStorage
     // Raw buffer that represents array of MovieClipFrameElement.
     // MovieClipFrameElement structure is accessible by byte offset in MovieClip
     // Example: MovieClipFrameElement* element = movieclips_frame_elements + ref_offset;
-    movieclips_frame_elements: [ubyte];
+    movieclips_frame_elements: [ushort];
 
     // Raw buffer that represents array of ShapeDrawBitmapCommandVertex.
     // Objects can be accessed by index of ShapeDrawBitmapCommandVertex structure

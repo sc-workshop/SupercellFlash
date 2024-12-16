@@ -54,7 +54,7 @@ namespace sc
 
 			virtual uint8_t tag(SupercellSWF& swf) const;
 
-			void write_buffer(wk::Stream& stream, bool normalized = false) const;
+			void write_buffer(wk::Stream& stream, bool normalized = false, bool ordered = false) const;
 
 		public:
 			bool operator==(const ShapeDrawBitmapCommand& other) const;

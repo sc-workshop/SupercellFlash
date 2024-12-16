@@ -40,7 +40,7 @@ namespace sc
 
 			swf.stream.reserve(swf.stream.position() + (vertices.size() * ShapeDrawBitmapCommandVertex::Size));
 
-			write_buffer(swf.stream);
+			write_buffer(swf.stream, true, false);
 		}
 
 		void ShapeDrawBitmapCommand::create_triangle_indices(bool advanced)
@@ -98,26 +98,44 @@ namespace sc
 			return TAG_SHAPE_DRAW_BITMAP_COMMAND_3;
 		}
 
-		void ShapeDrawBitmapCommand::write_buffer(wk::Stream& stream, bool normalized) const
+		void ShapeDrawBitmapCommand::write_buffer(wk::Stream& stream, bool normalized, bool ordered) const
 		{
-			for (const ShapeDrawBitmapCommandVertex& vertex : vertices)
-			{
-				if (normalized)
+			auto write_xy = [&stream, &normalized](float value)
 				{
-					stream.write_int((int)(vertex.x / 0.05f));
-					stream.write_int((int)(vertex.y / 0.05f));
-				}
-				else
+					if (normalized)
+					{
+						stream.write_int((int)(value / 0.05f));
+					}
+					else
+					{
+						stream.write_float(value);
+					}
+					
+				};
+
+			auto write_uv = [&stream](float value)
 				{
-					stream.write_float(vertex.x);
-					stream.write_float(vertex.y);
-				}
-			}
+					stream.write_unsigned_short((uint16_t)(value * 65535.0f));
+				};
 
 			for (const ShapeDrawBitmapCommandVertex& vertex : vertices)
 			{
-				stream.write_unsigned_short((uint16_t)(vertex.u * 65535.0f));
-				stream.write_unsigned_short((uint16_t)(vertex.v * 65535.0f));
+				write_xy(vertex.x);
+				write_xy(vertex.y);
+				
+				if (ordered)
+				{
+					write_uv(vertex.u);
+					write_uv(vertex.v);
+				}
+			}
+
+			if (ordered) return;
+
+			for (const ShapeDrawBitmapCommandVertex& vertex : vertices)
+			{
+				write_uv(vertex.u);
+				write_uv(vertex.v);
 			}
 		}
 
