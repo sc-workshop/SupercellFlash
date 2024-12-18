@@ -92,10 +92,13 @@ namespace sc
 				case TAG_SCALING_GRID:
 				{
 					wk::RectF grid;
-					grid.x = swf.stream.read_twip();
-					grid.y = swf.stream.read_twip();
-					grid.width = swf.stream.read_twip();
-					grid.height = swf.stream.read_twip();
+					grid.left = swf.stream.read_twip();
+					grid.top = swf.stream.read_twip();
+					float width = swf.stream.read_twip();
+					float height = swf.stream.read_twip();
+
+					grid.right = grid.left + width;
+					grid.bottom = grid.top + height;
 
 					scaling_grid = grid;
 				}
@@ -185,10 +188,10 @@ namespace sc
 				swf.stream.write_unsigned_byte(TAG_SCALING_GRID);
 				swf.stream.write_int(sizeof(scaling_grid));
 
-				swf.stream.write_int((int)(scaling_grid->x * 20.0f));
-				swf.stream.write_int((int)(scaling_grid->y * 20.0f));
-				swf.stream.write_int((int)(scaling_grid->width * 20.0f));
-				swf.stream.write_int((int)(scaling_grid->height * 20.0f));
+				swf.stream.write_twip(scaling_grid->left);
+				swf.stream.write_twip(scaling_grid->top);
+				swf.stream.write_twip(std::abs(scaling_grid->left - scaling_grid->right));
+				swf.stream.write_twip(std::abs(scaling_grid->top - scaling_grid->bottom));
 			}
 
 			swf.stream.write_tag_flag(TAG_END);
