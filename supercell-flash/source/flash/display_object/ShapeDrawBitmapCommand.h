@@ -46,7 +46,7 @@ namespace sc
 			void create_triangle_indices(bool advanced);
 
 		public:
-			void sort_advanced_vertices();
+			void sort_advanced_vertices(bool forward = false);
 
 		public:
 			virtual void load(SupercellSWF& swf, uint8_t tag);

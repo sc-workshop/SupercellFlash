@@ -553,7 +553,11 @@ namespace sc::flash
 				Offset<Vector<uint8_t>> export_name_hash_off = 0;
 				Offset<String> export_name_off = 0;
 
-				export_name_hash_off = builder.CreateVector(export_name.hash.data(), export_name.hash.size());
+				if (!export_name.hash.empty())
+				{
+					export_name_hash_off = builder.CreateVector(export_name.hash.data(), export_name.hash.size());
+				}
+				
 				export_name_off = builder.CreateString(export_name.name.data(), export_name.name.length());
 
 				Offset<SC2::ExportNameHash> name_off = SC2::CreateExportNameHash(
