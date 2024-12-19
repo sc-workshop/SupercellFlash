@@ -156,7 +156,7 @@ namespace sc
 
 				for (uint16_t i = 0; exports_count > i; i++)
 				{
-					export_ids.push_back(stream.read_unsigned_short());
+					export_ids[i] = stream.read_unsigned_short();
 				}
 
 				for (uint16_t i = 0; exports_count > i; i++)
