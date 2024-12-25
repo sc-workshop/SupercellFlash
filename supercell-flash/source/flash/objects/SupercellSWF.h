@@ -82,11 +82,11 @@ namespace sc
 			void save_textures(bool has_data, bool is_lowres);
 
 		public:
-			ExportName* GetExportName(SWFString& name);
-			uint16_t GetDisplayObjectID(SWFString& name);
+			ExportName* GetExportName(const SWFString& name);
+			uint16_t GetDisplayObjectID(const SWFString& name);
 			DisplayObject& GetDisplayObjectByID(uint16_t id);
-			MovieClip& GetDisplayObjectByName(SWFString& name);
-			void CreateExportName(SWFString& name, uint16_t id);
+			MovieClip& GetDisplayObjectByName(const SWFString& name);
+			void CreateExportName(const SWFString& name, uint16_t id);
 
 		public:
 			// Saves all textures to _tex.sc if true

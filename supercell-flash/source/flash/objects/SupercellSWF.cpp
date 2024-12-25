@@ -606,7 +606,7 @@ namespace sc
 		}
 #pragma endregion
 
-		ExportName* SupercellSWF::GetExportName(SWFString& name)
+		ExportName* SupercellSWF::GetExportName(const SWFString& name)
 		{
 			auto it = std::find_if(std::execution::par_unseq, exports.begin(), exports.end(), [&name](const ExportName& other)
 				{
@@ -621,7 +621,7 @@ namespace sc
 			return nullptr;
 		}
 
-		uint16_t SupercellSWF::GetDisplayObjectID(SWFString& name)
+		uint16_t SupercellSWF::GetDisplayObjectID(const SWFString& name)
 		{
 			auto export_name = GetExportName(name);
 			if (export_name)
@@ -669,7 +669,7 @@ namespace sc
 			throw new wk::Exception("Failed to get Display Object");
 		}
 
-		MovieClip& SupercellSWF::GetDisplayObjectByName(SWFString& name)
+		MovieClip& SupercellSWF::GetDisplayObjectByName(const SWFString& name)
 		{
 			uint16_t id = GetDisplayObjectID(name);
 			for (MovieClip& movie : movieclips)
@@ -683,7 +683,7 @@ namespace sc
 			throw new wk::Exception("Failed to get Display Object");
 		}
 
-		void SupercellSWF::CreateExportName(SWFString& name, uint16_t id)
+		void SupercellSWF::CreateExportName(const SWFString& name, uint16_t id)
 		{
 			auto possible_name = GetExportName(name);
 			if (possible_name)
