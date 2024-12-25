@@ -1,8 +1,8 @@
 namespace sc.flash.SC2;
 
 enum TextFieldStyle : ubyte(bit_flags) {
-    has_outline,
     unknown_flag3,
+    has_outline,
     bold,
     italic,
     is_multiline,
