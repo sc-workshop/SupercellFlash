@@ -37,8 +37,18 @@ namespace sc
 				*(data_ptr + m_length) = '\0';
 			}
 
-			SWFString(const std::string& string)
+			SWFString(const std::string& string_data)
 			{
+				std::string string = string_data;
+				string.erase(
+					std::remove_if(string.begin(), string.end(),
+					[](char value) { 
+							return !SWFString::IsValid(value);
+						}
+					),
+					string.end()
+				);
+
 				m_length = string.length() >= 0xFE ? 0xFE : static_cast<uint8_t>(string.length());
 				if (!m_length) return;
 
@@ -174,6 +184,13 @@ namespace sc
 			bool operator==(const char* other) const
 			{
 				return compare(other, strlen(other)) == 0;
+			}
+
+		public:
+			// Function for character filtering
+			// Since strings in sc in ASCII and are quite sensitive, we need to carefully select only required character range
+			static bool IsValid(char ch) {
+				return (ch >= 32 && ch <= 126) || ch == '\n' || ch == '\t';
 			}
 
 		private:
