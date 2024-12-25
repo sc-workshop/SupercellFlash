@@ -46,3 +46,4 @@ target_link_libraries(${TARGET}
 
 # setup project
 wk_project_setup(${TARGET})
+wk_include_flatbuffers()
