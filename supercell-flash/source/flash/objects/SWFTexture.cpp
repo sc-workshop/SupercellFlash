@@ -70,7 +70,7 @@ namespace sc
 		{
 			if (m_encoding == encoding) return;
 
-			Ref<RawImage> temp_image = CreateRef<RawImage>(image()->width(), image()->height(), image()->depth());
+			Ref<Image> target_image;
 
 			switch (m_encoding)
 			{
@@ -78,15 +78,16 @@ namespace sc
 			case SWFTexture::TextureEncoding::KhronosTexture:
 			{
 				CompressedImage* texture = (CompressedImage*)m_image.get();
-				wk::SharedMemoryStream image_data(temp_image->data(), temp_image->data_length());
+				target_image = CreateRef<RawImage>(image()->width(), image()->height(), texture->depth());
+
+				wk::SharedMemoryStream image_data(target_image->data(), target_image->data_length());
 				texture->decompress_data(image_data);
 			}
 			break;
 
 			case SWFTexture::TextureEncoding::Raw:
 			{
-				RawImage* raw_image = (RawImage*)m_image.get();
-				raw_image->copy(*temp_image);
+				target_image = m_image;
 			}
 			break;
 
@@ -94,18 +95,23 @@ namespace sc
 				break;
 			}
 
+			if (!target_image)
+			{
+				throw Exception("Failed to get raw texture!");
+			}
+
 			switch (encoding)
 			{
 			case SWFTexture::TextureEncoding::Raw:
-				m_image = temp_image;
+				m_image = target_image;
 				break;
 
 			case SWFTexture::TextureEncoding::KhronosTexture:
-				m_image = CreateRef<KhronosTexture1>(*temp_image, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_6x6);
+				m_image = CreateRef<KhronosTexture1>(*((RawImage*)target_image.get()), KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_6x6);
 				break;
 
 			case SWFTexture::TextureEncoding::SupercellTexture:
-				m_image = CreateRef<SupercellTexture>(*temp_image, ScPixel::Type::ASTC_RGBA8_4x4, false);
+				m_image = CreateRef<SupercellTexture>(*((RawImage*)target_image.get()), ScPixel::Type::ASTC_RGBA8_4x4, false);
 				break;
 
 			default:
