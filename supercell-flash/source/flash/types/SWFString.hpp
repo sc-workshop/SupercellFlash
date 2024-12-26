@@ -6,6 +6,7 @@
 #include "core/memory/memory.h"
 #include "core/memory/ref.h"
 #include "core/io/stream.h"
+#include "core/hashing/hash_stream.h"
 
 namespace sc
 {
@@ -198,4 +199,19 @@ namespace sc
 			uint8_t m_length = 0;
 		};
 	}
+}
+
+namespace wk::hash
+{
+	template<>
+	struct Hash_t<sc::flash::SWFString>
+	{
+		template<typename T>
+		static void update(HashStream<T>& stream, const sc::flash::SWFString& string)
+		{
+			if (string.empty()) return;
+
+			stream.update((const uint8_t*)string.data(), string.length());
+		}
+	};
 }
