@@ -108,8 +108,12 @@ namespace sc
 							export_name_data->name()->data(), 
 							export_name_data->name()->size()
 						);
-						export_name.hash.resize(export_name_data->hash()->size());
-						wk::Memory::copy(export_name_data->hash()->data(), export_name.hash.data(), export_name.hash.size());
+
+						if (export_name_data->hash())
+						{
+							export_name.hash.resize(export_name_data->hash()->size());
+							wk::Memory::copy(export_name_data->hash()->data(), export_name.hash.data(), export_name.hash.size());
+						}
 					}
 				}
 			}
