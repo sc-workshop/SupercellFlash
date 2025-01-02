@@ -68,7 +68,7 @@ namespace sc
 			void load_sc2(wk::Stream& stream);
 			void load_sc2_internal(uint32_t header_offset, uint32_t resources_offset);
 
-			virtual void save(const fs::path& filepath, Signature signature);
+			virtual void save(const fs::path& filepath, Signature signature, bool save_lowres = true);
 			void save_internal(bool is_texture, bool is_lowres);
 
 			virtual void save_sc2(const fs::path& filepath) const;
@@ -94,8 +94,8 @@ namespace sc
 
 			bool use_multi_resolution = false;
 
-			// Save low-resolution texture variant
-			bool use_low_resolution = true;
+			// Use low-resolution texture
+			bool use_low_resolution = false;
 
 			// Write matrices with greater precision
 			bool use_precision_matrix = false;

@@ -228,8 +228,8 @@ namespace sc
 					use_multi_resolution = true;
 					break;
 
-				case TAG_DISABLE_LOW_RES_TEXTURE:
-					use_low_resolution = false;
+				case TAG_USE_LOW_RES_TEXTURE:
+					use_low_resolution = true;
 					break;
 
 				case TAG_USE_EXTERNAL_TEXTURE:
@@ -346,14 +346,14 @@ namespace sc
 #pragma endregion
 
 #pragma region Saving
-		void SupercellSWF::save(const fs::path& filepath, Signature signature)
+		void SupercellSWF::save(const fs::path& filepath, Signature signature, bool save_lowres)
 		{
 			current_file = filepath;
 
 			save_internal(false, false);
 			stream.save_file(filepath, signature);
 
-			if (use_external_texture) {
+			{
 				fs::path basename = filepath.stem();
 				fs::path dirname = filepath.parent_path();
 
@@ -361,15 +361,19 @@ namespace sc
 				fs::path low_resolution_path = dirname / fs::path(basename).concat(low_resolution_suffix.string()).concat("_tex.sc");
 				fs::path common_file_path = dirname / fs::path(basename).concat("_tex.sc");
 
-				save_internal(true, false);
-				stream.save_file(use_multi_resolution ? multi_resolution_path : common_file_path, signature);
+				if (use_external_texture)
+				{
+					save_internal(true, false);
+					stream.save_file(use_multi_resolution ? multi_resolution_path : common_file_path, signature);
+				}
 
-				if (use_low_resolution)
+				if ((use_low_resolution || use_multi_resolution) && save_lowres)
 				{
 					save_internal(true, true);
 					stream.save_file(low_resolution_path, signature);
 				}
 			}
+			
 		}
 
 		void SupercellSWF::save_internal(bool is_texture, bool is_lowres)
@@ -457,23 +461,23 @@ namespace sc
 
 		void SupercellSWF::save_tags()
 		{
-			if (use_external_texture) {
-				if (
-					multi_resolution_suffix.compare(MULTIRES_DEFAULT_SUFFIX) != 0 ||
-					low_resolution_suffix.compare(LOWRES_DEFAULT_SUFFIX) != 0) {
-					size_t position = stream.write_tag_header(TAG_TEXTURE_FILE_SUFFIXES);
-					stream.write_string(multi_resolution_suffix);
-					stream.write_string(low_resolution_suffix);
-					stream.write_tag_final(position);
-				}
+			if (use_low_resolution)
+				stream.write_tag_flag(TAG_USE_LOW_RES_TEXTURE);
 
-				if (!use_low_resolution)
-					stream.write_tag_flag(TAG_DISABLE_LOW_RES_TEXTURE);
+			if (use_multi_resolution)
+				stream.write_tag_flag(TAG_USE_MULTI_RES_TEXTURE);
 
-				if (use_multi_resolution)
-					stream.write_tag_flag(TAG_USE_MULTI_RES_TEXTURE);
-
+			if (use_external_texture)
 				stream.write_tag_flag(TAG_USE_EXTERNAL_TEXTURE);
+
+			if (
+				multi_resolution_suffix.compare(MULTIRES_DEFAULT_SUFFIX) != 0 ||
+				low_resolution_suffix.compare(LOWRES_DEFAULT_SUFFIX) != 0)
+			{
+				size_t position = stream.write_tag_header(TAG_TEXTURE_FILE_SUFFIXES);
+				stream.write_string(multi_resolution_suffix);
+				stream.write_string(low_resolution_suffix);
+				stream.write_tag_final(position);
 			}
 
 			save_textures(!use_external_texture, false);

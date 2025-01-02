@@ -33,7 +33,7 @@ namespace sc
 		constexpr uint8_t TAG_TEXT_FIELD_3 = 20;
 		constexpr uint8_t TAG_TEXT_FIELD_4 = 21;
 		constexpr uint8_t TAG_SHAPE_DRAW_BITMAP_COMMAND_3 = 22;
-		constexpr uint8_t TAG_DISABLE_LOW_RES_TEXTURE = 23;
+		constexpr uint8_t TAG_USE_LOW_RES_TEXTURE = 23;
 		constexpr uint8_t TAG_TEXTURE_4 = 24;
 		constexpr uint8_t TAG_TEXT_FIELD_5 = 25;
 		constexpr uint8_t TAG_USE_EXTERNAL_TEXTURE = 26;
