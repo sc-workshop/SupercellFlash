@@ -289,7 +289,7 @@ namespace sc::flash
 				SC2::TextField textfield_data(
 					textfield.id, 0, font_name,
 					textfield.left, textfield.top, textfield.right, textfield.bottom,
-					textfield.font_color, textfield.outline_color, text, style_path,
+					textfield.font_color.as_value(), textfield.outline_color, text, style_path,
 					textfield.get_style_flags(), textfield.get_align_flags(),
 					textfield.font_size, 0, textfield.unknown_short
 				);

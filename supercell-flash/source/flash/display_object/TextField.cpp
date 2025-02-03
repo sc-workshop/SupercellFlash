@@ -12,7 +12,7 @@ namespace sc
 			id = swf.stream.read_unsigned_short();
 
 			swf.stream.read_string(font_name);
-			font_color = swf.stream.read_unsigned_int();
+			font_color.set_value(swf.stream.read_unsigned_int());
 
 			is_bold = swf.stream.read_bool();
 			is_italic = swf.stream.read_bool();
@@ -74,7 +74,7 @@ namespace sc
 			swf.stream.write_unsigned_short(id);
 
 			swf.stream.write_string(font_name);
-			swf.stream.write_unsigned_int(font_color);
+			swf.stream.write_unsigned_int(font_color.as_value());
 
 			swf.stream.write_bool(is_bold);
 			swf.stream.write_bool(is_italic);

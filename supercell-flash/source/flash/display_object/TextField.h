@@ -6,6 +6,8 @@
 #include "flash/SC2/DataStorage_generated.h"
 #include "flash/SC2/TextFields_generated.h"
 
+#include "core/math/color_rgba.h"
+
 namespace sc
 {
 	namespace flash {
@@ -37,7 +39,7 @@ namespace sc
 			SWFString text = "";
 
 			SWFString font_name = "";
-			uint32_t font_color = 0xFFFFFFFF;
+			wk::ColorRGBA font_color = {0xFF, 0xFF, 0xFF};
 			uint8_t font_size = 0;
 			Align font_horizontal_align = Align::Left;
 			Align font_vertical_align = Align::Left;
