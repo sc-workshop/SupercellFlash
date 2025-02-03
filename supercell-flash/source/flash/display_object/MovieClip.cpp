@@ -186,7 +186,7 @@ namespace sc
 			if (scaling_grid != std::nullopt)
 			{
 				swf.stream.write_unsigned_byte(TAG_SCALING_GRID);
-				swf.stream.write_int(sizeof(scaling_grid));
+				swf.stream.write_int(sizeof(int) * 4);
 
 				swf.stream.write_twip(scaling_grid->left);
 				swf.stream.write_twip(scaling_grid->top);
