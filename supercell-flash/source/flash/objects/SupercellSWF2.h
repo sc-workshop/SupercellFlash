@@ -2,6 +2,7 @@
 
 #include "flash/types/SWFContainer.hpp"
 #include "flash/types/SWFString.hpp"
+#include "flash/objects/SWFTexture.h"
 #include "core/io/buffer_stream.h"
 #include "core/math/rect.h"
 
@@ -81,6 +82,8 @@ namespace sc::flash
 		void save_movieClips();
 		void save_modifiers();
 		uint32_t save_textures();
+
+		flatbuffers::Offset<sc::flash::SC2::TextureData> create_texture(const SWFTexture& texture, uint32_t index, bool is_lowres);
 
 	public:
 		void gather_resources();

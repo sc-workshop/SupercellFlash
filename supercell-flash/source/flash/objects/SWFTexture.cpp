@@ -70,30 +70,7 @@ namespace sc
 		{
 			if (m_encoding == encoding) return;
 
-			Ref<Image> target_image;
-
-			switch (m_encoding)
-			{
-			case SWFTexture::TextureEncoding::SupercellTexture:
-			case SWFTexture::TextureEncoding::KhronosTexture:
-			{
-				CompressedImage* texture = (CompressedImage*)m_image.get();
-				target_image = CreateRef<RawImage>(image()->width(), image()->height(), texture->depth());
-
-				wk::SharedMemoryStream image_data(target_image->data(), target_image->data_length());
-				texture->decompress_data(image_data);
-			}
-			break;
-
-			case SWFTexture::TextureEncoding::Raw:
-			{
-				target_image = m_image;
-			}
-			break;
-
-			default:
-				break;
-			}
+			wk::RawImageRef target_image = raw_image();
 
 			if (!target_image)
 			{
@@ -107,11 +84,11 @@ namespace sc
 				break;
 
 			case SWFTexture::TextureEncoding::KhronosTexture:
-				m_image = CreateRef<KhronosTexture1>(*((RawImage*)target_image.get()), KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_6x6);
+				m_image = CreateRef<KhronosTexture1>(*target_image, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
 				break;
 
 			case SWFTexture::TextureEncoding::SupercellTexture:
-				m_image = CreateRef<SupercellTexture>(*((RawImage*)target_image.get()), ScPixel::Type::ASTC_RGBA8_4x4, false);
+				m_image = CreateRef<SupercellTexture>(*target_image, ScPixel::Type::ASTC_RGBA8_4x4, false);
 				break;
 
 			default:
@@ -154,13 +131,7 @@ namespace sc
 		{
 			Ref<wk::RawImage> texture = CreateRef<wk::RawImage>(m_image->width(), m_image->height(), m_image->depth());
 
-			if (m_encoding == TextureEncoding::KhronosTexture || m_encoding == TextureEncoding::SupercellTexture)
-			{
-				CompressedImage* compressed_image = (CompressedImage*)m_image.get();
-				wk::SharedMemoryStream texture_data(texture->data(), texture->data_length());
-				compressed_image->decompress_data(texture_data);
-			}
-			else
+			if (m_encoding == TextureEncoding::Raw)
 			{
 				RawImage* raw_image = (RawImage*)m_image.get();
 				raw_image->copy(*texture);
@@ -168,6 +139,12 @@ namespace sc
 				{
 					make_linear_data(raw_image->data(), texture->data(), texture->width(), texture->height(), m_pixel_format, false);
 				}
+			}
+			else
+			{
+				CompressedImage* compressed_image = (CompressedImage*)m_image.get();
+				wk::SharedMemoryStream texture_data(texture->data(), texture->data_length());
+				compressed_image->decompress_data(texture_data);
 			}
 
 			return texture;
@@ -203,25 +180,7 @@ namespace sc
 
 			if (!external_texture_path.empty())
 			{
-				fs::path texture_path = swf.current_file.parent_path() / fs::path(external_texture_path.data());
-
-				fs::path texture_extension = texture_path.extension();
-				if (texture_extension == ".zktx")
-				{
-					InputFileStream texture_stream(texture_path);
-					load_from_compressed_khronos_texture(texture_stream);
-				}
-				else if (texture_extension == ".ktx")
-				{
-					InputFileStream texture_stream(texture_path);
-					load_from_khronos_texture(texture_stream);
-				}
-				else if (texture_extension == ".sctx")
-				{
-					load_from_supercell_texture(texture_path);
-				}
-
-				return;
+				return load_from_file(swf, fs::path(external_texture_path.data()));
 			}
 
 			if (has_data)
@@ -290,7 +249,39 @@ namespace sc
 
 		void SWFTexture::save_buffer(Stream& stream, bool is_lowres) const
 		{
-			if (m_encoding == TextureEncoding::KhronosTexture)
+			uint16_t target_width = m_image->width();
+			uint16_t target_height = m_image->height();
+			if (is_lowres)
+			{
+				target_width = (uint16_t)(round(target_width / 2));
+				target_height = (uint16_t)(round(target_height / 2));
+			}
+
+			if (m_encoding == TextureEncoding::Raw)
+			{
+				RawImage* image = (RawImage*)m_image.get();
+
+				if (is_lowres)
+				{
+					MemoryStream buffer(
+						Image::calculate_image_length(target_width, target_height, m_image->depth())
+					);
+
+					RawImage lowres_image(
+						(uint8_t*)buffer.data(),
+						target_width, target_height,
+						m_image->depth(), m_image->colorspace()
+					);
+
+					image->copy(lowres_image);
+					stream.write(lowres_image.data(), lowres_image.data_length());
+				}
+				else
+				{
+					stream.write(m_image->data(), m_image->data_length());
+				}
+			}
+			else
 			{
 				CompressedImage* image = (CompressedImage*)m_image.get();
 
@@ -301,45 +292,33 @@ namespace sc
 					image->decompress_data(texture_data);
 
 					RawImage lowres_texture(
-						(uint16_t)(round(m_image->width() / 2)),
-						(uint16_t)(round(m_image->height() / 2)),
+						target_width,
+						target_height,
 						image->depth()
 					);
 					texture.copy(lowres_texture);
 
-					KhronosTexture1 compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
-
-					compressed_lowres.write(stream);
+					switch (m_encoding)
+					{
+					case SWFTexture::TextureEncoding::KhronosTexture:
+					{
+						KhronosTexture1 compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
+						compressed_lowres.write(stream);
+					}
+						break;
+					case SWFTexture::TextureEncoding::SupercellTexture:
+					{
+						SupercellTexture compressed_lowres(lowres_texture, ScPixel::Type::ASTC_RGBA8_4x4);
+						compressed_lowres.write(stream);
+					}
+						break;
+					default:
+						break;
+					}
 				}
 				else
 				{
 					image->write(stream);
-				}
-			}
-			else
-			{
-				RawImage* image = (RawImage*)m_image.get();
-
-				if (is_lowres)
-				{
-					uint16_t width = (uint16_t)(round(m_image->width() / 2));
-					uint16_t height = (uint16_t)(round(m_image->height() / 2));
-					MemoryStream buffer(
-						Image::calculate_image_length(width, height, m_image->depth())
-					);
-
-					RawImage lowres_image(
-						(uint8_t*)buffer.data(),
-						width, height,
-						m_image->depth(), m_image->colorspace()
-					);
-
-					image->copy(lowres_image);
-					stream.write(lowres_image.data(), lowres_image.data_length());
-				}
-				else
-				{
-					stream.write(m_image->data(), m_image->data_length());
 				}
 			}
 		};
@@ -404,13 +383,38 @@ namespace sc
 			}
 		}
 
+		void SWFTexture::load_from_file(const SupercellSWF& swf, const fs::path& path)
+		{
+			fs::path texture_path = swf.current_file.parent_path() / path;
+			return load_from_file(texture_path);
+		}
+
+		void SWFTexture::load_from_file(const fs::path& path)
+		{
+			fs::path texture_extension = path.extension();
+			if (texture_extension == ".zktx")
+			{
+				InputFileStream texture_stream(path);
+				load_from_compressed_khronos_texture(texture_stream);
+			}
+			else if (texture_extension == ".ktx")
+			{
+				InputFileStream texture_stream(path);
+				load_from_khronos_texture(texture_stream);
+			}
+			else if (texture_extension == ".sctx")
+			{
+				load_from_supercell_texture(path);
+			}
+		}
+
 		void SWFTexture::load_from_khronos_texture(Stream& data)
 		{
 			m_encoding = TextureEncoding::KhronosTexture;
 			m_image = CreateRef<KhronosTexture1>(data);
 		}
 
-		void SWFTexture::load_from_supercell_texture(std::filesystem::path path)
+		void SWFTexture::load_from_supercell_texture(const std::filesystem::path& path)
 		{
 			m_encoding = TextureEncoding::SupercellTexture;
 			m_image = CreateRef<SupercellTexture>(path);
@@ -487,37 +491,93 @@ namespace sc
 			if (m_encoding == TextureEncoding::KhronosTexture) {
 				return TAG_TEXTURE_9;
 			}
-
-			switch (filtering)
+			else if (m_encoding == TextureEncoding::Raw)
 			{
-			case SWFTexture::Filter::LINEAR_NEAREST:
-				if (!m_linear) {
-					tag = downscaling ? TAG_TEXTURE_6 : TAG_TEXTURE_5;
-				}
-				else if (!downscaling) {
-					tag = TAG_TEXTURE_4;
-				}
-				break;
-			case SWFTexture::Filter::LINEAR_MIPMAP_NEAREST:
-				if (!m_linear && downscaling) {
-					tag = TAG_TEXTURE_7;
-				}
-				else {
-					tag = downscaling ? TAG_TEXTURE_2 : TAG_TEXTURE_3;
-				}
-				break;
-			case SWFTexture::Filter::NEAREST_NEAREST:
-				if (!m_linear)
+				switch (filtering)
 				{
-					tag = TAG_TEXTURE_8;
-				}
+				case SWFTexture::Filter::LINEAR_NEAREST:
+					if (!m_linear) {
+						tag = downscaling ? TAG_TEXTURE_6 : TAG_TEXTURE_5;
+					}
+					else if (!downscaling) {
+						tag = TAG_TEXTURE_4;
+					}
+					break;
+				case SWFTexture::Filter::LINEAR_MIPMAP_NEAREST:
+					if (!m_linear && downscaling) {
+						tag = TAG_TEXTURE_7;
+					}
+					else {
+						tag = downscaling ? TAG_TEXTURE_2 : TAG_TEXTURE_3;
+					}
+					break;
+				case SWFTexture::Filter::NEAREST_NEAREST:
+					if (!m_linear)
+					{
+						tag = TAG_TEXTURE_8;
+					}
 
-				break;
-			default:
-				break;
+					break;
+				default:
+					break;
+				}
+			}
+			else
+			{
+				throw wk::Exception("Unsuported encoding method");
 			}
 
 			return tag;
+		}
+
+		std::filesystem::path SWFTexture::save_to_external_file(const SupercellSWF& swf, uint32_t index, bool is_lowres) const
+		{
+			fs::path output_filepath = swf.current_file.parent_path();
+			fs::path filename = get_external_filename(swf, index, is_lowres);
+			output_filepath /= filename;
+			save_to_external_file(swf, output_filepath, is_lowres);
+
+			return filename;
+		}
+
+		void SWFTexture::save_to_external_file(const SupercellSWF& swf, const std::filesystem::path& path, bool is_lowres) const
+		{
+			wk::OutputFileStream file(path);
+
+			switch (m_encoding)
+			{
+			case SWFTexture::TextureEncoding::KhronosTexture:
+			{
+				if (swf.compress_external_textures)
+				{
+					wk::BufferStream input_data;
+					save_buffer(input_data, is_lowres);
+
+					ZstdCompressor::Props props;
+					ZstdCompressor cctx(props);
+
+					input_data.seek(0);
+					cctx.compress(input_data, file);
+				}
+				else
+				{
+					save_buffer(file, is_lowres);
+				}
+			}
+			break;
+
+			case SWFTexture::TextureEncoding::SupercellTexture:
+			{
+				SupercellTexture* texture = (SupercellTexture*)m_image.get();
+				texture->use_compression = swf.compress_external_textures;
+				save_buffer(file, is_lowres);
+			}
+			break;
+
+			case SWFTexture::TextureEncoding::Raw:
+			default:
+				break;
+			}
 		}
 
 		void SWFTexture::load_sc2(SupercellSWF& swf, const SC2::DataStorage*, const uint8_t* data)
@@ -531,18 +591,57 @@ namespace sc
 
 			for (uint32_t i = 0; texture_count > i; i++)
 			{
-				auto texture_set_data = textures_vector->Get(i);
-				swf.use_low_resolution = texture_set_data->lowres();
+				SWFTexture& texture = swf.textures[i];
+				auto texture_set = textures_vector->Get(i);
+				swf.use_low_resolution = texture_set->lowres();
 				swf.use_multi_resolution = swf.use_low_resolution;
 				
-				auto texture_data = swf.low_memory_usage_mode && texture_set_data->lowres() ? texture_set_data->lowres() : texture_set_data->highres();
-				SWFTexture& texture = swf.textures[i];
+				auto selected_texture = swf.low_memory_usage_mode && texture_set->lowres() ? 
+					texture_set->lowres() : 
+					texture_set->highres();
 
-				// Hardcode Khronos texture for now
-				wk::SharedMemoryStream texture_stream((uint8_t*)texture_data->data()->data(), texture_data->data()->size());
-				texture.load_from_khronos_texture(texture_stream);
+				if (selected_texture->external_texture())
+				{
+					swf.use_external_textures = true;
+					fs::path texture_path = selected_texture->external_texture()->str();
+					texture.load_from_file(swf, texture_path);
+				}
+				else
+				{
+					// Hardcode Khronos texture for now
+					wk::SharedMemoryStream texture_stream((uint8_t*)selected_texture->data()->data(), selected_texture->data()->size());
+					texture.load_from_khronos_texture(texture_stream);
+				}
 			}
 		}
 
+		std::filesystem::path SWFTexture::get_external_filename(const SupercellSWF& swf, uint32_t index, bool is_lowres) const
+		{
+			std::filesystem::path result = swf.current_file.stem();
+
+			if (is_lowres)
+			{
+				result += swf.low_resolution_suffix.string();
+			}
+			result += "_";
+			result += std::to_string(index);
+
+			switch (m_encoding)
+			{
+			case sc::flash::SWFTexture::TextureEncoding::Raw:
+				result += ".bin";
+				break;
+			case sc::flash::SWFTexture::TextureEncoding::KhronosTexture:
+				result += swf.compress_external_textures ? ".zktx" : ".ktx";
+				break;
+			case sc::flash::SWFTexture::TextureEncoding::SupercellTexture:
+				result += ".sctx";
+				break;
+			default:
+				break;
+			}
+
+			return result;
+		}
 	}
 }

@@ -49,7 +49,7 @@ namespace sc
 			SupercellSWF& operator=(SupercellSWF&&) = default;
 
 		public:
-			fs::path current_file;
+			mutable fs::path current_file;
 
 			ExportsArray exports;
 			MatrixBankArray matrixBanks;
@@ -79,7 +79,7 @@ namespace sc
 			bool load_tags();
 
 			void save_tags();
-			void save_textures(bool has_data, bool is_lowres);
+			void save_textures_sc1(bool has_data, bool is_lowres);
 
 		public:
 			ExportName* GetExportName(const SWFString& name);

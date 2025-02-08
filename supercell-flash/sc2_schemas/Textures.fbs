@@ -15,6 +15,9 @@ table TextureData
 
     // Texture Data
     data: [ubyte];
+
+    // Path to external texture (zktx, ktx, sctx)
+    external_texture: string;
 }
 
 // Each set can have a texture and optionally a lowres variant which is 2 times smaller

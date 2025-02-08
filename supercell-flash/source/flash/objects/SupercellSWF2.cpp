@@ -13,7 +13,6 @@ namespace sc::flash
 	SupercellSWF2CompileTable::SupercellSWF2CompileTable(const SupercellSWF& _swf) : swf(_swf)
 	{
 		builder = FlatBufferBuilder(1024 * 1024, nullptr, false);
-		//builder.TrackMinAlign(16);
 	}
 
 	void SupercellSWF2CompileTable::load_chunk(SupercellSWF& swf, const SC2::DataStorage* storage, const std::function<void(SupercellSWF&, const SC2::DataStorage*, const uint8_t*)>& reader)
@@ -455,57 +454,64 @@ namespace sc::flash
 		flush_builder(root_off);
 	}
 
+	Offset<sc::flash::SC2::TextureData> SupercellSWF2CompileTable::create_texture(const SWFTexture& texture, uint32_t index, bool is_lowres)
+	{
+		Offset<Vector<uint8_t>> texture_data_off;
+		Offset<String> external_path_off;
+		Offset<sc::flash::SC2::TextureData> result;
+		wk::BufferStream texture_buffer;
+
+		if (swf.use_external_textures)
+		{
+			fs::path filename = texture.save_to_external_file(swf, index, is_lowres);
+			external_path_off = builder.CreateString(filename.string());
+		}
+		else
+		{
+			// Temporarly solution
+			SWFTexture texture_copy = texture;
+			texture_copy.encoding(SWFTexture::TextureEncoding::KhronosTexture);
+			texture_copy.save_buffer(texture_buffer, is_lowres);
+
+			texture_data_off = builder.CreateVector((uint8_t*)texture_buffer.data(), texture_buffer.length());
+		}
+
+		result = SC2::CreateTextureData(
+			builder, 8, 0,
+			texture.image()->width(),
+			texture.image()->height(),
+			texture_data_off,
+			external_path_off
+		);
+
+		return result;
+	}
+
 	uint32_t SupercellSWF2CompileTable::save_textures()
 	{
 		Offset<Vector<Offset<SC2::TextureSet>>> textures_offs;
 		{
 			std::vector<Offset<sc::flash::SC2::TextureSet>> raw_textures_offs;
 
-			for (const SWFTexture& texture : swf.textures)
+			for (uint32_t i = 0; swf.textures.size() > i; i++)
 			{
-				Offset<sc::flash::SC2::TextureSet> texuture_set_off;
+				const SWFTexture& texture = swf.textures[i];
+
+				Offset<sc::flash::SC2::TextureSet> texture_set_off;
 				Offset<sc::flash::SC2::TextureData> highres_texuture_off;
 				Offset<sc::flash::SC2::TextureData> lowres_texuture_off;
 
-				// Warning. Big amount of hardcode.
-
-				// Temporarly solution
-				SWFTexture texture_copy = texture;
-				texture_copy.encoding(SWFTexture::TextureEncoding::KhronosTexture);
-
 				if (swf.use_low_resolution)
 				{
-					Offset<Vector<uint8_t>> texture_data_off;
-					wk::BufferStream lowres_texture_data;
-					texture_copy.save_buffer(lowres_texture_data, true);
-
-					texture_data_off = builder.CreateVector((uint8_t*)lowres_texture_data.data(), lowres_texture_data.length());
-					lowres_texuture_off = SC2::CreateTextureData(
-						builder, 8, 0,
-						(uint16_t)(round(texture_copy.image()->width() / 2)),
-						(uint16_t)(round(texture_copy.image()->height() / 2)),
-						texture_data_off
-					);
+					lowres_texuture_off = create_texture(texture, i, true);
 				}
 
-				{
-					Offset<Vector<uint8_t>> texture_data_off;
-					wk::BufferStream highres_texture_data;
-					texture_copy.save_buffer(highres_texture_data, false);
+				highres_texuture_off = create_texture(texture, i, false);
 
-					texture_data_off = builder.CreateVector((uint8_t*)highres_texture_data.data(), highres_texture_data.length());
-					highres_texuture_off = SC2::CreateTextureData(
-						builder, 8, 0,
-						texture_copy.image()->width(),
-						texture_copy.image()->height(),
-						texture_data_off
-					);
-				}
-
-				texuture_set_off = SC2::CreateTextureSet(
+				texture_set_off = SC2::CreateTextureSet(
 					builder, lowres_texuture_off, highres_texuture_off
 				);
-				raw_textures_offs.push_back(texuture_set_off);
+				raw_textures_offs.push_back(texture_set_off);
 			}
 
 			if (!swf.textures.empty())

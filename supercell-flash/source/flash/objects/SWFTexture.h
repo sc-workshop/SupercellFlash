@@ -88,9 +88,11 @@ namespace sc
 		public:
 			void load_from_image(wk::RawImage& image);
 			void load_from_buffer(wk::Stream& data, uint16_t width, uint16_t height, PixelFormat format, bool has_data = true);
+			void load_from_file(const SupercellSWF& swf, const fs::path& path);
+			void load_from_file(const std::filesystem::path& path);
 			void load_from_khronos_texture(wk::Stream& data);
 			void load_from_compressed_khronos_texture(wk::Stream& data);
-			void load_from_supercell_texture(std::filesystem::path path);
+			void load_from_supercell_texture(const std::filesystem::path& path);
 
 		protected:
 			wk::Ref<wk::Image> m_image = nullptr;
@@ -107,6 +109,10 @@ namespace sc
 			virtual void save(SupercellSWF& swf, bool has_data, bool is_lowres) const;
 			virtual void save_buffer(wk::Stream& stream, bool is_lowres) const;
 			virtual uint8_t tag(SupercellSWF& swf, bool has_data = false) const;
+
+			std::filesystem::path save_to_external_file(const SupercellSWF& swf, uint32_t index, bool is_lowres) const;
+			void save_to_external_file(const SupercellSWF& swf, const std::filesystem::path& path, bool is_lowres) const;
+			std::filesystem::path get_external_filename(const SupercellSWF& swf, uint32_t index, bool is_lowres) const;
 
 		public:
 			static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);

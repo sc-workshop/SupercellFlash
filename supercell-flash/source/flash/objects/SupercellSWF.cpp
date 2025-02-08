@@ -453,7 +453,7 @@ namespace sc
 			}
 			else
 			{
-				save_textures(is_texture, is_lowres);
+				save_textures_sc1(is_texture, is_lowres);
 			}
 
 			stream.write_tag_flag(TAG_END);
@@ -480,7 +480,7 @@ namespace sc
 				stream.write_tag_final(position);
 			}
 
-			save_textures(!use_external_texture, false);
+			save_textures_sc1(!use_external_texture, false);
 
 			if (movieclip_modifiers.size() > 0) {
 				stream.write_unsigned_byte(TAG_MOVIE_CLIP_MODIFIERS_COUNT); // Tag
@@ -544,7 +544,7 @@ namespace sc
 			}
 		}
 
-		void SupercellSWF::save_textures(bool has_data, bool is_lowres)
+		void SupercellSWF::save_textures_sc1(bool has_data, bool is_lowres)
 		{
 			for (uint16_t i = 0; textures.size() > i; i++)
 			{
@@ -556,38 +556,12 @@ namespace sc
 					texture.encoding(SWFTexture::TextureEncoding::KhronosTexture);
 
 					// Path String In Tag
-					fs::path output_filepath = current_file.parent_path();
-					output_filepath /= current_file.stem();
-					if (is_lowres)
-					{
-						output_filepath += low_resolution_suffix.string();
-					}
-					output_filepath += "_";
-					output_filepath += std::to_string(i);
-					output_filepath += compress_external_textures ? ".zktx" : ".ktx";
+					fs::path filename = texture.save_to_external_file(*this, i, is_lowres);
 
 					{
-						std::string texture_filename = output_filepath.filename().string();
+						std::string texture_filename = filename.string();
 						SWFString texture_path(texture_filename);
 						stream.write_string(texture_path);
-					}
-
-					wk::BufferStream input_data;
-					texture.save_buffer(input_data, is_lowres);
-
-					wk::OutputFileStream output_file(output_filepath);
-
-					if (compress_external_textures)
-					{
-						ZstdCompressor::Props props;
-						ZstdCompressor cctx(props);
-
-						input_data.seek(0);
-						cctx.compress(input_data, output_file);
-					}
-					else
-					{
-						output_file.write(input_data.data(), input_data.length());
 					}
 				}
 				texture.save(*this, has_data, is_lowres);
@@ -597,6 +571,7 @@ namespace sc
 
 		void SupercellSWF::save_sc2(const fs::path& filepath) const
 		{
+			current_file = filepath;
 			SupercellSWF2CompileTable table(*this);
 			stream.clear();
 			
