@@ -218,7 +218,7 @@ namespace sc
 				textfield.top = textfield_data->top();
 				textfield.bottom = textfield_data->bottom();
 
-				textfield.font_color = textfield_data->font_color();
+				textfield.font_color.set_value(textfield_data->font_color());
 				textfield.outline_color = textfield_data->outline_color();
 
 				textfield.text = SWFString(
