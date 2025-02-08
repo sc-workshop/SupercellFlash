@@ -14,11 +14,6 @@ namespace fs = std::filesystem;
 
 int main(int argc, char* argv[])
 {
-	SupercellSWF swf1;
-	SupercellSWF swf2;
-
-	swf1 = swf2;
-
 	if (argc <= 1) {
 		return 1;
 	}
@@ -29,6 +24,12 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	int version = 1;
+	if (argc >= 2)
+	{
+		version = std::stoi(argv[2]);
+	}
+
 	/* Loading test */
 	time_point loading_start = high_resolution_clock::now();
 	Timer loading;
@@ -36,20 +37,32 @@ int main(int argc, char* argv[])
 	swf.load(filepath);
 
 	cout << "Loading took: ";
-	cout << loading.elapsed() << endl << endl;
+	cout << loading.elapsed() << "ms" << endl << endl;
 	loading.reset();
 
 	/* Save test */
 	fs::path folder = filepath.parent_path();
 	try {
-		swf.save(folder / filepath.stem().concat("_new").concat(filepath.extension().string()), Signature::Zstandard);
+		fs::path dest = folder / filepath.stem().concat("_new").concat(filepath.extension().string());
+		switch (version)
+		{
+		case 1:
+			swf.save(dest, Signature::Zstandard);
+			break;
+		case 2:
+			swf.save_sc2(dest);
+			break;
+		default:
+			break;
+		}
+		
 	}
 	catch (const wk::Exception& err) {
 		cout << "Error. " << endl << "Message: " << err.what() << endl;
 	}
 
 	cout << "Saving took: ";
-	cout << loading.elapsed() << endl;
+	cout << loading.elapsed() << "ms" << endl;
 
 	return 0;
 }

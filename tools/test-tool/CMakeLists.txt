@@ -1,7 +1,7 @@
 # Project: supercell-flash test-tool
 
 # C++ headers and source files
-set(SOURCES main.cpp)
+set(SOURCES source/main.cpp)
 
 set(CLI_TARGET supercell-flash-test-tool)
 
@@ -12,3 +12,4 @@ set_target_properties(${CLI_TARGET} PROPERTIES
 )
 
 target_link_libraries(${CLI_TARGET} PRIVATE supercell::flash)
+wk_project_setup(${CLI_TARGET})
