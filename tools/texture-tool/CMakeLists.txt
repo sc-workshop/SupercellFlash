@@ -9,6 +9,7 @@ set(CLI_TARGET supercell-flash-texture-tool)
 add_executable(${CLI_TARGET} ${HEADERS} ${SOURCES})
 wk_project_setup(${CLI_TARGET})
 wk_include_json()
+wk_include_argparse()
 
 set_target_properties(${CLI_TARGET} PROPERTIES
     FOLDER SupercellSDK/tools

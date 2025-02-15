@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <chrono>
+#include "core/console/console.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -15,45 +16,51 @@ namespace fs = std::filesystem;
 
 int main(int argc, char* argv[])
 {
-	print("SC Flash Texture Tool - Command Line app");
+	wk::ArgumentParser parser("SC Flash Texture Tool");
 
-	if (argc <= 2) {
-		print("Usage: SCTex [decode/encode] [input _tex.sc file or folder] [_dl.sc file for encode]");
-		print("Flags: ");
-		print("--save-external-files: Encodes all textures to Khronos texture and saves it to .zktx");
-		//print("--use-sprites: Decodes or encodes texture by sprites. Input file should be .sc (not _tex.sc)");
-		return 1;
+	parser
+		.add_argument("mode")
+		.choices("decode", "encode")
+		.required();
+
+	parser
+		.add_argument("input")
+		.help("input _tex.sc file or folder")
+		.required();
+
+	parser
+		.add_argument("external")
+		.default_value("")
+		.help("_dl.sc or sc2 file for encode");
+
+	parser
+		.add_argument("-t", "--type")
+		.choices("sc1", "sc2")
+		.default_value("sc1")
+		.help("_dl.sc or sc2 file for encode");
+
+	try
+	{
+		parser.parse_args(argc, argv);
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << parser << std::endl;
 	}
 
-	fs::path input_path = argv[2];
+	fs::path input_path = fs::path(parser.get<std::string>("input"));
 	if (!fs::exists(input_path)) {
 		cout << "Path is inncorrect or does not exist";
 		return 1;
 	}
 
-	fs::path basename = input_path.stem();
-
-	std::string operation = argv[1];
-
-	// Flags
 	bool use_external_files = false;
 	bool use_sprites = false;
-	for (int i = 1; argc > i; i++)
-	{
-		std::string argument = argv[i];
-
-		if (argument == "--save-external-files")
-		{
-			use_external_files = true;
-		}
-		else if (argument == "--use-sprites")
-		{
-			use_sprites = true;
-		}
-	}
+	bool save_to_sc1 = parser.get<std::string>("type") == "sc1";
+	std::string operation = parser.get<std::string>("mode");
+	fs::path basename = input_path.stem();
 
 	Timer operation_timer;
-
 	try
 	{
 		if (operation == "decode")
@@ -107,7 +114,15 @@ int main(int argc, char* argv[])
 			fs::path output_path = fs::path(input_path.parent_path() / fs::path(basename.concat(".sc")));
 			if (is_dl_file)
 			{
-				file.save(output_path, Signature::Zstandard);
+				if (save_to_sc1)
+				{
+					file.save(output_path, Signature::Zstandard);
+				}
+				else
+				{
+					file.save_sc2(output_path);
+				}
+				
 			}
 			else
 			{
