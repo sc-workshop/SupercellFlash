@@ -34,8 +34,13 @@ namespace sc::flash
 
 	public:
 		static void load_chunk(SupercellSWF& swf, const SC2::DataStorage* storage, const std::function<void(SupercellSWF&, const SC2::DataStorage*, const uint8_t*)>& reader);
+		static const float get_precision_multiplier(SC2::Precision);
 
 	public:
+		// Matrix precision
+		SC2::Precision scale_presicion = SC2::Precision::Default;
+		SC2::Precision translation_precision = SC2::Precision::Default;
+
 		// Resource palette
 		SWFVector<SWFString> strings;
 		SWFVector<SC2::Typing::Rect> rectangles;

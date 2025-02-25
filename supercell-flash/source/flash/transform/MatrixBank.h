@@ -6,6 +6,7 @@
 #include "flash/types/SWFContainer.hpp"
 
 #include "flash/SC2/DataStorage_generated.h"
+#include "flash/SC2/FileDescriptor_generated.h"
 
 namespace sc
 {
@@ -33,7 +34,7 @@ namespace sc
 			virtual uint8_t tag(SupercellSWF& swf) const;
 
 		public:
-			static void load(SupercellSWF&, const SC2::DataStorage*);
+			static void load(SupercellSWF&, const SC2::DataStorage*, SC2::Precision scale_presicion, SC2::Precision translation_presicion);
 		};
 	}
 }

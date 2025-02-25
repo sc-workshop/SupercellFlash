@@ -33,6 +33,29 @@ struct Matrix2x3
     ty: float;
 }
 
+// A structure that represents Normalized Half Precision Matrix 2x3
+// Used to save resources when accuracy is not very important
+struct HalfMatrix2x3
+{
+    // Scale X
+    a: short;
+
+    // Skew X
+    b: short;
+
+    // Skew Y
+    c: short;
+
+    // Scale Y
+    d: short;
+
+    // Translation X
+    tx: short;
+
+    // Translation Y
+    ty: short;
+}
+
 // A structure that represents Multiply and Addition color
 // Used for transforming Display Objects color
 struct ColorTransform

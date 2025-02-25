@@ -71,14 +71,14 @@ namespace sc
 			uint32_t resources_offset = 0;
 
 			// Descriptor
-			{
+			//{
 				uint32_t descriptor_size = input.read_unsigned_int();
 				wk::MemoryStream descriptor_data(descriptor_size);
 				input.read(descriptor_data.data(), descriptor_data.length());
 
 				const SC2::FileDescriptor* descriptor = SC2::GetFileDescriptor(descriptor_data.data());
 
-				assert(descriptor->unk1() == 1 && descriptor->unk2() == 1);
+				//assert(descriptor->unk1() == 1 && descriptor->unk2() == 1);
 
 				uint32_t shape_count = descriptor->shape_count();
 				shapes.resize(shape_count);
@@ -116,7 +116,7 @@ namespace sc
 						}
 					}
 				}
-			}
+			//}
 
 			// Compressed buffer
 			{
@@ -124,7 +124,7 @@ namespace sc
 				decompressor.decompress(input, stream);
 			}
 
-			load_sc2_internal(header_offset, resources_offset);
+			load_sc2_internal(descriptor);
 		}
 
 		bool SupercellSWF::load_sc1(bool is_texture)
@@ -175,19 +175,19 @@ namespace sc
 			return load_tags();
 		}
 
-		void SupercellSWF::load_sc2_internal(uint32_t header_offset, uint32_t resources_offset)
+		void SupercellSWF::load_sc2_internal(const SC2::FileDescriptor* descriptor)
 		{
 			const SC2::DataStorage* storage = nullptr;
 			{
-				stream.seek(header_offset);
+				stream.seek(descriptor->header_offset());
 				uint32_t data_storage_size = stream.read_unsigned_int();
 				storage = SC2::GetDataStorage((char*)stream.data() + stream.position());
 				stream.seek(data_storage_size, wk::Stream::SeekMode::Add);
-				MatrixBank::load(*this, storage);
+				MatrixBank::load(*this, storage, descriptor->scale_precision(), descriptor->translation_precision());
 			}
 			
 			{
-				stream.seek(resources_offset);
+				stream.seek(descriptor->resources_offset());
 				using Table = SupercellSWF2CompileTable;
 				Table::load_chunk(*this, storage, ExportName::load_sc2);
 				Table::load_chunk(*this, storage, TextField::load_sc2);

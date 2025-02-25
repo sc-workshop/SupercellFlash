@@ -10,11 +10,24 @@ table ExportNameHash
     hash: [ubyte];
 }
 
+enum Precision : uint
+{
+    // value / 1.0f
+    Default = 1,
+
+    // value / 20.0f
+    Twip = 2,
+
+    // value / 1000.0f
+    Optimized = 3
+}
+
 // A table that describes some properties of SC2 file that help to make some optimizations when loading decompressed file content
 table FileDescriptor
 {
-    unk1: uint; // Always 1
-    unk2: uint; // Always 1
+    // Im not sure but these values ​​are different only in files where matrices are normalized
+    translation_precision: Precision = Default;
+    scale_precision: Precision = Default;
     
     shape_count: uint;
     movie_clips_count: uint;

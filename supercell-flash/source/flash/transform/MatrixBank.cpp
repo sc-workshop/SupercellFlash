@@ -1,5 +1,6 @@
 #include "MatrixBank.h"
 #include "flash/objects/SupercellSWF.h"
+#include "flash/objects/SupercellSWF2.h"
 
 #include <execution>
 
@@ -67,49 +68,65 @@ namespace sc {
 			return TAG_MATRIX_BANK;
 		};
 
-		void MatrixBank::load(SupercellSWF& swf, const SC2::DataStorage* storage)
+		void MatrixBank::load(SupercellSWF& swf, const SC2::DataStorage* storage, SC2::Precision scale_presicion, SC2::Precision translation_presicion)
 		{
 			auto matrix_banks_vector = storage->matrix_banks();
 			// Return if empty
 			if (!matrix_banks_vector) return;
 
-			uint32_t matrix_bank_count = matrix_banks_vector->size();
-			swf.matrixBanks.reserve(matrix_bank_count);
+			float scale_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(scale_presicion);
+			float translation_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(translation_presicion);
 
-			for (uint32_t i = 0; matrix_bank_count > i; i++)
+			uint32_t matrix_bank_count = matrix_banks_vector->size();
+			swf.matrixBanks.reserve((uint16_t)matrix_bank_count);
+
+			for (auto data : *matrix_banks_vector)
 			{
-				auto bank_data = matrix_banks_vector->Get(i);
 				MatrixBank& bank = swf.matrixBanks.emplace_back();
 
-				auto matrices_vector = bank_data->matrices();
-				auto colors_vector = bank_data->colors();
+				auto matrices_vector = data->matrices();
+				auto colors_vector = data->colors();
+				auto half_matrices_vector = data->half_matrices();
 
 				if (matrices_vector)
 				{
-					uint16_t matrices_count = (uint16_t)matrices_vector->size();
-					bank.matrices.reserve(matrices_count);
+					bank.matrices.reserve((uint16_t)matrices_vector->size());
 
-					for (uint16_t m = 0; matrices_count > m; m++)
+					for (auto mdata : *matrices_vector)
 					{
-						auto matrix_data = matrices_vector->Get(m);
 						Matrix2D& matrix = bank.matrices.emplace_back();
-						matrix.a = matrix_data->a(); matrix.b = matrix_data->b(); matrix.c = matrix_data->c(); matrix.d = matrix_data->d();
-						matrix.tx = matrix_data->tx(); matrix.ty = matrix_data->ty();
+						matrix.a = mdata->a(); matrix.b = mdata->b(); matrix.c = mdata->c(); matrix.d = mdata->d();
+						matrix.tx = mdata->tx(); matrix.ty = mdata->ty();
+					}
+					
+				}
+				else if (half_matrices_vector)
+				{
+					swf.use_half_precision_matrices = true;
+					bank.matrices.reserve((uint16_t)half_matrices_vector->size());
+
+					for (auto mdata : *half_matrices_vector)
+					{
+						Matrix2D& matrix = bank.matrices.emplace_back();
+						matrix.a = (float)mdata->a() / scale_multiplier;
+						matrix.b = (float)mdata->b() / scale_multiplier;
+						matrix.c = (float)mdata->c() / scale_multiplier;
+						matrix.d = (float)mdata->d() / scale_multiplier;
+						matrix.tx = (float)mdata->tx() / translation_multiplier;
+						matrix.ty = (float)mdata->ty() / translation_multiplier;
 					}
 				}
 
 				if (colors_vector)
 				{
-					uint16_t colors_count = (uint16_t)colors_vector->size();
-					bank.color_transforms.reserve(colors_count);
+					bank.color_transforms.reserve((uint16_t)colors_vector->size());
 
-					for (uint16_t c = 0; colors_count > c; c++)
+					for (auto cdata : *colors_vector)
 					{
-						auto color_data = colors_vector->Get(c);
 						ColorTransform& color = bank.color_transforms.emplace_back();
-						color.add.r = color_data->r_add(); color.add.g = color_data->g_add(); color.add.b = color_data->b_add();
-						color.multiply.r = color_data->r_mul(); color.multiply.g = color_data->g_mul(); color.multiply.b = color_data->b_mul();
-						color.alpha = color_data->alpha();
+						color.add.r = cdata->r_add(); color.add.g = cdata->g_add(); color.add.b = cdata->b_add();
+						color.multiply.r = cdata->r_mul(); color.multiply.g = cdata->g_mul(); color.multiply.b = cdata->b_mul();
+						color.alpha = cdata->alpha();
 					}
 				}
 			}

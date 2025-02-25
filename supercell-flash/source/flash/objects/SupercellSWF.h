@@ -66,7 +66,7 @@ namespace sc
 
 			bool load_sc1(bool is_texture);
 			void load_sc2(wk::Stream& stream);
-			void load_sc2_internal(uint32_t header_offset, uint32_t resources_offset);
+			void load_sc2_internal(const SC2::FileDescriptor* descriptor);
 
 			virtual void save(const fs::path& filepath, Signature signature, bool save_lowres = true);
 			void save_internal(bool is_texture, bool is_lowres);
@@ -91,7 +91,6 @@ namespace sc
 		public:
 			// Saves all textures to _tex.sc if true
 			bool use_external_texture = false;
-
 			bool use_multi_resolution = false;
 
 			// Use low-resolution texture
@@ -111,6 +110,9 @@ namespace sc
 
 			// Load only lowres files if available
 			bool low_memory_usage_mode = false;
+
+			// Save SC2 matrices with half precision
+			bool use_half_precision_matrices = true;
 
 			SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;
 			SWFString low_resolution_suffix = LOWRES_DEFAULT_SUFFIX;

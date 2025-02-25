@@ -13,6 +13,12 @@ namespace sc::flash
 	SupercellSWF2CompileTable::SupercellSWF2CompileTable(const SupercellSWF& _swf) : swf(_swf)
 	{
 		builder = FlatBufferBuilder(1024 * 1024, nullptr, false);
+
+		if (swf.use_half_precision_matrices)
+		{
+			scale_presicion = SC2::Precision::Optimized;
+			translation_precision = SC2::Precision::Twip;
+		}
 	}
 
 	void SupercellSWF2CompileTable::load_chunk(SupercellSWF& swf, const SC2::DataStorage* storage, const std::function<void(SupercellSWF&, const SC2::DataStorage*, const uint8_t*)>& reader)
@@ -20,7 +26,20 @@ namespace sc::flash
 		uint32_t data_size = swf.stream.read_unsigned_int();
 		reader(swf, storage, (uint8_t*)swf.stream.data() + swf.stream.position());
 		swf.stream.seek(data_size, wk::Stream::SeekMode::Add);
-	};
+	}
+
+	const float SupercellSWF2CompileTable::get_precision_multiplier(SC2::Precision precision)
+	{
+		switch (precision)
+		{
+		case sc::flash::SC2::Precision::Twip:
+			return 20.f;
+		case sc::flash::SC2::Precision::Optimized:
+			return 1000.f;
+		default:
+			return 1.f;
+		}
+	}
 
 	uint32_t SupercellSWF2CompileTable::get_string_ref(const SWFString& target)
 	{
@@ -226,24 +245,56 @@ namespace sc::flash
 
 			for (const MatrixBank& bank : swf.matrixBanks)
 			{
-				std::vector<SC2::Typing::Matrix2x3> matrices;
+				flatbuffers::Offset<SC2::MatrixBank> bank_off;
+
 				std::vector<SC2::Typing::ColorTransform> colors;
-
-				for (const flash::Matrix2D& matrix : bank.matrices)
-				{
-					matrices.emplace_back(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
-				}
-
 				for (const flash::ColorTransform& color : bank.color_transforms)
 				{
 					colors.emplace_back(
-						color.multiply.r, color.multiply.g, color.multiply.b, 
-						color.alpha, 
+						color.multiply.r, color.multiply.g, color.multiply.b,
+						color.alpha,
 						color.add.r, color.add.g, color.add.b
 					);
 				}
 
-				auto bank_off = SC2::CreateMatrixBankDirect(builder, &matrices, &colors);
+
+				if (swf.use_half_precision_matrices)
+				{
+					// Scale multiplier
+					float sm = SupercellSWF2CompileTable::get_precision_multiplier(scale_presicion);
+					// Translation multiplier
+					float tm = SupercellSWF2CompileTable::get_precision_multiplier(translation_precision);
+
+					std::vector<SC2::Typing::HalfMatrix2x3> matrices;
+					matrices.reserve(bank.matrices.size());
+
+					for (const flash::Matrix2D& matrix : bank.matrices)
+					{
+						matrices.emplace_back(
+							(int16_t)(matrix.a * sm), 
+							(int16_t)(matrix.b * sm), 
+							(int16_t)(matrix.c * sm), 
+							(int16_t)(matrix.d * sm), 
+							(int16_t)(matrix.tx * tm), 
+							(int16_t)(matrix.ty * tm)
+						);
+					}
+
+					bank_off = SC2::CreateMatrixBankDirect(builder, nullptr, &colors, &matrices);
+				}
+				else
+				{
+					std::vector<SC2::Typing::Matrix2x3> matrices;
+					matrices.reserve(bank.matrices.size());
+
+					for (const flash::Matrix2D& matrix : bank.matrices)
+					{
+						matrices.emplace_back(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
+					}
+
+					bank_off = SC2::CreateMatrixBankDirect(builder, &matrices, &colors);
+				}
+				
 				raw_banks_off.push_back(bank_off);
 			}
 
@@ -577,7 +628,7 @@ namespace sc::flash
 		}
 
 		Offset<SC2::FileDescriptor> root_off = SC2::CreateFileDescriptor(
-			builder, 1, 1,
+			builder, translation_precision, scale_presicion,
 			swf.shapes.size(), swf.movieclips.size(), swf.textures.size(), swf.textfields.size(), 0,
 			header_offset, data_offset, textures_length, exports_hash_off
 		);

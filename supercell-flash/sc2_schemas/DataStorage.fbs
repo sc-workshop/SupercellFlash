@@ -6,6 +6,7 @@ table MatrixBank
 {
     matrices: [Typing.Matrix2x3];
     colors: [Typing.ColorTransform];
+    half_matrices: [Typing.HalfMatrix2x3];
 }
 
 // The very first chunk that contains all important binary data such as strings, shapes points, MovieClip frame elements
