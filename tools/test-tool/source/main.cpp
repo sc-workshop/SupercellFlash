@@ -5,6 +5,8 @@
 #include <iostream>
 #include <chrono>
 
+#include "core/console/console.h"
+
 using namespace std;
 using namespace std::chrono;
 using namespace sc::flash;
@@ -14,21 +16,38 @@ namespace fs = std::filesystem;
 
 int main(int argc, char* argv[])
 {
-	if (argc <= 1) {
-		return 1;
+	wk::ArgumentParser program;
+
+	program
+		.add_argument("input")
+		.required();
+
+	program
+		.add_argument("version")
+		.default_value(1)
+		.scan<'i', int>();
+
+	program
+		.add_argument("--half-presicion")
+		.flag();
+
+	try
+	{
+		program.parse_args(argc, argv);
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << "Error! " << e.what() << std::endl;
+		std::cout << program << std::endl;
 	}
 
-	fs::path filepath = argv[1];
+	fs::path filepath = program.get<std::string>("input");
 	if (!fs::exists(filepath)) {
 		cout << "File not found";
 		return 1;
 	}
 
-	int version = 1;
-	if (argc >= 2)
-	{
-		version = std::stoi(argv[2]);
-	}
+	int version = program.get<int>("version");
 
 	/* Loading test */
 	time_point loading_start = high_resolution_clock::now();
@@ -50,6 +69,7 @@ int main(int argc, char* argv[])
 			swf.save(dest, Signature::Zstandard);
 			break;
 		case 2:
+			swf.use_half_precision_matrices = program.get<bool>("half-presicion");
 			swf.save_sc2(dest);
 			break;
 		default:
