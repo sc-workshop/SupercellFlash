@@ -68,7 +68,7 @@ namespace sc
 			void load_sc2(wk::Stream& stream);
 			void load_sc2_internal(const SC2::FileDescriptor* descriptor);
 
-			virtual void save(const fs::path& filepath, Signature signature, bool save_lowres = true);
+			virtual void save(const fs::path& filepath, Signature signature, bool save_lowres = false);
 			void save_internal(bool is_texture, bool is_lowres);
 
 			virtual void save_sc2(const fs::path& filepath) const;
