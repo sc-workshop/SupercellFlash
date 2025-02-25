@@ -112,7 +112,7 @@ namespace sc
 			bool low_memory_usage_mode = false;
 
 			// Save SC2 matrices with half precision
-			bool use_half_precision_matrices = true;
+			bool use_half_precision_matrices = false;
 
 			SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;
 			SWFString low_resolution_suffix = LOWRES_DEFAULT_SUFFIX;
