@@ -35,7 +35,7 @@ namespace sc::flash
 		case sc::flash::SC2::Precision::Twip:
 			return 20.f;
 		case sc::flash::SC2::Precision::Optimized:
-			return 1000.f;
+			return 1024.f;
 		default:
 			return 1.f;
 		}
