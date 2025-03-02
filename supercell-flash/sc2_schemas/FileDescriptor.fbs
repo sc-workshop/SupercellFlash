@@ -12,6 +12,8 @@ table ExportNameHash
 
 enum Precision : uint
 {
+    None = 0,
+
     // value / 1.0f
     Default = 1,
 
@@ -26,8 +28,8 @@ enum Precision : uint
 table FileDescriptor
 {
     // Im not sure but these values ​​are different only in files where matrices are normalized
-    translation_precision: Precision = Default;
-    scale_precision: Precision = Default;
+    translation_precision: Precision = None;
+    scale_precision: Precision = None;
     
     shape_count: uint;
     movie_clips_count: uint;
