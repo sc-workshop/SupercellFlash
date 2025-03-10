@@ -10,6 +10,13 @@ struct MovieClipFrame
     label_ref_id: uint;
 }
 
+// Same as MovieClipFrame but without frame label and with smaller possible frame elements count
+struct MovieClipShortFrame
+{
+    // Count of MovieClipFrameElement to be displayed in current frame
+    used_transform: ushort;
+}
+
 // A movieclip is a timeline and/or animation object with frames and children that are used in the object 
 // It can transform properties of children objecs, and create animation in that way
 // It can have an export name for use in a game or external tools
@@ -40,7 +47,7 @@ table MovieClip
     // Array of children blend modes
     children_blending: [ubyte];
 
-    // MovieClip frames
+    // Classic MovieClip frames
     frames: [MovieClipFrame];
 
     // Ushort offset to frame elements in DataStorage MovieClip frame elements buffer
@@ -51,6 +58,9 @@ table MovieClip
 
     // Index of Rect for 9-slice scaling
     scaling_grid_index: uint = null;
+
+    // MovieClip frames but without frame labels and with lower possible count of elements
+    short_frames: [MovieClipShortFrame];
 }
 
 table MovieClips

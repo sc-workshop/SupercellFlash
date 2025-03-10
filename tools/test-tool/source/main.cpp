@@ -31,6 +31,10 @@ int main(int argc, char* argv[])
 		.add_argument("--half-presicion")
 		.flag();
 
+	program
+		.add_argument("--use-short-frames")
+		.flag();
+
 	try
 	{
 		program.parse_args(argc, argv);
@@ -69,7 +73,8 @@ int main(int argc, char* argv[])
 			swf.save(dest, Signature::Zstandard);
 			break;
 		case 2:
-			swf.use_half_precision_matrices = program.get<bool>("half-presicion");
+			swf.sc2_compile_settings.use_half_precision_matrices = program.get<bool>("half-presicion");
+			swf.sc2_compile_settings.use_short_frames = program.get<bool>("use-short-frames");
 			swf.save_sc2(dest);
 			break;
 		default:

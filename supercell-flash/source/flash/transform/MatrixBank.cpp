@@ -102,7 +102,7 @@ namespace sc {
 				}
 				else if (half_matrices_vector)
 				{
-					swf.use_half_precision_matrices = true;
+					swf.sc2_compile_settings.use_half_precision_matrices = true;
 					bank.matrices.reserve((uint16_t)half_matrices_vector->size());
 
 					for (auto mdata : *half_matrices_vector)

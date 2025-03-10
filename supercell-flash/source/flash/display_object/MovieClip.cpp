@@ -289,21 +289,32 @@ namespace sc
 				}
 
 				auto frames_vector = movieclip_data->frames();
+				auto short_frames_vector = movieclip_data->short_frames();
 				uint16_t frames_count = (uint16_t)movieclip_data->frames_count();
 				movieclip.frames.reserve(frames_count);
+				swf.sc2_compile_settings.use_short_frames |= short_frames_vector != nullptr;
 
-				for (uint16_t f = 0; frames_count > f; f++)
+				if (frames_vector)
 				{
-					auto frame_data = frames_vector->Get(f);
-					MovieClipFrame& frame = movieclip.frames.emplace_back();
-
-					frame.elements_count = frame_data->used_transform();
-					frame.label = SWFString(
-						strings_vector->Get(
-							frame_data->label_ref_id()
-						)->c_str()
-					);
+					for (auto frame_data : *frames_vector)
+					{
+						MovieClipFrame& frame = movieclip.frames.emplace_back();
+						uint32_t label_id = frame_data->label_ref_id();
+						frame.elements_count = frame_data->used_transform();
+						frame.label = SWFString(
+							strings_vector->Get(label_id)->c_str()
+						);
+					}
 				}
+				else if (short_frames_vector)
+				{
+					for (auto frame_data : *short_frames_vector)
+					{
+						MovieClipFrame& frame = movieclip.frames.emplace_back();
+						frame.elements_count = frame_data->used_transform();
+					}
+				}
+
 
 				uint32_t elements_count = 0;
 				uint32_t elements_offset = movieclip_data->frame_elements_offset();

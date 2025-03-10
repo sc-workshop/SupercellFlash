@@ -14,7 +14,7 @@ namespace sc::flash
 	{
 		builder = FlatBufferBuilder(1024 * 1024, nullptr, false);
 
-		if (swf.use_half_precision_matrices)
+		if (swf.sc2_compile_settings.use_half_precision_matrices)
 		{
 			scale_presicion = SC2::Precision::Optimized;
 			translation_precision = SC2::Precision::Twip;
@@ -258,7 +258,7 @@ namespace sc::flash
 				}
 
 
-				if (swf.use_half_precision_matrices)
+				if (swf.sc2_compile_settings.use_half_precision_matrices)
 				{
 					// Scale multiplier
 					float sm = SupercellSWF2CompileTable::get_precision_multiplier(scale_presicion);
@@ -440,13 +440,38 @@ namespace sc::flash
 					childrens_names = &children_names_data.value();
 				}
 
+				std::vector<SC2::MovieClipShortFrame> short_frames;
 				std::vector<SC2::MovieClipFrame> frames;
-				frames.reserve(movieclip.frames.size());
+				bool has_frame_lables = std::any_of(movieclip.frames.begin(), movieclip.frames.end(),
+					[](const MovieClipFrame& frame) {
+						return !frame.label.empty();
+					}
+				);
 
-				for (uint16_t t = 0; movieclip.frames.size() > t; t++)
+				bool elements_in_short_range = std::any_of(movieclip.frames.begin(), movieclip.frames.end(),
+					[frame_elements_offset](const MovieClipFrame& frame) {
+						return std::numeric_limits<uint16_t>::max() > frame.elements_count;
+					}
+				);
+
+
+				if (swf.sc2_compile_settings.use_short_frames && !has_frame_lables && elements_in_short_range)
 				{
-					const MovieClipFrame& frame = movieclip.frames[t];
-					frames.emplace_back(frame.elements_count, frame_labels[t]);
+					short_frames.reserve(movieclip.frames.size());
+					for (uint16_t t = 0; movieclip.frames.size() > t; t++)
+					{
+						const MovieClipFrame& frame = movieclip.frames[t];
+						short_frames.emplace_back((uint16_t)frame.elements_count);
+					}
+				}
+				else
+				{
+					frames.reserve(movieclip.frames.size());
+					for (uint16_t t = 0; movieclip.frames.size() > t; t++)
+					{
+						const MovieClipFrame& frame = movieclip.frames[t];
+						frames.emplace_back(frame.elements_count, frame_labels[t]);
+					}
 				}
 
 				Optional<uint32_t> scaling_grid = nullopt;
@@ -464,7 +489,8 @@ namespace sc::flash
 					childrens_names, 
 					children_blending.empty() ? nullptr : &children_blending,
 					frames.empty() ? nullptr : &frames,
-					frame_elements_offset, movieclip.bank_index, scaling_grid
+					frame_elements_offset, movieclip.bank_index, scaling_grid, 
+					short_frames.empty() ? nullptr : &short_frames
 				);
 				raw_movieclips_off.push_back(movieclip_off);
 			}
