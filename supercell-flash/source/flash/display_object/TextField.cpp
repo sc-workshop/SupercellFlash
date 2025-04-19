@@ -107,7 +107,7 @@ namespace sc
 				tag = TAG_TEXT_FIELD_3;
 
 			if (outline_color != 0x000000FF)
-				tag = TAG_TEXT_FIELD_4;
+				tag = TAG_TEXT_FIELD_5;
 
 			if (unknown_short != 0xFFFF || unknown_short2 != 0xFFFF)
 				tag = TAG_TEXT_FIELD_6;
