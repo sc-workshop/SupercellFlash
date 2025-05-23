@@ -1,6 +1,7 @@
 #include "SWFTexture.h"
 #include "flash/objects/SupercellSWF.h"
 #include "compression/compression.h"
+#include "core/stb/stb.h"
 
 using namespace sc::texture;
 using namespace sc::compression;
@@ -259,7 +260,7 @@ namespace sc
 
 			if (m_encoding == TextureEncoding::Raw)
 			{
-				RawImage* image = (RawImage*)m_image.get();
+				RawImageRef image = raw_image();
 
 				if (is_lowres)
 				{

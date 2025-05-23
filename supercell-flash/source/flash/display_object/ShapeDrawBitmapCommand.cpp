@@ -160,7 +160,7 @@ namespace sc
 
 		bool ShapeDrawBitmapCommandVertex::xy_equal(const ShapeDrawBitmapCommandVertex& other) const
 		{
-			return x == other.x && x == other.y;
+			return x == other.x && y == other.y;
 		}
 
 		bool ShapeDrawBitmapCommand::operator==(const ShapeDrawBitmapCommand& other) const
