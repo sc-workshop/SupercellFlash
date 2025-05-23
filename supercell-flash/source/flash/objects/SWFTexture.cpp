@@ -1,7 +1,6 @@
 #include "SWFTexture.h"
 #include "flash/objects/SupercellSWF.h"
 #include "compression/compression.h"
-#include "core/stb/stb.h"
 
 using namespace sc::texture;
 using namespace sc::compression;
@@ -50,16 +49,14 @@ namespace sc
 			if (status == m_linear) return;
 			if (m_encoding != TextureEncoding::Raw) return;
 
-			uint8_t* buffer = wk::Memory::allocate(m_image->data_length());
-			wk::Memory::copy(m_image->data(), buffer, m_image->data_length());
+			wk::MemoryStream buffer(m_image->data_length());
+			wk::Memory::copy(m_image->data(), buffer.data(), buffer.length());
 
-			make_linear_data(
-				buffer, m_image->data(),
+			convert_tiled_data(
+				(uint8_t*)buffer.data(), m_image->data(),
 				m_image->width(), m_image->height(),
 				m_pixel_format, m_linear
 			);
-
-			free(buffer);
 		}
 
 		SWFTexture::TextureEncoding SWFTexture::encoding() const
@@ -138,7 +135,7 @@ namespace sc
 				raw_image->copy(*texture);
 				if (!m_linear)
 				{
-					make_linear_data(raw_image->data(), texture->data(), texture->width(), texture->height(), m_pixel_format, false);
+					convert_tiled_data(raw_image->data(), texture->data(), texture->width(), texture->height(), m_pixel_format, false);
 				}
 			}
 			else
@@ -273,9 +270,24 @@ namespace sc
 						target_width, target_height,
 						m_image->depth(), m_image->colorspace()
 					);
-
 					image->copy(lowres_image);
-					stream.write(lowres_image.data(), lowres_image.data_length());
+
+					if (!m_linear)
+					{
+						MemoryStream result(lowres_image.data_length());
+
+						convert_tiled_data(
+							lowres_image.data(), (uint8_t*)result.data(),
+							lowres_image.width(), lowres_image.height(),
+							m_pixel_format, true
+						);
+
+						stream.write(result.data(), result.length());
+					}
+					else
+					{
+						stream.write(lowres_image.data(), lowres_image.data_length());
+					}
 				}
 				else
 				{
@@ -432,7 +444,7 @@ namespace sc
 			load_from_khronos_texture(texture_data);
 		}
 
-		void SWFTexture::make_linear_data(uint8_t* inout_data, uint8_t* output_data, uint16_t width, uint16_t height, PixelFormat type, bool is_raw) {
+		void SWFTexture::convert_tiled_data(uint8_t* input_data, uint8_t* output_data, uint16_t width, uint16_t height, PixelFormat type, bool is_linear) {
 			uint8_t pixel_size = Image::PixelDepthTable[(uint8_t)pixel_depth_table[(uint8_t)type]].byte_count;
 
 			const uint16_t x_blocks = static_cast<uint16_t>(floor(width / SWFTEXTURE_BLOCK_SIZE));
@@ -444,28 +456,21 @@ namespace sc
 				for (uint16_t x_block = 0; x_blocks + 1 > x_block; x_block++) {
 					for (uint8_t y = 0; SWFTEXTURE_BLOCK_SIZE > y; y++) {
 						uint16_t pixel_y = (y_block * SWFTEXTURE_BLOCK_SIZE) + y;
-						if (pixel_y >= height) {
-							break;
-						}
+						if (pixel_y >= height) break;
 
 						for (uint8_t x = 0; SWFTEXTURE_BLOCK_SIZE > x; x++) {
 							uint16_t pixel_x = (x_block * SWFTEXTURE_BLOCK_SIZE) + x;
-							if (pixel_x >= width) {
-								break;
+							if (pixel_x >= width) break;
+
+							uint32_t source = (pixel_y * width + pixel_x) * pixel_size;
+							uint32_t target = pixel_index * pixel_size;
+							if (!is_linear) // blocks to image
+							{
+								wk::Memory::copy<uint8_t>(input_data + target, output_data + source, pixel_size);
 							}
-
-							uint32_t target = (pixel_y * width + pixel_x) * pixel_size;
-							if (!is_raw) { // blocks to image
-								uint32_t block_target = pixel_index * pixel_size;
-
-								wk::Memory::copy<uint8_t>(inout_data + block_target, output_data + target, pixel_size);
-							}
-							else { // image to blocks
-								uint32_t block_pixel_x = pixel_index % width;
-								uint32_t block_pixel_y = static_cast<uint32_t>(pixel_index / width);
-								uint32_t block_target = (block_pixel_y * width + block_pixel_x) * pixel_size;
-
-								wk::Memory::copy<uint8_t>(output_data + block_target, inout_data + target, pixel_size);
+							else // image to blocks
+							{
+								wk::Memory::copy<uint8_t>(input_data + source, output_data + target, pixel_size);
 							}
 
 							pixel_index++;
