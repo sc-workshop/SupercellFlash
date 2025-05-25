@@ -82,8 +82,8 @@ namespace sc
 			/// <param name="width"></param>
 			/// <param name="height"></param>
 			/// <param name="type">Pixel type</param>
-			/// <param name="is_raw">If true, converts image to block. Otherwise converts blocks to image</param>
-			static void convert_tiled_data(uint8_t* inout_data, uint8_t* output_data, uint16_t width, uint16_t height, PixelFormat type, bool is_raw);
+			/// <param name="is_linear">If true, converts image to block. Otherwise converts blocks to image</param>
+			static void convert_tiled_data(uint8_t* inout_data, uint8_t* output_data, uint16_t width, uint16_t height, PixelFormat type, bool is_linear);
 
 		public:
 			void load_from_image(wk::RawImage& image);

@@ -17,32 +17,7 @@ namespace sc
 			current_file = filepath;
 			use_external_texture = load_internal(filepath, false);
 
-			if (use_external_texture)
-			{
-				fs::path basename = filepath.stem();
-				fs::path dirname = filepath.parent_path();
-
-				fs::path multi_resolution_path = dirname / fs::path(basename).concat(multi_resolution_suffix.string()).concat("_tex.sc");
-				fs::path low_resolution_path = dirname / fs::path(basename).concat(low_resolution_suffix.string()).concat("_tex.sc");
-				fs::path common_file_path = dirname / fs::path(basename).concat("_tex.sc");
-
-				if (low_memory_usage_mode && use_low_resolution && fs::exists(low_resolution_path))
-				{
-					load_internal(low_resolution_path, true);
-				}
-				else if (use_multi_resolution && fs::exists(multi_resolution_path))
-				{
-					load_internal(multi_resolution_path, true);
-				}
-				else if (fs::exists(common_file_path))
-				{
-					load_internal(common_file_path, true);
-				}
-				else
-				{
-					throw wk::Exception("Failed to load external texture file");
-				}
-			}
+			if (use_external_texture) load_external_texture();
 
 			stream.clear();
 		}
@@ -62,6 +37,33 @@ namespace sc
 				file.seek(0);
 				Decompressor::decompress(file, stream);
 				return load_sc1(is_texture);
+			}
+		}
+
+		void SupercellSWF::load_external_texture()
+		{
+			fs::path basename = current_file.stem();
+			fs::path dirname = current_file.parent_path();
+
+			fs::path multi_resolution_path = dirname / fs::path(basename).concat(multi_resolution_suffix.string()).concat("_tex.sc");
+			fs::path low_resolution_path = dirname / fs::path(basename).concat(low_resolution_suffix.string()).concat("_tex.sc");
+			fs::path common_file_path = dirname / fs::path(basename).concat("_tex.sc");
+
+			if (low_memory_usage_mode && use_low_resolution && fs::exists(low_resolution_path))
+			{
+				load_internal(low_resolution_path, true);
+			}
+			else if (use_multi_resolution && fs::exists(multi_resolution_path))
+			{
+				load_internal(multi_resolution_path, true);
+			}
+			else if (fs::exists(common_file_path))
+			{
+				load_internal(common_file_path, true);
+			}
+			else
+			{
+				throw wk::Exception("Failed to load external texture file");
 			}
 		}
 
