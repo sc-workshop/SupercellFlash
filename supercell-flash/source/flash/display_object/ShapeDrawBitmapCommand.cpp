@@ -166,13 +166,12 @@ namespace sc
 		bool ShapeDrawBitmapCommand::operator==(const ShapeDrawBitmapCommand& other) const
 		{
 			if (texture_index != other.texture_index) return false;
-
 			if (triangle_indices != other.triangle_indices) return false;
 
 			for (uint32_t i = 0; other.triangle_indices.size() > i; i++)
 			{
-				const ShapeDrawBitmapCommandVertex& v1 = vertices[i];
-				const ShapeDrawBitmapCommandVertex& v2 = vertices[i];
+				const ShapeDrawBitmapCommandVertex& v1 = vertices[other.triangle_indices[i]];
+				const ShapeDrawBitmapCommandVertex& v2 = vertices[other.triangle_indices[i]];
 
 				if (!(v1 == v2)) return false;
 			}
