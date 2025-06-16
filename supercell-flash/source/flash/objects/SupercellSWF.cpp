@@ -27,8 +27,13 @@ namespace sc
 			stream.clear();
 
 			wk::InputFileStream file(filepath);
-			if (SupercellSWF::IsSC2(file))
+			uint32_t version = SupercellSWF::GetSC2Version(file);
+			if (version)
 			{
+				if (version == 6)
+				{
+					file.read_unsigned_short(); // always 0
+				}
 				load_sc2(file);
 				return false;
 			}
@@ -69,56 +74,50 @@ namespace sc
 
 		void SupercellSWF::load_sc2(wk::Stream& input)
 		{
-			uint32_t header_offset = 0;
 			uint32_t resources_offset = 0;
 
 			// Descriptor
-			//{
-				uint32_t descriptor_size = input.read_unsigned_int();
-				wk::MemoryStream descriptor_data(descriptor_size);
-				input.read(descriptor_data.data(), descriptor_data.length());
+			uint32_t descriptor_size = input.read_unsigned_int();
+			wk::MemoryStream descriptor_data(descriptor_size);
+			input.read(descriptor_data.data(), descriptor_data.length());
 
-				const SC2::FileDescriptor* descriptor = SC2::GetFileDescriptor(descriptor_data.data());
+			const SC2::FileDescriptor* descriptor = SC2::GetFileDescriptor(descriptor_data.data());
 
-				//assert(descriptor->unk1() == 1 && descriptor->unk2() == 1);
+			uint32_t shape_count = descriptor->shape_count();
+			shapes.resize(shape_count);
 
-				uint32_t shape_count = descriptor->shape_count();
-				shapes.resize(shape_count);
+			uint32_t movies_count = descriptor->movie_clips_count();
+			movieclips.resize(movies_count);
 
-				uint32_t movies_count = descriptor->movie_clips_count();
-				movieclips.resize(movies_count);
+			uint32_t texture_count = descriptor->texture_count();
+			textures.resize(texture_count);
 
-				uint32_t texture_count = descriptor->texture_count();
-				textures.resize(texture_count);
+			uint32_t textFields_count = descriptor->text_fields_count();
+			textfields.resize(textFields_count);
 
-				uint32_t textFields_count = descriptor->text_fields_count();
-				textfields.resize(textFields_count);
+			resources_offset = descriptor->resources_offset();
 
-				header_offset = descriptor->header_offset();
-				resources_offset = descriptor->resources_offset();
+			auto export_names_hash = descriptor->exports();
+			if (export_names_hash)
+			{
+				exports.resize(export_names_hash->size());
 
-				auto export_names_hash = descriptor->exports();
-				if (export_names_hash)
+				for (uint32_t i = 0; export_names_hash->size() > i; i++)
 				{
-					exports.resize(export_names_hash->size());
+					auto export_name_data = export_names_hash->Get(i);
+					ExportName& export_name = exports[i];
+					export_name.name = SWFString(
+						export_name_data->name()->data(), 
+						export_name_data->name()->size()
+					);
 
-					for (uint32_t i = 0; export_names_hash->size() > i; i++)
+					if (export_name_data->hash())
 					{
-						auto export_name_data = export_names_hash->Get(i);
-						ExportName& export_name = exports[i];
-						export_name.name = SWFString(
-							export_name_data->name()->data(), 
-							export_name_data->name()->size()
-						);
-
-						if (export_name_data->hash())
-						{
-							export_name.hash.resize(export_name_data->hash()->size());
-							wk::Memory::copy(export_name_data->hash()->data(), export_name.hash.data(), export_name.hash.size());
-						}
+						export_name.hash.resize(export_name_data->hash()->size());
+						wk::Memory::copy(export_name_data->hash()->data(), export_name.hash.data(), export_name.hash.size());
 					}
 				}
-			//}
+			}
 
 			// Compressed buffer
 			{
@@ -181,7 +180,7 @@ namespace sc
 		{
 			const SC2::DataStorage* storage = nullptr;
 			{
-				stream.seek(descriptor->header_offset());
+				stream.seek(0);
 				uint32_t data_storage_size = stream.read_unsigned_int();
 				storage = SC2::GetDataStorage((char*)stream.data() + stream.position());
 				stream.seek(data_storage_size, wk::Stream::SeekMode::Add);
@@ -685,7 +684,13 @@ namespace sc
 
 		bool SupercellSWF::IsSC2(wk::Stream& stream)
 		{
-			return stream.read_short() == SC_MAGIC && stream.read_unsigned_int() == 5;
+			return stream.read_short() == SC_MAGIC && stream.read_unsigned_int() >= 5;
+		}
+
+		uint32_t SupercellSWF::GetSC2Version(wk::Stream& stream)
+		{
+			if (stream.read_short() != SC_MAGIC) return 0;
+			return stream.read_unsigned_int();
 		}
 	}
 }

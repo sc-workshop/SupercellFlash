@@ -38,8 +38,8 @@ table FileDescriptor
     
     unk3: uint; // Always 0
 
-    // Offset to DataStorage table?
-    header_offset: uint; 
+    // Unknown field, sometimes 3 in some v6 files (maybe some kind of atlas generator flags?)
+    unk4: uint; 
 
     // Offset to ExportNames table. But it is probably also used to read all subsequent tables
     resources_offset: uint;
