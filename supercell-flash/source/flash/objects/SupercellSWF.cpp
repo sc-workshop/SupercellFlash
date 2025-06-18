@@ -27,8 +27,8 @@ namespace sc
 			stream.clear();
 
 			wk::InputFileStream file(filepath);
-			uint32_t version = SupercellSWF::GetSC2Version(file);
-			if (version)
+			uint32_t version = SupercellSWF::GetVersion(file);
+			if (version > 5)
 			{
 				if (version == 6)
 				{
@@ -374,7 +374,6 @@ namespace sc
 					stream.save_file(low_resolution_path, signature);
 				}
 			}
-			
 		}
 
 		void SupercellSWF::save_internal(bool is_texture, bool is_lowres)
@@ -684,13 +683,27 @@ namespace sc
 
 		bool SupercellSWF::IsSC2(wk::Stream& stream)
 		{
-			return stream.read_short() == SC_MAGIC && stream.read_unsigned_int() >= 5;
+			return GetVersion(stream) >= 5;
 		}
 
-		uint32_t SupercellSWF::GetSC2Version(wk::Stream& stream)
+		uint32_t SupercellSWF::GetVersion(wk::Stream& stream)
 		{
 			if (stream.read_short() != SC_MAGIC) return 0;
-			return stream.read_unsigned_int();
+
+			// Check for sc1 first
+			uint32_t version = stream.read_unsigned_int(wk::Endian::Big);
+			if (4 >= version) return version;
+
+			uint32_t result = wk::swap_endian(version);
+			if (result >= 5) {
+				return result;
+			}
+			else
+			{
+				return version;
+			}
+
+			return 0;
 		}
 	}
 }

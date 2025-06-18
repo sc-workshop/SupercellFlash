@@ -128,7 +128,7 @@ namespace sc
 
 		public:
 			static bool IsSC2(wk::Stream& stream);
-			static uint32_t GetSC2Version(wk::Stream& stream);
+			static uint32_t GetVersion(wk::Stream& stream);
 		};
 	}
 }
