@@ -43,7 +43,13 @@ namespace sc::flash
 
 	uint32_t SupercellSWF2CompileTable::get_string_ref(const SWFString& target)
 	{
-		auto it = std::find(std::execution::par_unseq, strings.begin(), strings.end(), target);
+		if (strings.empty())
+		{
+			// Zero index reserved for empty string
+			strings.push_back("");
+		}
+
+		auto it = std::find(std::execution::par_unseq, strings.begin() + 1, strings.end(), target);
 		if (it != strings.end())
 		{
 			return (uint32_t)std::distance(strings.begin(), it);
@@ -606,9 +612,6 @@ namespace sc::flash
 
 	void SupercellSWF2CompileTable::save_buffer()
 	{
-		// just a mini optimization
-		get_string_ref("");
-
 		gather_resources();
 
 		header_offset = (uint32_t)swf.stream.position();
