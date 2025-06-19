@@ -28,7 +28,7 @@ namespace sc
 
 			wk::InputFileStream file(filepath);
 			uint32_t version = SupercellSWF::GetVersion(file);
-			if (version > 5)
+			if (version >= 5)
 			{
 				if (version == 6)
 				{

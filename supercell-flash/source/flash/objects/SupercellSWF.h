@@ -121,6 +121,9 @@ namespace sc
 			// Load only lowres files if available
 			bool low_memory_usage_mode = false;
 
+			// Generate streaming textures for SC2 when possible
+			bool use_texture_streaming = false;
+
 			Sc2CompileSettings sc2_compile_settings;
 
 			SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;

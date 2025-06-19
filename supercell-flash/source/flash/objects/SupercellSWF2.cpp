@@ -538,7 +538,7 @@ namespace sc::flash
 		Offset<sc::flash::SC2::TextureData> result;
 		wk::BufferStream texture_buffer;
 
-		if (swf.use_external_textures)
+		if (swf.use_external_textures  && texture.encoding() != SWFTexture::TextureEncoding::Raw)
 		{
 			fs::path filename = texture.save_to_external_file(swf, index, is_lowres);
 			external_path_off = builder.CreateString(filename.string());
