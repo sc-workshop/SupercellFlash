@@ -41,13 +41,15 @@ namespace sc::flash
 		}
 	}
 
-	uint32_t SupercellSWF2CompileTable::get_string_ref(const SWFString& target)
+	uint32_t SupercellSWF2CompileTable::get_string_ref(const SWFString& target, bool required)
 	{
 		if (strings.empty())
 		{
 			// Zero index reserved for empty string
 			strings.push_back("");
 		}
+
+		if (!required && target.empty()) return 0;
 
 		auto it = std::find(std::execution::par_unseq, strings.begin() + 1, strings.end(), target);
 		if (it != strings.end())
@@ -114,7 +116,7 @@ namespace sc::flash
 			for (const ExportName& export_name : swf.exports)
 			{
 				exports_ref_indices.push_back(
-					get_string_ref(export_name.name)
+					get_string_ref(export_name.name, true)
 				);
 			}
 		}

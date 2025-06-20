@@ -43,7 +43,7 @@ namespace sc
 			{
 				file.seek(0);
 				auto hashes = Decompressor::decompress(file, stream);
-				if (hashes)
+				if (hashes && exports.empty())
 				{
 					auto hashmap = hashes->AsMap();
 					if (hashmap.size())

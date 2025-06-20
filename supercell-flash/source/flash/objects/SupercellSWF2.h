@@ -63,7 +63,7 @@ namespace sc::flash
 		flatbuffers::FlatBufferBuilder builder;
 
 	public:
-		uint32_t get_string_ref(const SWFString& string);
+		uint32_t get_string_ref(const SWFString& string, bool required = false);
 		uint32_t get_rect_ref(const wk::RectF& rectangle);
 
 	private:
