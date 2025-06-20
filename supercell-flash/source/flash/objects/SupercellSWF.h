@@ -30,6 +30,16 @@ namespace sc
 
 		struct Sc2CompileSettings
 		{
+		public:
+			enum class Version : uint32_t
+			{
+				Basic = 5,
+				Unknown1 = 6
+			};
+
+		public:
+			Version version = Version::Basic;
+
 			// Save matrices with half precision
 			bool use_half_precision_matrices = false;
 

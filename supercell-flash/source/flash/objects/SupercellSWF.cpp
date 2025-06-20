@@ -34,6 +34,8 @@ namespace sc
 				{
 					file.read_unsigned_short(); // always 0
 				}
+
+				sc2_compile_settings.version = Sc2CompileSettings::Version(version);
 				load_sc2(file);
 				return false;
 			}
@@ -581,10 +583,15 @@ namespace sc
 
 			// Output stream
 			wk::OutputFileStream file(filepath);
-			file.write_unsigned_short(SC_MAGIC);						// Magic
-			file.write_unsigned_int(5);									// Version
-			table.save_descriptor(file);								// Descriptor
-			Compressor::compress(stream, file, Signature::Zstandard);	// File Content
+			file.write_unsigned_short(SC_MAGIC);							// Magic
+			file.write_unsigned_int((uint32_t)sc2_compile_settings.version);// Version
+			if (sc2_compile_settings.version == Sc2CompileSettings::Version::Unknown1)
+			{
+				file.write_unsigned_short(0);								// Unknown 0
+			}
+
+			table.save_descriptor(file);									// Descriptor
+			Compressor::compress(stream, file, Signature::Zstandard);		// File Content
 
 		}
 #pragma endregion
