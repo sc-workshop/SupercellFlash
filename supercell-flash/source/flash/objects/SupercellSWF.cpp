@@ -42,7 +42,32 @@ namespace sc
 			else
 			{
 				file.seek(0);
-				Decompressor::decompress(file, stream);
+				auto hashes = Decompressor::decompress(file, stream);
+				if (hashes)
+				{
+					auto hashmap = hashes->AsMap();
+					if (hashmap.size())
+					{
+						auto keys = hashmap.Keys();
+						auto values = hashmap.Values();
+						for (size_t i = 0; hashmap.size() > i; i++)
+						{
+							auto export_name = keys[i].AsString();
+							if (export_name.IsTheEmptyString()) continue;
+
+							auto export_name_hash = values[i].AsBlob();
+							if (export_name_hash.IsTheEmptyBlob()) continue;
+
+							auto& result = CreateExportName(
+								SWFString(export_name.str()),
+								0
+							);
+
+							result.hash = SWFVector<uint8_t, uint32_t>(export_name_hash.data(), export_name_hash.data() + export_name_hash.size());
+						}
+					}
+				}
+
 				return load_sc1(is_texture);
 			}
 		}
@@ -673,18 +698,20 @@ namespace sc
 			throw new wk::Exception("Failed to get Display Object");
 		}
 
-		void SupercellSWF::CreateExportName(const SWFString& name, uint16_t id)
+		ExportName& SupercellSWF::CreateExportName(const SWFString& name, uint16_t id)
 		{
 			auto possible_name = GetExportName(name);
 			if (possible_name)
 			{
 				possible_name->id = id;
+				return *possible_name;
 			}
 			else
 			{
 				ExportName& export_name = exports.emplace_back();
 				export_name.name = name;
 				export_name.id = id;
+				return export_name;
 			}
 		}
 

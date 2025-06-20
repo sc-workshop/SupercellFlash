@@ -106,7 +106,7 @@ namespace sc
 			uint16_t GetDisplayObjectID(const SWFString& name);
 			DisplayObject& GetDisplayObjectByID(uint16_t id);
 			MovieClip& GetDisplayObjectByName(const SWFString& name);
-			void CreateExportName(const SWFString& name, uint16_t id);
+			ExportName& CreateExportName(const SWFString& name, uint16_t id);
 
 		public:
 			// Saves all textures to _tex.sc if true
