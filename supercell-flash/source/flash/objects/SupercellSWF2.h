@@ -93,7 +93,7 @@ namespace sc::flash
 	public:
 		void gather_resources();
 		void save_buffer();
-		void save_descriptor(wk::Stream& stream);
+		void save_descriptor(wk::Stream& stream, size_t compressed_size = 0);
 
 	private:
 		const SupercellSWF& swf;

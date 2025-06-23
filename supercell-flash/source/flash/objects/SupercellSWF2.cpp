@@ -546,6 +546,7 @@ namespace sc::flash
 		Offset<sc::flash::SC2::TextureData> result;
 		wk::BufferStream texture_buffer;
 
+		uint8_t flags = 0;
 		if (swf.use_external_textures  && texture.encoding() != SWFTexture::TextureEncoding::Raw)
 		{
 			fs::path filename = texture.save_to_external_file(swf, index, is_lowres);
@@ -554,6 +555,7 @@ namespace sc::flash
 		else
 		{
 			// Temporarly solution
+			flags = 8;
 			SWFTexture texture_copy = texture;
 			texture_copy.encoding(SWFTexture::TextureEncoding::KhronosTexture);
 			texture_copy.save_buffer(texture_buffer, is_lowres);
@@ -562,7 +564,7 @@ namespace sc::flash
 		}
 
 		result = SC2::CreateTextureData(
-			builder, 8, 0,
+			builder, flags, 0,
 			texture.image()->width(),
 			texture.image()->height(),
 			texture_data_off,
@@ -629,7 +631,7 @@ namespace sc::flash
 		textures_length = save_textures();
 	}
 
-	void SupercellSWF2CompileTable::save_descriptor(wk::Stream& stream)
+	void SupercellSWF2CompileTable::save_descriptor(wk::Stream& stream, size_t compressed_size)
 	{
 		Offset<Vector<Offset<SC2::ExportNameHash>>> exports_hash_off = 0;
 		{
@@ -641,12 +643,12 @@ namespace sc::flash
 				Offset<Vector<uint8_t>> export_name_hash_off = 0;
 				Offset<String> export_name_off = 0;
 
+				export_name_off = builder.CreateString(export_name.name.data(), export_name.name.length());
+
 				if (!export_name.hash.empty())
 				{
 					export_name_hash_off = builder.CreateVector(export_name.hash.data(), export_name.hash.size());
 				}
-				
-				export_name_off = builder.CreateString(export_name.name.data(), export_name.name.length());
 
 				Offset<SC2::ExportNameHash> name_off = SC2::CreateExportNameHash(
 					builder, export_name_off, export_name_hash_off
@@ -661,7 +663,7 @@ namespace sc::flash
 		Offset<SC2::FileDescriptor> root_off = SC2::CreateFileDescriptor(
 			builder, translation_precision, scale_presicion,
 			swf.shapes.size(), swf.movieclips.size(), swf.textures.size(), swf.textfields.size(), 0,
-			header_offset, data_offset, textures_length, exports_hash_off
+			header_offset, data_offset, textures_length, exports_hash_off, (uint32_t)compressed_size
 		);
 
 		builder.FinishSizePrefixed(root_off);

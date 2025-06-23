@@ -613,10 +613,20 @@ namespace sc
 			if (sc2_compile_settings.version == Sc2CompileSettings::Version::Unknown1)
 			{
 				file.write_unsigned_short(0);								// Unknown 0
+
+				wk::BufferStream compressed_data;
+				Compressor::compress(stream, compressed_data, Signature::Zstandard);
+
+				table.save_descriptor(file, compressed_data.length());		// Descriptor
+				file.write(compressed_data.data(), compressed_data.length()); // File Content
+			}
+			else
+			{
+				table.save_descriptor(file);									// Descriptor
+				Compressor::compress(stream, file, Signature::Zstandard);		// File Content
 			}
 
-			table.save_descriptor(file);									// Descriptor
-			Compressor::compress(stream, file, Signature::Zstandard);		// File Content
+			
 
 		}
 #pragma endregion

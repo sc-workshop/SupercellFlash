@@ -49,6 +49,9 @@ table FileDescriptor
 
     // Export names hash array
     exports: [ExportNameHash];
+	
+	// Size of compressed ZSTD data
+	compressed_size: uint;
 }
 
 root_type FileDescriptor;
