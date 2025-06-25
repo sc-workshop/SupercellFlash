@@ -746,8 +746,6 @@ namespace sc
 			{
 				return version;
 			}
-
-			return 0;
 		}
 	}
 }

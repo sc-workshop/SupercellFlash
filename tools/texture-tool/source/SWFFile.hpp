@@ -220,9 +220,18 @@ namespace sc
 				current_file = path;
 
 				wk::InputFileStream file(path);
-				if (SupercellSWF::IsSC2(file))
+
+				uint32_t version = SupercellSWF::GetVersion(file);
+				if (version >= 5)
 				{
 					std::cout << "File is loaded as a SC2" << std::endl;
+
+					if (version == 6)
+					{
+						file.read_unsigned_short(); // always 0
+					}
+
+					sc2_compile_settings.version = Sc2CompileSettings::Version(version);
 					load_sc2(file);
 				}
 				else
