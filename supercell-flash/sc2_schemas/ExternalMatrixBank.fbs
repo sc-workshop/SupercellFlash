@@ -1,0 +1,31 @@
+include "Types.fbs";
+namespace sc.flash.SC2;
+
+table ExternalMatrixBank
+{
+    index: uint;
+
+    compressed_data_offset: uint;
+    compressed_data_size: uint;
+    decompressed_data_size: uint;
+
+    zeros_count: uint;
+    unk6: uint;
+    total_matrices_count: uint;
+    matrices_count: uint;
+    color_transform_count: uint;
+
+    unk_offset: uint;
+    unk1: uint;
+    unk2: uint;
+    unk3: uint; // Always 10
+    unk4: uint;
+
+}
+
+table ExternalMatrixBanks
+{
+    banks: [ExternalMatrixBank];
+}
+
+root_type ExternalMatrixBanks;

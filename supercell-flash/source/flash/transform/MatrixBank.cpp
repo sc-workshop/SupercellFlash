@@ -68,14 +68,14 @@ namespace sc {
 			return TAG_MATRIX_BANK;
 		};
 
-		void MatrixBank::load(SupercellSWF& swf, const SC2::DataStorage* storage, SC2::Precision scale_presicion, SC2::Precision translation_presicion)
+		void MatrixBank::load(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, const SC2::DataStorage* storage)
 		{
 			auto matrix_banks_vector = storage->matrix_banks();
 			// Return if empty
 			if (!matrix_banks_vector) return;
 
-			float scale_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(scale_presicion);
-			float translation_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(translation_presicion);
+			float scale_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(descritptor->scale_precision());
+			float translation_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(descritptor->translation_precision());
 
 			uint32_t matrix_bank_count = matrix_banks_vector->size();
 			swf.matrixBanks.reserve((uint16_t)matrix_bank_count);
@@ -129,6 +129,83 @@ namespace sc {
 						color.alpha = cdata->alpha();
 					}
 				}
+			}
+		}
+
+		void MatrixBank::load_external(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, wk::Stream& stream)
+		{
+			uint32_t descriptor_size = stream.read_unsigned_int();
+			wk::SharedMemoryStream descriptor_data((uint8_t*)stream.data() + stream.position(), descriptor_size);
+			const SC2::ExternalMatrixBanks* root = SC2::GetExternalMatrixBanks(descriptor_data.data());
+			const auto* banks = root->banks();
+
+			size_t banks_data_offset = stream.position() + descriptor_size;
+			float scale_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(descritptor->scale_precision());
+			float translation_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(descritptor->translation_precision());
+
+			swf.matrixBanks.resize(banks->size());
+			for (const auto* bank : *banks)
+			{
+				auto& target = swf.matrixBanks[bank->index()];
+				wk::MemoryStream bank_data(bank->decompressed_data_size());
+
+				{
+					wk::MemoryStream compressed(bank->compressed_data_size());
+					stream.seek(banks_data_offset + bank->compressed_data_offset());
+					stream.read(compressed.data(), bank->compressed_data_size());
+					compressed.seek(0);
+
+					ZstdDecompressor decompressor;
+					decompressor.decompress(compressed, bank_data);
+					bank_data.seek(0);
+				}
+
+				// Matrices
+				{
+					size_t total_matrices_count = bank->matrices_count() + bank->total_matrices_count();
+					target.matrices.resize(total_matrices_count);
+					size_t matrix_index = 0;
+
+					for (size_t i = 0; bank->matrices_count() > i; i++)
+					{
+						auto& matrix = target.matrices[matrix_index++];
+
+						matrix.a = (float)bank_data.read_int() / 65535.f;
+						matrix.b = (float)bank_data.read_int() / 65535.f;
+						matrix.c = (float)bank_data.read_int() / 65535.f;
+						matrix.d = (float)bank_data.read_int() / 65535.f;
+
+						matrix.tx = (float)bank_data.read_int() / 20.f;
+						matrix.ty = (float)bank_data.read_int() / 20.f;
+					}
+
+					for (size_t i = 0; bank->zeros_count() > i; i++)
+					{
+						uint32_t value = bank_data.read_unsigned_int();
+						if (value != 0)
+						{
+							__debugbreak();
+						}
+					}
+
+					for (size_t i = 0; bank->total_matrices_count() > i; i++)
+					{
+						auto& matrix = target.matrices[matrix_index++];
+
+						matrix.a = (float)swf.stream.read_short() / scale_multiplier;
+						matrix.b = (float)swf.stream.read_short() / scale_multiplier;
+						matrix.c = (float)swf.stream.read_short() / scale_multiplier;
+						matrix.d = (float)swf.stream.read_short() / scale_multiplier;
+						matrix.tx = (float)swf.stream.read_short() / translation_multiplier;
+						matrix.ty = (float)swf.stream.read_short() / translation_multiplier;
+					}
+				}
+
+				// Color Transforms
+				{
+					target.color_transforms.resize(bank->color_transform_count());
+				}
+				
 			}
 		}
 	}

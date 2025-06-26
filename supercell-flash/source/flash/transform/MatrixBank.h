@@ -7,6 +7,9 @@
 
 #include "flash/SC2/DataStorage_generated.h"
 #include "flash/SC2/FileDescriptor_generated.h"
+#include "flash/SC2/ExternalMatrixBank_generated.h"
+
+#include "core/io/stream.h"
 
 namespace sc
 {
@@ -24,8 +27,8 @@ namespace sc
 			MatrixBank& operator=(MatrixBank&&) = default;
 
 		public:
-			SWFVector<Matrix2D> matrices;
-			SWFVector<ColorTransform> color_transforms;
+			SWFVector<Matrix2D, uint32_t> matrices;
+			SWFVector<ColorTransform, uint32_t> color_transforms;
 
 		public:
 			bool get_matrix_index(const Matrix2D& matrix, uint16_t& index) const;
@@ -34,7 +37,8 @@ namespace sc
 			virtual uint8_t tag(SupercellSWF& swf) const;
 
 		public:
-			static void load(SupercellSWF&, const SC2::DataStorage*, SC2::Precision scale_presicion, SC2::Precision translation_presicion);
+			static void load(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, const SC2::DataStorage* storage);
+			static void load_external(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, wk::Stream& data);
 		};
 	}
 }

@@ -52,6 +52,9 @@ table FileDescriptor
 	
 	// Size of compressed ZSTD data
 	compressed_size: uint;
+
+    // Size of external matrix banks chunk
+    external_matrix_bank_size: uint;
 }
 
 root_type FileDescriptor;

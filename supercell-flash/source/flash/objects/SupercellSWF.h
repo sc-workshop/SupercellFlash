@@ -134,6 +134,8 @@ namespace sc
 			// Generate streaming textures for SC2 when possible
 			bool use_texture_streaming = false;
 
+			bool use_external_matrix_banks = false;
+
 			Sc2CompileSettings sc2_compile_settings;
 
 			SWFString multi_resolution_suffix = MULTIRES_DEFAULT_SUFFIX;

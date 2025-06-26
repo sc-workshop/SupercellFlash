@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "flash/SC2/FileDescriptor_generated.h"
+#include "flash/SC2/ExternalMatrixBank_generated.h"
 
 namespace fs = std::filesystem;
 
@@ -146,10 +147,29 @@ namespace sc
 				}
 			}
 
+			ZstdDecompressor decompressor;
+
 			// Compressed buffer
+			if (descriptor->compressed_size())
 			{
-				ZstdDecompressor decompressor;
+				wk::MemoryStream compressed_data(descriptor->compressed_size());
+				input.read(compressed_data.data(), descriptor->compressed_size());
+
+				decompressor.decompress(compressed_data, stream);
+			}
+			else
+			{
 				decompressor.decompress(input, stream);
+			}
+
+			use_external_matrix_banks = false;
+			if (descriptor->external_matrix_bank_size())
+			{
+				wk::MemoryStream matrix_banks(descriptor->external_matrix_bank_size());
+				input.read(matrix_banks.data(), descriptor->external_matrix_bank_size());
+				use_external_matrix_banks = true;
+
+				MatrixBank::load_external(*this, descriptor, matrix_banks);
 			}
 
 			load_sc2_internal(descriptor);
@@ -211,7 +231,7 @@ namespace sc
 				uint32_t data_storage_size = stream.read_unsigned_int();
 				storage = SC2::GetDataStorage((char*)stream.data() + stream.position());
 				stream.seek(data_storage_size, wk::Stream::SeekMode::Add);
-				MatrixBank::load(*this, storage, descriptor->scale_precision(), descriptor->translation_precision());
+				MatrixBank::load(*this, descriptor, storage);
 			}
 			
 			{

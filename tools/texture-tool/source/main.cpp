@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 	{
 		parser.parse_args(argc, argv);
 	}
-	catch (const std::exception& e)
+	catch (const std::exception&)
 	{
 		std::cout << parser << std::endl;
 	}
