@@ -1,11 +1,18 @@
 namespace sc.flash.SC2;
 
+enum TextureFormat : ubyte(bit_flags) {
+    Unk1,
+    Unk2,
+    Unk3,
+    KhronosTexture
+}
+
 // Basic texture info and data
 table TextureData
 {
-    flags: uint;
-    
-    type: ubyte; // ScPixel ?
+    texture_format: TextureFormat;
+
+    pixel_type: ubyte; // ScPixel ?
 
     // Texture Width
     width: ushort;

@@ -614,9 +614,19 @@ namespace sc
 				}
 				else
 				{
-					// Hardcode Khronos texture for now
 					wk::SharedMemoryStream texture_stream((uint8_t*)selected_texture->data()->data(), selected_texture->data()->size());
-					texture.load_from_khronos_texture(texture_stream);
+					auto format = selected_texture->texture_format();
+					switch (format)
+					{
+					case SC2::TextureFormat::NONE:
+						texture.load_from_buffer(texture_stream, selected_texture->width(), selected_texture->height(), (PixelFormat)selected_texture->pixel_type());
+						break;
+					case SC2::TextureFormat::KhronosTexture:
+						texture.load_from_khronos_texture(texture_stream);
+						break;
+					default:
+						assert(false);
+					}
 				}
 			}
 		}

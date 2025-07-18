@@ -546,7 +546,7 @@ namespace sc::flash
 		Offset<sc::flash::SC2::TextureData> result;
 		wk::BufferStream texture_buffer;
 
-		uint8_t flags = 0;
+		SC2::TextureFormat format = SC2::TextureFormat::NONE;
 		if (swf.use_external_textures  && texture.encoding() != SWFTexture::TextureEncoding::Raw)
 		{
 			fs::path filename = texture.save_to_external_file(swf, index, is_lowres);
@@ -554,17 +554,33 @@ namespace sc::flash
 		}
 		else
 		{
-			// Temporarly solution
-			flags = 8;
-			SWFTexture texture_copy = texture;
-			texture_copy.encoding(SWFTexture::TextureEncoding::KhronosTexture);
-			texture_copy.save_buffer(texture_buffer, is_lowres);
+			switch (texture.encoding())
+			{
+			case SWFTexture::TextureEncoding::Raw:
+				format = SC2::TextureFormat::NONE;
+				break;
 
-			texture_data_off = builder.CreateVector((uint8_t*)texture_buffer.data(), texture_buffer.length());
+			case SWFTexture::TextureEncoding::KhronosTexture:
+				format = SC2::TextureFormat::KhronosTexture;
+				break;
+
+			default:
+				// Fallback to raw texture if something goes wrong
+				{
+					SWFTexture texture_copy = texture;
+					texture_copy.encoding(SWFTexture::TextureEncoding::Raw);
+					texture_copy.save_buffer(texture_buffer, is_lowres);
+					texture_data_off = builder.CreateVector((uint8_t*)texture_buffer.data(), texture_buffer.length());
+				}
+				
+			}
+
+			if (texture_data_off.IsNull())
+				texture_data_off = builder.CreateVector((uint8_t*)texture_buffer.data(), texture_buffer.length());
 		}
 
 		result = SC2::CreateTextureData(
-			builder, flags, 0,
+			builder, format, (uint8_t)texture.pixel_format(),
 			texture.image()->width(),
 			texture.image()->height(),
 			texture_data_off,
