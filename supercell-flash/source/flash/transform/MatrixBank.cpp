@@ -162,48 +162,53 @@ namespace sc {
 
 				// Matrices
 				{
-					size_t total_matrices_count = bank->matrices_count() + bank->total_matrices_count();
+					size_t total_matrices_count = std::min<size_t>(bank->matrices_count() + bank->total_matrices_count(), 0xFFFF - 1);
 					target.matrices.resize(total_matrices_count);
 					size_t matrix_index = 0;
 
-					for (size_t i = 0; bank->matrices_count() > i; i++)
+					for (size_t i = 0; bank->matrices_count() > i && total_matrices_count > matrix_index; i++)
 					{
 						auto& matrix = target.matrices[matrix_index++];
 
-						matrix.a = (float)bank_data.read_int() / 65535.f;
-						matrix.b = (float)bank_data.read_int() / 65535.f;
-						matrix.c = (float)bank_data.read_int() / 65535.f;
-						matrix.d = (float)bank_data.read_int() / 65535.f;
+						matrix.a = bank_data.read_float();
+						matrix.b = bank_data.read_float();
+						matrix.c = bank_data.read_float();
+						matrix.d = bank_data.read_float();
 
-						matrix.tx = (float)bank_data.read_int() / 20.f;
-						matrix.ty = (float)bank_data.read_int() / 20.f;
+						matrix.tx = (float)bank_data.read_float() / 20.f;
+						matrix.ty = (float)bank_data.read_float() / 20.f;
 					}
 
 					for (size_t i = 0; bank->zeros_count() > i; i++)
 					{
 						uint32_t value = bank_data.read_unsigned_int();
-						if (value != 0)
-						{
-							__debugbreak();
-						}
 					}
 
-					for (size_t i = 0; bank->total_matrices_count() > i; i++)
+					matrix_index = 0;
+					for (size_t i = 0; bank->total_matrices_count() > i && total_matrices_count > matrix_index; i++)
 					{
 						auto& matrix = target.matrices[matrix_index++];
 
-						matrix.a = (float)swf.stream.read_short() / scale_multiplier;
-						matrix.b = (float)swf.stream.read_short() / scale_multiplier;
-						matrix.c = (float)swf.stream.read_short() / scale_multiplier;
-						matrix.d = (float)swf.stream.read_short() / scale_multiplier;
+						matrix.a = (float)bank_data.read_short() / 512.f;
+						matrix.b = (float)bank_data.read_short() / 512.f;
+						matrix.c = (float)bank_data.read_short() / 512.f;
+						matrix.d = (float)bank_data.read_short() / 512.f;
 						matrix.tx = (float)swf.stream.read_short() / translation_multiplier;
 						matrix.ty = (float)swf.stream.read_short() / translation_multiplier;
+
+						//matrix.a = matrix.d = 1.0f;
+						//matrix.b = matrix.c = 0.0f;
 					}
 				}
 
 				// Color Transforms
 				{
 					target.color_transforms.resize(bank->color_transform_count());
+
+					for (auto& color : target.color_transforms)
+					{
+						color.alpha = 0xFF;
+					}
 				}
 				
 			}

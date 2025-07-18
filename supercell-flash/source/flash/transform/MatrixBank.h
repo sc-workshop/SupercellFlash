@@ -27,8 +27,8 @@ namespace sc
 			MatrixBank& operator=(MatrixBank&&) = default;
 
 		public:
-			SWFVector<Matrix2D, uint32_t> matrices;
-			SWFVector<ColorTransform, uint32_t> color_transforms;
+			SWFVector<Matrix2D> matrices;
+			SWFVector<ColorTransform> color_transforms;
 
 		public:
 			bool get_matrix_index(const Matrix2D& matrix, uint16_t& index) const;
