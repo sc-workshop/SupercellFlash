@@ -86,15 +86,17 @@ namespace sc
 			static void convert_tiled_data(uint8_t* inout_data, uint8_t* output_data, uint16_t width, uint16_t height, PixelFormat type, bool is_linear);
 
 		public:
+			void reset_texture();
 			void load_from_image(wk::RawImage& image);
 			void load_from_buffer(wk::Stream& data, uint16_t width, uint16_t height, PixelFormat format, bool has_data = true);
 			void load_from_file(const SupercellSWF& swf, const fs::path& path);
 			void load_from_file(const std::filesystem::path& path);
 			void load_from_khronos_texture(wk::Stream& data);
 			void load_from_compressed_khronos_texture(wk::Stream& data);
-			void load_from_supercell_texture(const std::filesystem::path& path);
+			void load_from_supercell_texture(wk::Stream& data);
 
 		protected:
+			wk::Ref<wk::Stream> m_external_texture = nullptr;
 			wk::Ref<wk::Image> m_image = nullptr;
 			bool m_linear = true;
 			PixelFormat m_pixel_format = PixelFormat::RGBA8;

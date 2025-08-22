@@ -148,6 +148,12 @@ namespace sc
 			return texture;
 		}
 
+		void SWFTexture::reset_texture()
+		{
+			m_image.reset();
+			m_external_texture.reset();
+		}
+
 		void SWFTexture::load(SupercellSWF& swf, uint8_t tag, bool has_data)
 		{
 			bool has_khronos_texture = false;
@@ -405,19 +411,18 @@ namespace sc
 		void SWFTexture::load_from_file(const fs::path& path)
 		{
 			fs::path texture_extension = path.extension();
+			m_external_texture = wk::CreateRef<InputFileStream>(path);
 			if (texture_extension == ".zktx")
 			{
-				InputFileStream texture_stream(path);
-				load_from_compressed_khronos_texture(texture_stream);
+				load_from_compressed_khronos_texture(*m_external_texture);
 			}
 			else if (texture_extension == ".ktx")
 			{
-				InputFileStream texture_stream(path);
-				load_from_khronos_texture(texture_stream);
+				load_from_khronos_texture(*m_external_texture);
 			}
 			else if (texture_extension == ".sctx")
 			{
-				load_from_supercell_texture(path);
+				load_from_supercell_texture(*m_external_texture);
 			}
 		}
 
@@ -427,10 +432,10 @@ namespace sc
 			m_image = CreateRef<KhronosTexture1>(data);
 		}
 
-		void SWFTexture::load_from_supercell_texture(const std::filesystem::path& path)
+		void SWFTexture::load_from_supercell_texture(Stream& data)
 		{
 			m_encoding = TextureEncoding::SupercellTexture;
-			m_image = CreateRef<SupercellTexture>(path);
+			m_image = CreateRef<SupercellTexture>(data);
 		}
 
 		void SWFTexture::load_from_compressed_khronos_texture(Stream& data)
