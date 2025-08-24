@@ -7,6 +7,8 @@
 #include "flash/SC2/FileDescriptor_generated.h"
 #include "flash/SC2/ExternalMatrixBank_generated.h"
 
+#include "core/asset_manager/asset_manager.h"
+
 namespace fs = std::filesystem;
 
 namespace sc
@@ -27,23 +29,26 @@ namespace sc
 		{
 			stream.clear();
 
-			wk::InputFileStream file(filepath);
-			uint32_t version = SupercellSWF::GetVersion(file);
+			auto& manager = wk::AssetManager::Instance();
+			auto file = manager.load_file(filepath);
+			auto& filestream = *file.get();
+
+			uint32_t version = SupercellSWF::GetVersion(filestream);
 			if (version >= 5)
 			{
 				if (version == 6)
 				{
-					file.read_unsigned_short(); // always 0
+					filestream.read_unsigned_short(); // always 0
 				}
 
 				sc2_compile_settings.version = Sc2CompileSettings::Version(version);
-				load_sc2(file);
+				load_sc2(filestream);
 				return false;
 			}
 			else
 			{
-				file.seek(0);
-				auto hashes = Decompressor::decompress(file, stream);
+				filestream.seek(0);
+				auto hashes = Decompressor::decompress(filestream, stream);
 				if (hashes && exports.empty())
 				{
 					auto hashmap = hashes->AsMap();
@@ -75,6 +80,8 @@ namespace sc
 
 		void SupercellSWF::load_external_texture()
 		{
+			auto& manager = wk::AssetManager::Instance();
+
 			fs::path basename = current_file.stem();
 			fs::path dirname = current_file.parent_path();
 
@@ -82,15 +89,15 @@ namespace sc
 			fs::path low_resolution_path = dirname / fs::path(basename).concat(low_resolution_suffix.string()).concat("_tex.sc");
 			fs::path common_file_path = dirname / fs::path(basename).concat("_tex.sc");
 
-			if (low_memory_usage_mode && use_low_resolution && fs::exists(low_resolution_path))
+			if (low_memory_usage_mode && use_low_resolution && manager.exists(low_resolution_path))
 			{
 				load_internal(low_resolution_path, true);
 			}
-			else if (use_multi_resolution && fs::exists(multi_resolution_path))
+			else if (use_multi_resolution && manager.exists(multi_resolution_path))
 			{
 				load_internal(multi_resolution_path, true);
 			}
-			else if (fs::exists(common_file_path))
+			else if (manager.exists(common_file_path))
 			{
 				load_internal(common_file_path, true);
 			}

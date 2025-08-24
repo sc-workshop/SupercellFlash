@@ -2,6 +2,7 @@
 
 #include <core/io/buffer_stream.h>
 #include <core/io/file_stream.h>
+#include <core/asset_manager/asset_manager.h>
 #include <compression/compression.h>
 
 #include "SWFString.hpp"
@@ -22,10 +23,11 @@ namespace sc
 		public:
 			void open_file(const std::filesystem::path& path)
 			{
+				wk::AssetManager& manager = wk::AssetManager::Instance();
 				clear();
 
-				wk::InputFileStream file(path);
-				Decompressor::decompress(file, *this);
+				auto file = manager.load_file(path);
+				Decompressor::decompress(*file, *this);
 
 				seek(0);
 			}

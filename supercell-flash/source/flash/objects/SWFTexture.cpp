@@ -1,6 +1,7 @@
 #include "SWFTexture.h"
 #include "flash/objects/SupercellSWF.h"
 #include "compression/compression.h"
+#include "core/asset_manager/asset_manager.h"
 
 using namespace sc::texture;
 using namespace sc::compression;
@@ -410,8 +411,10 @@ namespace sc
 
 		void SWFTexture::load_from_file(const fs::path& path)
 		{
+			wk::AssetManager& manager = wk::AssetManager::Instance();
+			m_external_texture = manager.load_file(path);
+
 			fs::path texture_extension = path.extension();
-			m_external_texture = wk::CreateRef<InputFileStream>(path);
 			if (texture_extension == ".zktx")
 			{
 				load_from_compressed_khronos_texture(*m_external_texture);
