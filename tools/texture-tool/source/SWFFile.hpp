@@ -254,34 +254,53 @@ namespace sc
 					return;
 				}
 
-				// First tag check
+				bool isTexture = true;
+
+				// Tags check
 				{
 					uint8_t tag = stream.read_unsigned_byte();
 					int32_t tag_length = stream.read_int();
 
-					switch (tag)
-					{
-					case TAG_TEXTURE:
-					case TAG_TEXTURE_2:
-					case TAG_TEXTURE_3:
-					case TAG_TEXTURE_4:
-					case TAG_TEXTURE_5:
-					case TAG_TEXTURE_6:
-					case TAG_TEXTURE_7:
-					case TAG_TEXTURE_8:
-					case TAG_TEXTURE_9:
-						if (tag_length <= 0) break;
+					while (stream.length() > stream.position()) {
+						switch (tag)
+						{
+						case TAG_END:
+							break;
 
+						case TAG_TEXTURE:
+						case TAG_TEXTURE_2:
+						case TAG_TEXTURE_3:
+						case TAG_TEXTURE_4:
+						case TAG_TEXTURE_5:
+						case TAG_TEXTURE_6:
+						case TAG_TEXTURE_7:
+						case TAG_TEXTURE_8:
+						case TAG_TEXTURE_9:
+							if (tag_length <= 0 || tag_length + stream.length() >= stream.position()) {
+								isTexture = false;
+								break;
+							};
+
+							stream.seek(tag_length, wk::Stream::SeekMode::Add);
+							break;
+						default:
+							isTexture = false;
+							break;
+						}
+
+						if (!isTexture)
+							break;
+					}
+
+					if (isTexture)
 						std::cout << "File is loaded as a texture file because the first tag is a texture" << std::endl;
 
-						stream.seek(0);
-						load_texures_from_binary();
+					stream.seek(0);
+				}
 
-						return;
-					default:
-						stream.seek(0);
-						break;
-					}
+				if (isTexture) {
+					load_texures_from_binary();
+					return;
 				}
 
 				// Whole file loading
