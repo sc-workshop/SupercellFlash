@@ -38,169 +38,33 @@ namespace sc
 
 			return  true;
 		}
-
-		void DecodePixel(uint8_t* pixel_data, const wk::Image::PixelDepthInfo& pixel_info, uint8_t& r_channel, uint8_t& g_channel, uint8_t& b_channel, uint8_t& a_channel)
-		{
-			uint32_t pixel_buffer = 0;
-
-			wk::Memory::copy(
-				pixel_data,
-				(uint8_t*)(&pixel_buffer),
-				pixel_info.byte_count
-			);
-
-			{
-				uint8_t bit_index = 0;
-
-				if (pixel_info.r_bits != 0xFF)
-				{
-					uint64_t r_bits_mask = (uint64_t)pow(2, pixel_info.r_bits) - 1;
-					r_channel = static_cast<uint8_t>(r_bits_mask & pixel_buffer);
-
-					bit_index += pixel_info.r_bits;
-				}
-
-				if (pixel_info.g_bits != 0xFF)
-				{
-					uint64_t g_bits_mask = (uint64_t)pow(2, pixel_info.g_bits) - 1;
-					g_channel = static_cast<uint8_t>(((g_bits_mask << bit_index) & pixel_buffer) >> bit_index);
-
-					bit_index += pixel_info.g_bits;
-				}
-				else
-				{
-					g_channel = r_channel;
-				}
-
-				if (pixel_info.b_bits != 0xFF)
-				{
-					uint64_t b_bits_mask = (uint64_t)pow(2, pixel_info.b_bits) - 1;
-					b_channel = static_cast<uint8_t>(((b_bits_mask << bit_index) & pixel_buffer) >> bit_index);
-
-					bit_index += pixel_info.b_bits;
-				}
-				else
-				{
-					b_channel = g_channel;
-				}
-
-				if (pixel_info.a_bits != 0xFF)
-				{
-					uint64_t a_bits_mask = (uint64_t)pow(2, pixel_info.a_bits) - 1;
-					a_channel = static_cast<uint8_t>(((a_bits_mask << bit_index) & pixel_buffer) >> bit_index);
-				}
-				else
-				{
-					a_channel = 0xFF;
-				}
-			}
-		}
-
-		void EncodePixel(uint8_t* pixel_data, const wk::Image::PixelDepthInfo& pixel_info, const uint8_t r_channel, const uint8_t g_channel, const uint8_t b_channel, const uint8_t a_channel)
-		{
-			uint32_t pixel_buffer = 0;
-
-			{
-				uint8_t bit_index = pixel_info.byte_count * 8;
-
-				if (pixel_info.a_bits != 0xFF)
-				{
-					bit_index -= pixel_info.a_bits;
-					uint64_t bits_mask = (uint64_t)((pow(2, pixel_info.a_bits) - 1));
-					pixel_buffer |= ((a_channel & bits_mask)) << bit_index;
-				}
-
-				if (pixel_info.b_bits != 0xFF)
-				{
-					bit_index -= pixel_info.b_bits;
-					uint64_t bits_mask = (uint64_t)((pow(2, pixel_info.b_bits) - 1));
-					pixel_buffer |= ((b_channel & bits_mask)) << bit_index;
-				}
-
-				if (pixel_info.g_bits != 0xFF)
-				{
-					bit_index -= pixel_info.g_bits;
-					uint64_t bits_mask = (uint64_t)((pow(2, pixel_info.g_bits) - 1));
-					pixel_buffer |= ((g_channel & bits_mask)) << bit_index;
-				}
-
-				if (pixel_info.r_bits != 0xFF)
-				{
-					bit_index -= pixel_info.r_bits;
-					uint64_t bits_mask = (uint64_t)((pow(2, pixel_info.r_bits) - 1));
-					pixel_buffer |= ((r_channel & bits_mask)) << bit_index;
-				}
-			}
-
-			wk::Memory::copy(
-				(uint8_t*)&pixel_buffer,
-				pixel_data,
-				pixel_info.byte_count
-			);
-		}
-
 		void PremultiplyToStraight(wk::RawImage& image)
 		{
-			uint64_t pixel_count = image.width() * image.height();
+			for (uint16_t w = 0; image.width() > w; w++) {
+				for (uint16_t h = 0; image.height() > h; h++) {
+					wk::ColorRGBA& pixel = image.at<wk::ColorRGBA>(w, h);
 
-			const wk::Image::PixelDepthInfo& pixel_info = wk::Image::PixelDepthTable[(uint16_t)image.depth()];
-
-			for (uint64_t pixel_index = 0; pixel_count > pixel_index; pixel_index++)
-			{
-				uint8_t* pixel_data = image.data() + (pixel_index * pixel_info.byte_count);
-
-				uint8_t r_channel = 0;
-				uint8_t g_channel = 0;
-				uint8_t b_channel = 0;
-				uint8_t a_channel = 0;
-
-				DecodePixel(pixel_data, pixel_info, r_channel, g_channel, b_channel, a_channel);
-
-				if (a_channel == 0) continue;
-
-				// PreAlpha to Straight
-				float factor = ((float)a_channel / 255.f);
-				r_channel = (uint8_t)(std::clamp(r_channel / factor, 0.f, 255.f));
-				g_channel = (uint8_t)(std::clamp(g_channel / factor, 0.f, 255.f));
-				b_channel = (uint8_t)(std::clamp(b_channel / factor, 0.f, 255.f));
-
-				EncodePixel(pixel_data, pixel_info, r_channel, g_channel, b_channel, a_channel);
+					float factor = ((float)pixel.a / 255.f);
+					pixel.r = (uint8_t)(std::clamp(pixel.r / factor, 0.f, 255.f));
+					pixel.g = (uint8_t)(std::clamp(pixel.g / factor, 0.f, 255.f));
+					pixel.b = (uint8_t)(std::clamp(pixel.b / factor, 0.f, 255.f));
+				}
 			}
 		}
 
 		void StraightToPremultiply(wk::RawImage& image)
 		{
-			uint64_t pixel_count = image.width() * image.height();
+			assert(image.depth() == wk::Image::PixelDepth::RGBA8 && "Image should be RGBA8 before converting");
 
-			const wk::Image::PixelDepthInfo& pixel_info = wk::Image::PixelDepthTable[(uint16_t)image.depth()];
+			for (uint16_t w = 0; image.width() > w; w++) {
+				for (uint16_t h = 0; image.height() > h; h++) {
+					wk::ColorRGBA& pixel = image.at<wk::ColorRGBA>(w, h);
 
-			for (uint64_t pixel_index = 0; pixel_count > pixel_index; pixel_index++)
-			{
-				uint8_t* pixel_data = image.data() + (pixel_index * pixel_info.byte_count);
-
-				uint8_t r_channel = 0;
-				uint8_t g_channel = 0;
-				uint8_t b_channel = 0;
-				uint8_t a_channel = 0;
-
-				DecodePixel(pixel_data, pixel_info, r_channel, g_channel, b_channel, a_channel);
-
-				if (a_channel == 0)
-				{
-					r_channel = 0;
-					g_channel = 0;
-					b_channel = 0;
+					float factor = ((float)pixel.a / 255.f);
+					pixel.r = (uint8_t)((float)pixel.r * factor);
+					pixel.g = (uint8_t)((float)pixel.g * factor);
+					pixel.b = (uint8_t)((float)pixel.b * factor);
 				}
-				else
-				{
-					//  Straight to PreAlpha
-					float factor = ((float)a_channel / 255.f);
-					r_channel = (uint8_t)((float)r_channel * factor);
-					g_channel = (uint8_t)((float)g_channel * factor);
-					b_channel = (uint8_t)((float)b_channel * factor);
-				}
-
-				EncodePixel(pixel_data, pixel_info, r_channel, g_channel, b_channel, a_channel);
 			}
 		}
 	}
@@ -492,40 +356,16 @@ namespace sc
 
 					wk::stb::ImageFormat format = wk::stb::ImageFormat::PNG;
 
-					switch (texture.encoding())
-					{
-					case SWFTexture::TextureEncoding::KhronosTexture:
-					{
-						wk::RawImage image(
-							texture.image()->width(), texture.image()->height(),
-							texture.image()->depth()
-						);
-
-						wk::SharedMemoryStream image_data(image.data(), image.data_length());
-						((sc::texture::KhronosTexture*)(texture.image().get()))->decompress_data(image_data);
-
-						PremultiplyToStraight(image);
-						wk::stb::write_image(image, format, output_image);
+					auto image = texture.raw_image();
+					if (image->channels() == 2 || image->channels() == 4) {
+						if (image->depth() != wk::Image::PixelDepth::RGBA8) {
+							wk::RawImageRef decoded = wk::CreateRef<wk::RawImage>(image->width(), image->height(), wk::Image::PixelDepth::RGBA8);
+							image->copy(*decoded);
+							image = decoded;
+						}
+						PremultiplyToStraight(*image);
 					}
-					break;
-
-					case SWFTexture::TextureEncoding::Raw:
-					{
-						texture.linear(true);
-
-						wk::RawImage& image = *(wk::RawImage*)(texture.image().get());
-						PremultiplyToStraight(image);
-						wk::stb::write_image(
-							image,
-							format,
-							output_image
-						);
-					}
-					break;
-
-					default:
-						break;
-					}
+					wk::stb::write_image(*image, format, output_image);
 
 					std::cout << "Decoded texture: " << output_image_path << std::endl;
 				}
@@ -573,10 +413,17 @@ namespace sc
 				for (uint16_t i = 0; texture_images_paths.size() > i; i++)
 				{
 					// Image Loading
-					wk::Ref<wk::RawImage> image;
+					wk::RawImageRef image;
 					wk::InputFileStream image_file(texture_images_paths[i]);
 					wk::stb::load_image(image_file, image);
-					StraightToPremultiply(*image);
+					if (image->channels() == 4 || image->channels() == 2) {
+						if (image->depth() != wk::Image::PixelDepth::RGBA8) {
+							wk::RawImageRef decoded = wk::CreateRef<wk::RawImage>(image->width(), image->height(), wk::Image::PixelDepth::RGBA8);
+							image->copy(*decoded);
+							image = decoded;
+						}
+						StraightToPremultiply(*image);
+					}
 
 					wk::SharedMemoryStream image_data(image->data(), image->data_length());
 
