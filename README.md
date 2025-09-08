@@ -9,8 +9,6 @@ Supercell Flash is a C++ library that allows you to quickly read, modify and sav
 ### TODO: 
 - Support for ScCompressedExternalMatrixBank
 
-```
-
 ## Building
 
 CMake build system is used. Make sure you have but installed and you can use it. Then just run ```cmake``` command from project root directory with specified generator type and output directory.
