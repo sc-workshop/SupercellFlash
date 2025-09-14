@@ -28,7 +28,7 @@ namespace sc::flash
 		swf.stream.seek(data_size, wk::Stream::SeekMode::Add);
 	}
 
-	const float SupercellSWF2CompileTable::get_precision_multiplier(SC2::Precision precision)
+	float SupercellSWF2CompileTable::get_precision_multiplier(SC2::Precision precision)
 	{
 		switch (precision)
 		{
@@ -457,7 +457,7 @@ namespace sc::flash
 				);
 
 				bool elements_in_short_range = std::any_of(movieclip.frames.begin(), movieclip.frames.end(),
-					[frame_elements_offset](const MovieClipFrame& frame) {
+					[](const MovieClipFrame& frame) {
 						return std::numeric_limits<uint16_t>::max() > frame.elements_count;
 					}
 				);

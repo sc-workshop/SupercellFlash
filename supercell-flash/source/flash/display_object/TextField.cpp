@@ -189,7 +189,6 @@ namespace sc
 
 		void TextField::load_sc2(SupercellSWF& swf, const SC2::DataStorage* storage, const uint8_t* data)
 		{
-			using Style = SC2::TextFieldStyle;
 			auto textfields_data = SC2::GetTextFields(data);
 
 			auto textfields_vector = textfields_data->textfields();

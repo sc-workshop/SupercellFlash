@@ -34,7 +34,7 @@ namespace sc::flash
 
 	public:
 		static void load_chunk(SupercellSWF& swf, const SC2::DataStorage* storage, const std::function<void(SupercellSWF&, const SC2::DataStorage*, const uint8_t*)>& reader);
-		static const float get_precision_multiplier(SC2::Precision);
+		static float get_precision_multiplier(SC2::Precision);
 
 	public:
 		// Matrix precision

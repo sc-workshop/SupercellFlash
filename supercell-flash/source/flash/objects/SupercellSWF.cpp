@@ -109,7 +109,7 @@ namespace sc
 
 		void SupercellSWF::load_sc2(wk::Stream& input)
 		{
-			uint32_t resources_offset = 0;
+			//uint32_t resources_offset = 0;
 
 			// Descriptor
 			uint32_t descriptor_size = input.read_unsigned_int();
@@ -130,7 +130,7 @@ namespace sc
 			uint32_t textFields_count = descriptor->text_fields_count();
 			textfields.resize(textFields_count);
 
-			resources_offset = descriptor->resources_offset();
+			//resources_offset = descriptor->resources_offset();
 
 			auto export_names_hash = descriptor->exports();
 			if (export_names_hash)

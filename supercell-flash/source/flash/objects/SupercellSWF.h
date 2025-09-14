@@ -25,7 +25,7 @@ namespace sc
 
 		namespace SC2
 		{
-			class DataStorage;
+			struct DataStorage;
 		}
 
 		struct Sc2CompileSettings
