@@ -2,7 +2,7 @@
 
 #include "flash/objects/SupercellSWF.h"
 
-#define floatEqual(a,b) (fabs(a - b) <= ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * 0.001))
+#define floatEqual(a,b) (fabs(a - b) <= ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * 0.001f))
 
 namespace sc {
 	namespace flash {

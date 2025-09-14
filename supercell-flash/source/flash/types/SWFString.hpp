@@ -2,6 +2,7 @@
 
 #include <string>
 #include <optional>
+#include <algorithm>
 
 #include "core/memory/memory.h"
 #include "core/memory/ref.h"

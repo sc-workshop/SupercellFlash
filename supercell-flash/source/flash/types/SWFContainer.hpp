@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <core/memory/memory_pool.h>
+#include <cstdint>
 
 namespace sc
 {

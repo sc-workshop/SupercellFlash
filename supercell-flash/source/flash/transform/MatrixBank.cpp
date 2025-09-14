@@ -4,7 +4,7 @@
 
 #include <execution>
 
-#define floatEqual(a,b) (fabs(a - b) <= ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * 0.001))
+#define floatEqual(a,b) (fabs(a - b) <= ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * 0.001f))
 
 namespace sc {
 	namespace flash {
@@ -17,11 +17,11 @@ namespace sc {
 		bool MatrixBank::get_matrix_index(const Matrix2D& matrix, uint16_t& index) const
 		{
 			if (floatEqual(matrix.a, 1.0f) &&
-				floatEqual(matrix.b, 0) &&
-				floatEqual(matrix.c, 0) &&
+				floatEqual(matrix.b, 0.f) &&
+				floatEqual(matrix.c, 0.f) &&
 				floatEqual(matrix.d, 1.0f) &&
-				floatEqual(matrix.tx, 0) &&
-				floatEqual(matrix.ty, 0)) {
+				floatEqual(matrix.tx, 0.f) &&
+				floatEqual(matrix.ty, 0.f)) {
 				index = 0xFFFF;
 				return true;
 			}

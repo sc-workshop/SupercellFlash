@@ -1,6 +1,5 @@
-#include "SupercellSWF2.h"
-
 #include "flash/objects/SupercellSWF.h"
+#include "SupercellSWF2.h"
 
 #include <optional>
 
