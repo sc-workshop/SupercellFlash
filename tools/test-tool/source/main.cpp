@@ -59,26 +59,28 @@ int main(int argc, char* argv[])
 	SupercellSWF swf;
 	swf.load(filepath);
 
-	size_t bank_count = 0;
-	for (auto& movie : swf.movieclips)
-	{
-		if (movie.bank_index == 20)
-		{
-			for (auto& element : movie.frame_elements)
-			{
-				if (element.matrix_index != 0xFFFF)
-				{
-					bank_count = std::max(bank_count, (size_t)element.matrix_index);
-				}
-			}
-		}
-	}
+	// size_t bank_count = 0;
+	// for (auto& movie : swf.movieclips)
+	// {
+	// 	if (movie.bank_index == 20)
+	// 	{
+	// 		for (auto& element : movie.frame_elements)
+	// 		{
+	// 			if (element.matrix_index != 0xFFFF)
+	// 			{
+	// 				bank_count = std::max(bank_count, (size_t)element.matrix_index);
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	cout << "bank_count " << bank_count << std::endl;
+	// cout << "bank_count " << bank_count << std::endl;
 
 	cout << "Loading took: ";
 	cout << loading.elapsed() << "ms" << endl << endl;
 	loading.reset();
+
+	// return 0;
 
 	/* Save test */
 	fs::path folder = filepath.parent_path();
@@ -87,6 +89,13 @@ int main(int argc, char* argv[])
 		switch (version)
 		{
 		case 1:
+			for (auto& shape : swf.shapes)
+			{
+				for (auto& command : shape.commands)
+				{
+					command.sort_advanced_vertices(false);
+				}
+			}
 			swf.save(dest, Signature::Zstandard);
 			break;
 		case 2:

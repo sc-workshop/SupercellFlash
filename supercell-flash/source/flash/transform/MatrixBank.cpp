@@ -162,44 +162,44 @@ namespace sc {
 
 				// Matrices
 				{
-					size_t total_matrices_count = std::min<size_t>(bank->matrices_count() + bank->total_matrices_count(), 0xFFFF - 1);
+					size_t total_matrices_count = std::min<size_t>(
+						std::max<size_t>(
+							bank->short_matrix_count() + bank->float_matrix_count(),
+							bank->compressed_matrix_data_size() * 16),
+						0xFFFF - 1);
 					target.matrices.resize(total_matrices_count);
 					size_t matrix_index = 0;
 
-					for (size_t i = 0; bank->matrices_count() > i && total_matrices_count > matrix_index; i++)
+					for (size_t i = 0; bank->float_matrix_count() > i; i++)
 					{
-						auto& matrix = target.matrices[matrix_index++];
+						auto& matrix = target.matrices[i];
 
 						matrix.a = bank_data.read_float();
 						matrix.b = bank_data.read_float();
 						matrix.c = bank_data.read_float();
 						matrix.d = bank_data.read_float();
 
-						matrix.tx = (float)bank_data.read_float() / 20.f;
-						matrix.ty = (float)bank_data.read_float() / 20.f;
+						matrix.tx = bank_data.read_float();
+						matrix.ty = bank_data.read_float();
 					}
-
-					for (size_t i = 0; bank->zeros_count() > i; i++)
+					bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4);
+					for (size_t i = bank->float_matrix_count(); bank->short_matrix_count() + bank->float_matrix_count() > i; i++)
 					{
-						uint32_t value = bank_data.read_unsigned_int();
-					}
+						auto& matrix = target.matrices[i];
 
-					matrix_index = 0;
-					for (size_t i = 0; bank->total_matrices_count() > i && total_matrices_count > matrix_index; i++)
-					{
-						auto& matrix = target.matrices[matrix_index++];
-
-						matrix.a = (float)bank_data.read_short() / 512.f;
-						matrix.b = (float)bank_data.read_short() / 512.f;
-						matrix.c = (float)bank_data.read_short() / 512.f;
-						matrix.d = (float)bank_data.read_short() / 512.f;
-						matrix.tx = (float)swf.stream.read_short() / translation_multiplier;
-						matrix.ty = (float)swf.stream.read_short() / translation_multiplier;
+						matrix.a = (float)bank_data.read_short() / 1024.f;
+						matrix.b = (float)bank_data.read_short() / 1024.f;
+						matrix.c = (float)bank_data.read_short() / 1024.f;
+						matrix.d = (float)bank_data.read_short() / 1024.f;
+						matrix.tx = (float)bank_data.read_short() / 20.f;
+						matrix.ty = (float)bank_data.read_short() / 20.f;
 
 						//matrix.a = matrix.d = 1.0f;
 						//matrix.b = matrix.c = 0.0f;
 					}
 				}
+
+				bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4 + bank->short_matrix_data_size() * 2);
 
 				// Color Transforms
 				{
@@ -207,10 +207,18 @@ namespace sc {
 
 					for (auto& color : target.color_transforms)
 					{
-						color.alpha = 0xFF;
+						color.add.r = bank_data.read_unsigned_byte();
+						color.add.g = bank_data.read_unsigned_byte();
+						color.add.b = bank_data.read_unsigned_byte();
+
+						color.alpha = bank_data.read_unsigned_byte();
+
+						color.multiply.r = bank_data.read_unsigned_byte();
+						color.multiply.g = bank_data.read_unsigned_byte();
+						color.multiply.b = bank_data.read_unsigned_byte();
 					}
 				}
-				
+
 			}
 		}
 	}

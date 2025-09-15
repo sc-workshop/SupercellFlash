@@ -13,6 +13,7 @@
 
 #include "flash/SC2/DataStorage_generated.h"
 #include "flash/SC2/MovieClips_generated.h"
+#include "flash/SC2/MovieClipsV6_generated.h"
 
 namespace sc
 {
@@ -95,6 +96,8 @@ namespace sc
 
 		public:
 			static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
+		private:
+			static void load_sc2_v6(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
 		};
 	}
 }
