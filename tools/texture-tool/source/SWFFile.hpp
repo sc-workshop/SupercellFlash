@@ -208,7 +208,7 @@ namespace sc
 					int32_t tag_length = stream.read_int();
 
 					if (tag == TAG_END)
-						break;
+						return;
 
 					if (tag_length < 0)
 						throw wk::Exception("Negative tag length");
@@ -225,6 +225,10 @@ namespace sc
 					case TAG_TEXTURE_8:
 					case TAG_TEXTURE_9:
 					case TAG_TEXTURE_10:
+						if (5 >= tag_length) {
+							throw wk::Exception("File does not have texture data");
+						}
+
 						textures.emplace_back().load(*this, tag, true);
 						break;
 
