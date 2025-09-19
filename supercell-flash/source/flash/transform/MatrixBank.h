@@ -29,6 +29,8 @@ namespace sc
 		public:
 			SWFVector<Matrix2D> matrices;
 			SWFVector<ColorTransform> color_transforms;
+			unsigned char* compressed_clip_data = nullptr;
+			int compressed_clip_size = -1;
 
 		public:
 			bool get_matrix_index(const Matrix2D& matrix, uint16_t& index) const;

@@ -238,7 +238,8 @@ namespace sc
 				uint32_t data_storage_size = stream.read_unsigned_int();
 				storage = SC2::GetDataStorage((char*)stream.data() + stream.position());
 				stream.seek(data_storage_size, wk::Stream::SeekMode::Add);
-				MatrixBank::load(*this, descriptor, storage);
+				if (!use_external_matrix_banks)
+					MatrixBank::load(*this, descriptor, storage);
 			}
 			
 			{

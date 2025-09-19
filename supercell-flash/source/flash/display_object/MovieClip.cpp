@@ -1,6 +1,6 @@
 #include "MovieClip.h"
 #include "flash/objects/SupercellSWF.h"
-
+#define COMPRESSED_CLIP_DATA_MAX_SIZE 4096
 namespace sc
 {
 	namespace flash {
@@ -354,12 +354,12 @@ namespace sc
 			auto elements_vector = storage->movieclips_frame_elements();
 			auto rectangles_vector = storage->rectangles();
 
+			unsigned short* out_decompressed = new unsigned short[COMPRESSED_CLIP_DATA_MAX_SIZE];
+
 			for (uint16_t i = 0; movieclips_count > i; i++)
 			{
+				printf("movieclip: %d\n", i);
 				auto movieclip_data = movieclips_vector->Get(i);
-
-				if (movieclip_data->frame_data_offset() != -1)
-					throw wk::Exception("Unsupported MovieClipV6 with frame_data_offset");
 
 				MovieClip& movieclip = swf.movieclips[i];
 
@@ -433,38 +433,81 @@ namespace sc
 						MovieClipFrame& frame = movieclip.frames.emplace_back();
 						uint32_t label_id = frame_data->label_ref_id();
 						frame.elements_count = frame_data->used_transform();
+						// printf("frame elements count: %d\n", frame.elements_count);
 						frame.label = SWFString(
 							strings_vector->Get(label_id)->c_str()
 						);
 					}
 				}
-				// else if (short_frames_vector)
-				// {
-				// 	for (auto frame_data : *short_frames_vector)
-				// 	{
-				// 		MovieClipFrame& frame = movieclip.frames.emplace_back();
-				// 		frame.elements_count = frame_data->used_transform();
-				// 	}
-				// }
 
-
-				uint32_t elements_count = 0;
-				uint32_t elements_offset = movieclip_data->frame_elements_offset();
-				for (MovieClipFrame& frame : movieclip.frames)
+				if (movieclip_data->frame_data_offset() != -1)
 				{
-					elements_count += frame.elements_count;
+					unsigned char* compressed_frame_data =
+						&swf.matrixBanks[movieclip_data->matrix_bank_index()].
+						compressed_clip_data[movieclip_data->frame_data_offset()];
+					unsigned char* compressed_frame_data_end = compressed_frame_data - movieclip_data->frame_data_offset() + swf.matrixBanks[movieclip_data->matrix_bank_index()].compressed_clip_size;
+					// auto frame_data =
+					unsigned short total_elements_count = *(unsigned short*)(compressed_frame_data + 4);
+					// printf("\ntotal elements count: %d\n", total_elements_count);
+					for (int frame_index = 0;frame_index < movieclip.frames.size();frame_index++)
+					{
+						unsigned char* this_frame_data = compressed_frame_data + frame_index * 8 + 8;
+						// unsigned char* last_frame_data = compressed_frame_data + (movieclip.frames.size() - 1) * 8 + 8;
+						unsigned short* element_data = (unsigned short*)(compressed_frame_data + *(int*)(this_frame_data));
+						if ((unsigned char*)element_data >= compressed_frame_data_end) abort();
+						unsigned short* element_data_start = (unsigned short*)((unsigned char*)element_data + 2 * *(unsigned short*)(this_frame_data + 4));
+						unsigned short* element_data_end = (unsigned short*)((unsigned char*)element_data + 2 * *(unsigned short*)(this_frame_data + 6));
+						int decompressed_size_shorts = decode_compressed_frame_data(element_data, element_data_start, element_data_end, out_decompressed);
+						if (decompressed_size_shorts > COMPRESSED_CLIP_DATA_MAX_SIZE) abort();
+						// printf("frame #%d:\ndecompressed_size: %d\n", frame_index, decompressed_size_shorts);
+						for (int k = 0;k < decompressed_size_shorts / 3;k++) {
+							MovieClipFrameElement& element = movieclip.frame_elements.emplace_back();
+
+							element.instance_index = out_decompressed[k * 3 + 0];
+							element.matrix_index = out_decompressed[k * 3 + 1];
+							element.colorTransform_index = out_decompressed[k * 3 + 2];
+							// continue;
+							if (element.colorTransform_index != 0xFFFF && element.colorTransform_index >= swf.matrixBanks[movieclip.bank_index].color_transforms.size() ||
+								element.instance_index >= children_count) {
+								abort();
+							}
+							if (element.matrix_index != 0xFFFF && element.matrix_index >= swf.matrixBanks[movieclip.bank_index].matrices.size()) {
+								abort();
+							}
+							// element.colorTransform_index = 0xFFFF;
+							// printf("	child_index: %d\nmatrix_index: %d\ncolor_index: %d\n\n",
+							// 	out_decompressed[k * 3 + 0], out_decompressed[k * 3 + 1], out_decompressed[k * 3 + 2]);
+						}
+						movieclip.frames[frame_index].elements_count = decompressed_size_shorts / 3;
+						// printf("  Element Data size should be: %d\n", movieclip.frames.size() * 3);
+						// printf("  Element Data size: %lld\n", (unsigned char*)m_pDataEnd - (unsigned char*)m_pData);
+						// printf("  Total Elements Count: %d\n", total_elements_count);
+						// continue;
+					}
+
+					// movieclip.frames.resize(1);
 				}
-
-				movieclip.frame_elements.reserve(elements_count);
-				for (uint32_t e = 0; elements_count > e; e++)
+				else
 				{
-					MovieClipFrameElement& element = movieclip.frame_elements.emplace_back();
+					uint32_t elements_count = 0;
+					uint32_t elements_offset = movieclip_data->frame_elements_offset();
+					for (MovieClipFrame& frame : movieclip.frames)
+					{
+						elements_count += frame.elements_count;
+					}
 
-					element.instance_index = elements_vector->Get(elements_offset++);
-					element.matrix_index = elements_vector->Get(elements_offset++);
-					element.colorTransform_index = elements_vector->Get(elements_offset++);
+					movieclip.frame_elements.reserve(elements_count);
+					for (uint32_t e = 0; elements_count > e; e++)
+					{
+						MovieClipFrameElement& element = movieclip.frame_elements.emplace_back();
+
+						element.instance_index = elements_vector->Get(elements_offset++);
+						element.matrix_index = elements_vector->Get(elements_offset++);
+						element.colorTransform_index = elements_vector->Get(elements_offset++);
+					}
 				}
 			}
+			delete[] out_decompressed;
 		}
 
 		void MovieClip::write_frame_elements_buffer(wk::Stream& stream) const
@@ -474,6 +517,142 @@ namespace sc
 				stream.write_unsigned_short(element.instance_index);
 				stream.write_unsigned_short(element.matrix_index);
 				stream.write_unsigned_short(element.colorTransform_index);
+			}
+		}
+		int MovieClip::decode_compressed_frame_data(unsigned short* element_data, unsigned short* element_data_start, unsigned short* element_data_end, unsigned short* result)
+		{
+			unsigned short* v7 = result;
+			unsigned short* v8 = &result[COMPRESSED_CLIP_DATA_MAX_SIZE];
+			int v6 = 0;
+			if (element_data_start == element_data)
+			{
+				memcpy(result, element_data_start, (unsigned char*)element_data_end - (unsigned char*)element_data_start);
+				return element_data_end - element_data_start;
+			}
+			else if (element_data_start != element_data_end || v6)
+			{
+				while (element_data_start != element_data_end && v8 - v7 >= 6)
+				{
+					if (element_data_start >= element_data_end) abort();
+					unsigned short v17 = element_data_start[0];
+					unsigned short v13 = element_data[0];
+					unsigned short v14 = element_data[1];
+					unsigned short v16 = element_data[2];
+					if ((v6 & 1) != 0)
+					{
+						*v7 = v13;
+						v7[1] = v14;
+						v7[2] = v16;
+						v7 += 3;
+						element_data += 3;
+						v6 >>= 1;
+					}
+					else
+					{
+						v6 >>= 1;
+						if ((v17 & 3) != 0)
+						{
+							int v23 = (v17 & 7) - 1;
+							// printf("switch: %d\n", v23 + 1);
+							switch (v17 & 7)
+							{
+							case 1:
+								*v7 = v13;
+								v23 = v14;
+								v7[1] = ((int32_t)(v17 << (32 - 13 - 3)) >> (32 - 13)) + v14;
+								v7[2] = v16;
+								v7 += 3;
+								element_data += 3;
+								++element_data_start;
+								break;
+							case 2:
+								*v7 = v13;
+								v23 = v14;
+								v7[1] = ((int32_t)(v17 << (32 - 4 - 3)) >> (32 - 4)) + v14;
+								v23 = v16;
+								v7[2] = ((int32_t)(v17 << (32 - 9 - 7)) >> (32 - 9)) + v16;
+								v7 += 3;
+								element_data += 3;
+								++element_data_start;
+								break;
+							case 3:
+								*v7 = v13;
+								v7[1] = element_data_start[1] + v14;
+								v23 = v16;
+								v7[2] = ((int32_t)(v17 << (32 - 13 - 3)) >> (32 - 13)) + v16;
+								v7 += 3;
+								element_data += 3;
+								element_data_start += 2;
+								break;
+							case 5:
+								*v7 = v13;
+								v7[1] = v14;
+								v7[2] = v16;
+								v7 += 3;
+								element_data += 3;
+								++element_data_start;
+								v6 = (int32_t)v17 >> 3;
+								break;
+							case 6:
+								element_data += 3 * ((int32_t)(v17 << (32 - 13 - 3)) >> (32 - 13));
+								++element_data_start;
+								break;
+							case 7:
+								*v7 = ((int32_t)(v17 << (32 - 12 - 3)) >> (32 - 12));
+								v7[1] = element_data_start[1];
+								v7[2] = element_data_start[2];
+								v7 += 3;
+								element_data_start += 3;
+								if ((v17 & 0x8000) != 0)
+									v23 = 3;
+								else
+									v23 = 0;
+								element_data += v23;
+								break;
+							default:
+								continue;
+							}
+						}
+						else
+						{
+							*v7 = v13;
+							v7[1] = ((int32_t)(v17 << (32 - 7 - 2)) >> (32 - 7)) + v14;
+							v7[2] = v16;
+							v7[3] = element_data[3];
+							v7[4] = ((int32_t)(v17 << (32 - 7 - 9)) >> (32 - 7)) + element_data[4];
+							v7[5] = element_data[5];
+							v7 += 6;
+							element_data += 6;
+							++element_data_start;
+							v6 >>= 1;
+						}
+					}
+				}
+				if (element_data_start == element_data_end)
+				{
+					while (v6 && v8 - v7 >= 3)
+					{
+						if ((v6 & 1) == 0)
+						{
+							abort();
+						}
+						*v7 = *element_data;
+						v7[1] = element_data[1];
+						v7[2] = element_data[2];
+						v7 += 3;
+						element_data += 3;
+						v6 >>= 1;
+					}
+				}
+				if (v7 > v8)
+				{
+					abort();
+				}
+				return v7 - result;
+			}
+			else
+			{
+				abort();
 			}
 		}
 	}
