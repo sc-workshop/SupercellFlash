@@ -140,8 +140,8 @@ namespace sc {
 			const auto* banks = root->banks();
 
 			size_t banks_data_offset = stream.position() + descriptor_size;
-			float scale_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(descritptor->scale_precision());
-			float translation_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(descritptor->translation_precision());
+			// float scale_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(descritptor->scale_precision());
+			// float translation_multiplier = SupercellSWF2CompileTable::get_precision_multiplier(descritptor->translation_precision());
 
 			swf.matrixBanks.resize(banks->size());
 			for (const auto* bank : *banks)
@@ -162,13 +162,22 @@ namespace sc {
 
 				// Matrices
 				{
+					printf("short matrix data size: %d\n", bank->short_matrix_data_size());
+					printf("compressed matrix data size: %d\n", bank->compressed_matrix_data_size());
+					printf("short matrix count: %d\n", bank->short_matrix_count());
+					printf("float matrix count: %d\n\n", bank->float_matrix_count());
+					size_t uncompressed_matrices_count = bank->short_matrix_count() + bank->float_matrix_count();
+					if (uncompressed_matrices_count % 16 != 0)
+						throw wk::Exception("uncompressed matrix count is not multiple of 16!");
 					size_t total_matrices_count = std::min<size_t>(
 						std::max<size_t>(
-							bank->short_matrix_count() + bank->float_matrix_count(),
+							uncompressed_matrices_count,
 							bank->compressed_matrix_data_size() * 16),
-						0xFFFF - 1);
+						0xFFFF);
+
+					uncompressed_matrices_count = std::min<size_t>(uncompressed_matrices_count, 0xFFFF);
+
 					target.matrices.resize(total_matrices_count);
-					size_t matrix_index = 0;
 
 					for (size_t i = 0; bank->float_matrix_count() > i; i++)
 					{
@@ -182,8 +191,152 @@ namespace sc {
 						matrix.tx = bank_data.read_float();
 						matrix.ty = bank_data.read_float();
 					}
+					
+					for (size_t i = uncompressed_matrices_count; total_matrices_count > i; i += 16)
+					{
+						// TODO: implement matricies decompression
+						
+						// int block_index = i / 16;
+						// bank_data.seek(bank->float_matrix_count() * 24 + block_index * 4);
+						// int position = bank_data.read_unsigned_int();
+
+						// unsigned short* compressed_matrix_data = (unsigned short*)bank_data.data();
+						// // printf("bank_data.read_unsigned_int(): %d\n", position);
+						// int v16 = position >> 13;
+						// unsigned short* v17 = &compressed_matrix_data[(position & 0x1FFF) * 6];
+						// unsigned short v18 = *v17;
+						// unsigned short v19 = v17[1];
+						// unsigned short v20 = v17[2];
+						// unsigned short v21 = v17[3];
+						// unsigned short v22 = v17[4];
+						// unsigned short v23 = v17[5];
+						// // unsigned short* v24 = a2 + 6;
+						// for (int sub_index = 0; sub_index < 16 && i + sub_index < total_matrices_count; sub_index++) {
+						// 	unsigned int v26 = compressed_matrix_data[v16];
+						// 	if ((v26 & 3) != 0)
+						// 	{
+						// 		unsigned int result = compressed_matrix_data[v16 + 1];
+						// 		int v27 = v16 + 2;
+						// 		unsigned int v28 = compressed_matrix_data[v16 + 2];
+						// 		unsigned int v29 = v26 & 0xF;
+						// 		if (v29 <= 4)
+						// 		{
+						// 			if (v29 == 1)
+						// 			{
+						// 				v22 += ((v26 << 14) | ((int)result << 30)) >> 18;
+						// 				v23 += (int)result >> 2;
+						// 				v16 = v16 + 2;
+						// 			}
+						// 			else
+						// 			{
+						// 				unsigned int v31 = v18 + (v26 << 21 >> 25);
+						// 				unsigned int v32 = (v26 << 14) | ((int)result << 30);
+						// 				unsigned int v33 = v18 + (v26 << 17 >> 21);
+						// 				unsigned int v34 = v21 + (((v26 << 6) | ((int)result << 22)) >> 21);
+						// 				unsigned int v35 = v22 + ((((int)result << 11) | (v28 << 27)) >> 21);
+						// 				if (v29 == 3)
+						// 					v18 = v33;
+						// 				unsigned int v36 = v28 << 16;
+						// 				if (v29 != 3)
+						// 				{
+						// 					v34 = v21;
+						// 					v35 = v22;
+						// 				}
+						// 				unsigned int v37 = v23 + (v36 >> 21);
+						// 				if (v29 == 3)
+						// 					v16 = v16 + 3;
+						// 				else
+						// 					v37 = v23;
+						// 				v21 += v32 >> 25;
+						// 				if (v29 == 2)
+						// 					v18 = v31;
+						// 				v22 += (int)((int)result << 23) >> 25;
+						// 				if (v29 != 2)
+						// 				{
+						// 					v21 = v34;
+						// 					v22 = v35;
+						// 				}
+						// 				result = (unsigned int)((int)result << 16);
+						// 				v23 += result >> 25;
+						// 				if (v29 == 2)
+						// 					v16 = v27;
+						// 				else
+						// 					v23 = v37;
+						// 			}
+						// 		}
+						// 		else if ((v26 & 0xFu) > 6)
+						// 		{
+						// 			if (v29 == 7)
+						// 			{
+						// 				unsigned int v38 = compressed_matrix_data[v16 + 3];
+						// 				unsigned int v39 = compressed_matrix_data[v16 + 4];
+						// 				v18 += (int)v26 >> 4;
+						// 				v19 += (int)((int)result << 20) >> 20;
+						// 				v20 += (((int)result << 8) | (v28 << 24)) >> 20;
+						// 				v21 += ((v28 << 12) | (v38 << 28)) >> 20;
+						// 				v22 += ((v38 << 14) | (v39 << 30)) >> 18;
+						// 				result = (v39 << 16);
+						// 				v16 = v16 + 5;
+						// 				v23 += v39 >> 2;
+						// 			}
+						// 			else if (v29 == 15)
+						// 			{
+						// 				v18 += result;
+						// 				v19 += v28;
+						// 				v20 += compressed_matrix_data[v16 + 3];
+						// 				v21 += compressed_matrix_data[v16 + 4];
+						// 				v22 += compressed_matrix_data[v16 + 5];
+						// 				result = compressed_matrix_data[v16 + 6];
+						// 				v23 += result;
+						// 				v16 = v16 + 7;
+						// 			}
+						// 		}
+						// 		else if (v29 == 5)
+						// 		{
+						// 			v18 += v26 << 21 >> 25;
+						// 			v19 += ((v26 << 14) | ((int)result << 30)) >> 25;
+						// 			v20 += (int)((int)result << 23) >> 25;
+						// 			v21 += (short)result >> 9;
+						// 			v22 += (char)v28;
+						// 			result = (v28 << 16);
+						// 			v16 = v16 + 3;
+						// 			v23 += v28 >> 8;
+						// 		}
+						// 		else if (v29 == 6)
+						// 		{
+						// 			unsigned int v30 = compressed_matrix_data[v16 + 3];
+						// 			v18 += v26 << 18 >> 22;
+						// 			v19 += ((v26 << 8) | ((int)result << 24)) >> 22;
+						// 			v20 += (((int)result << 14) | (v28 << 30)) >> 22;
+						// 			v21 += v28 << 20 >> 22;
+						// 			v22 += ((v28 << 10) | (v30 << 26)) >> 22;
+						// 			result = (v30 << 16);
+						// 			v16 = v16 + 4;
+						// 			v23 += (short)v30 >> 6;
+						// 		}
+						// 	}
+						// 	else
+						// 	{
+						// 		v22 += v26 << 23 >> 25;
+						// 		// result = (v26 << 16);
+						// 		v16 = v16 + 1;
+						// 		v23 += (short)v26 >> 9;
+						// 	}
+						// 	// printf("decompressed matrix data: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", v18 / 1024.f, v19 / 1024.f, v20 / 1024.f, v21 / 1024.f, v22 / 20.f, v23 / 20.f);
+						// 	auto& matrix = target.matrices[i + sub_index];
+
+						// 	matrix.a = (short)v18 / 1024.f;
+						// 	matrix.b = (short)v19 / 1024.f;
+						// 	matrix.c = (short)v20 / 1024.f;
+						// 	matrix.d = (short)v21 / 1024.f;
+						// 	matrix.tx = (short)v22 / 20.f;
+						// 	matrix.ty = (short)v23 / 20.f;
+						// }
+					}
+
 					bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4);
-					for (size_t i = bank->float_matrix_count(); bank->short_matrix_count() + bank->float_matrix_count() > i; i++)
+					
+					for (size_t i = bank->float_matrix_count(); uncompressed_matrices_count > i; i++)
 					{
 						auto& matrix = target.matrices[i];
 
@@ -193,9 +346,6 @@ namespace sc {
 						matrix.d = (float)bank_data.read_short() / 1024.f;
 						matrix.tx = (float)bank_data.read_short() / 20.f;
 						matrix.ty = (float)bank_data.read_short() / 20.f;
-
-						//matrix.a = matrix.d = 1.0f;
-						//matrix.b = matrix.c = 0.0f;
 					}
 				}
 
@@ -219,6 +369,16 @@ namespace sc {
 					}
 				}
 
+				bank_data.seek(bank->clip_data_offset());
+				// Clip Data
+				{
+					if (bank->clip_data_size() > 0)
+					{
+						target.compressed_clip_size = bank->clip_data_size();
+						target.compressed_clip_data = new unsigned char[bank->clip_data_size()];
+						bank_data.read(target.compressed_clip_data, bank->clip_data_size());
+					}
+				}
 			}
 		}
 	}
