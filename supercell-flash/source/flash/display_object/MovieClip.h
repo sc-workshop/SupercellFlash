@@ -94,7 +94,7 @@ namespace sc
 
 			void write_frame_elements_buffer(wk::Stream& stream) const;
 
-			static int decode_compressed_frame_data(unsigned short* m_pKeyframes, unsigned short* m_pData, unsigned short* m_pDataEnd, unsigned short* out);
+			static int decode_compressed_frame_data(uint16_t* m_pKeyframes, uint16_t* m_pData, uint16_t* m_pDataEnd, uint16_t* out);
 		public:
 			static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
 		private:
