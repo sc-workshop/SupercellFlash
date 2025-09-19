@@ -191,10 +191,11 @@ namespace sc {
 						matrix.tx = bank_data.read_float();
 						matrix.ty = bank_data.read_float();
 					}
-					// printf("uncompressed matrix count: %d\n", uncompressed_matrices_count);
-					// printf("total matrix count: %d\n", total_matrices_count);
+					
 					for (size_t i = uncompressed_matrices_count; total_matrices_count > i; i += 16)
 					{
+						// TODO: implement matricies decompression
+						
 						// int block_index = i / 16;
 						// bank_data.seek(bank->float_matrix_count() * 24 + block_index * 4);
 						// int position = bank_data.read_unsigned_int();
@@ -334,8 +335,7 @@ namespace sc {
 					}
 
 					bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4);
-					// printf("short matrix count: %d\n", bank->short_matrix_count());
-					// printf("float matrix count: %d\n", bank->float_matrix_count());
+					
 					for (size_t i = bank->float_matrix_count(); uncompressed_matrices_count > i; i++)
 					{
 						auto& matrix = target.matrices[i];
@@ -346,9 +346,6 @@ namespace sc {
 						matrix.d = (float)bank_data.read_short() / 1024.f;
 						matrix.tx = (float)bank_data.read_short() / 20.f;
 						matrix.ty = (float)bank_data.read_short() / 20.f;
-
-						//matrix.a = matrix.d = 1.0f;
-						//matrix.b = matrix.c = 0.0f;
 					}
 				}
 
