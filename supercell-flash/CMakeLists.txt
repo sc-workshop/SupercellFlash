@@ -37,7 +37,7 @@ wk_flatbuffers_generate_headers(
 )
 
 set_target_properties(${TARGET} PROPERTIES
-    FOLDER SupercellSDK/core
+    FOLDER supercell-sdk/core
 )
 
 target_link_libraries(${TARGET}
