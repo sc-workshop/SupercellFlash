@@ -1,6 +1,9 @@
 #include "MovieClip.h"
 #include "flash/objects/SupercellSWF.h"
+
+// TODO(pavidloq): move it to some const maybe? (we are on C++, not C)
 #define COMPRESSED_CLIP_DATA_MAX_SIZE 4096
+
 namespace sc
 {
 	namespace flash {
@@ -354,11 +357,10 @@ namespace sc
 			auto elements_vector = storage->movieclips_frame_elements();
 			auto rectangles_vector = storage->rectangles();
 
-			unsigned short* out_decompressed = new unsigned short[COMPRESSED_CLIP_DATA_MAX_SIZE];
+			uint16_t* out_decompressed = new uint16_t[COMPRESSED_CLIP_DATA_MAX_SIZE];
 
 			for (uint16_t i = 0; movieclips_count > i; i++)
 			{
-				printf("movieclip: %d\n", i);
 				auto movieclip_data = movieclips_vector->Get(i);
 
 				MovieClip& movieclip = swf.movieclips[i];
@@ -420,6 +422,7 @@ namespace sc
 					}
 				}
 
+				// TODO: short frames support? (idk)
 				auto frames_vector = movieclip_data->frames();
 				// auto short_frames_vector = movieclip_data->short_frames();
 				uint16_t frames_count = (uint16_t)movieclip_data->frames_count();
@@ -433,23 +436,23 @@ namespace sc
 						MovieClipFrame& frame = movieclip.frames.emplace_back();
 						uint32_t label_id = frame_data->label_ref_id();
 						frame.elements_count = frame_data->used_transform();
-						// printf("frame elements count: %d\n", frame.elements_count);
+						
 						frame.label = SWFString(
 							strings_vector->Get(label_id)->c_str()
 						);
 					}
 				}
 
+				// FIXME: scope below
 				if (movieclip_data->frame_data_offset() != -1)
 				{
-					unsigned char* compressed_frame_data =
+					uint8_t* compressed_frame_data =
 						&swf.matrixBanks[movieclip_data->matrix_bank_index()].
 						compressed_clip_data[movieclip_data->frame_data_offset()];
-					unsigned char* compressed_frame_data_end = compressed_frame_data - movieclip_data->frame_data_offset() + swf.matrixBanks[movieclip_data->matrix_bank_index()].compressed_clip_size;
-					// auto frame_data =
-					unsigned short total_elements_count = *(unsigned short*)(compressed_frame_data + 4);
-					// printf("\ntotal elements count: %d\n", total_elements_count);
-					for (int frame_index = 0;frame_index < movieclip.frames.size();frame_index++)
+					uint8_t* compressed_frame_data_end = compressed_frame_data - movieclip_data->frame_data_offset() + swf.matrixBanks[movieclip_data->matrix_bank_index()].compressed_clip_size;
+					uint16_t total_elements_count = *(uint16_t*)(compressed_frame_data + 4);
+					
+					for (int frame_index = 0; frame_index < movieclip.frames.size(); frame_index++)
 					{
 						unsigned char* this_frame_data = compressed_frame_data + frame_index * 8 + 8;
 						// unsigned char* last_frame_data = compressed_frame_data + (movieclip.frames.size() - 1) * 8 + 8;
@@ -458,34 +461,26 @@ namespace sc
 						unsigned short* element_data_start = (unsigned short*)((unsigned char*)element_data + 2 * *(unsigned short*)(this_frame_data + 4));
 						unsigned short* element_data_end = (unsigned short*)((unsigned char*)element_data + 2 * *(unsigned short*)(this_frame_data + 6));
 						int decompressed_size_shorts = decode_compressed_frame_data(element_data, element_data_start, element_data_end, out_decompressed);
-						if (decompressed_size_shorts > COMPRESSED_CLIP_DATA_MAX_SIZE) abort();
-						// printf("frame #%d:\ndecompressed_size: %d\n", frame_index, decompressed_size_shorts);
-						for (int k = 0;k < decompressed_size_shorts / 3;k++) {
+						if (decompressed_size_shorts > COMPRESSED_CLIP_DATA_MAX_SIZE) abort();  // FIXME: bro :skull:
+						
+						for (int k = 0; k < decompressed_size_shorts / 3; k++) {
 							MovieClipFrameElement& element = movieclip.frame_elements.emplace_back();
 
 							element.instance_index = out_decompressed[k * 3 + 0];
 							element.matrix_index = out_decompressed[k * 3 + 1];
 							element.colorTransform_index = out_decompressed[k * 3 + 2];
-							// continue;
+							
 							if (element.colorTransform_index != 0xFFFF && element.colorTransform_index >= swf.matrixBanks[movieclip.bank_index].color_transforms.size() ||
 								element.instance_index >= children_count) {
-								abort();
+								abort();  // FIXME: bro :skull:
 							}
 							if (element.matrix_index != 0xFFFF && element.matrix_index >= swf.matrixBanks[movieclip.bank_index].matrices.size()) {
-								abort();
+								abort();  // FIXME: bro :skull:
 							}
-							// element.colorTransform_index = 0xFFFF;
-							// printf("	child_index: %d\nmatrix_index: %d\ncolor_index: %d\n\n",
-							// 	out_decompressed[k * 3 + 0], out_decompressed[k * 3 + 1], out_decompressed[k * 3 + 2]);
 						}
+						
 						movieclip.frames[frame_index].elements_count = decompressed_size_shorts / 3;
-						// printf("  Element Data size should be: %d\n", movieclip.frames.size() * 3);
-						// printf("  Element Data size: %lld\n", (unsigned char*)m_pDataEnd - (unsigned char*)m_pData);
-						// printf("  Total Elements Count: %d\n", total_elements_count);
-						// continue;
 					}
-
-					// movieclip.frames.resize(1);
 				}
 				else
 				{
@@ -507,6 +502,8 @@ namespace sc
 					}
 				}
 			}
+
+			// TODO: wrap it into smart pointer maybe to avoid possible memory leaks?
 			delete[] out_decompressed;
 		}
 
