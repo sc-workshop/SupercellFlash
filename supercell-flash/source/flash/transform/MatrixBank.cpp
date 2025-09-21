@@ -192,146 +192,109 @@ namespace sc {
 						matrix.ty = bank_data.read_float();
 					}
 					
+					// TODO: refactor this
+					unsigned short* bank_data_ptr = (unsigned short*)bank_data.data();
 					for (size_t i = uncompressed_matrices_count; total_matrices_count > i; i += 16)
 					{
-						// TODO: implement matricies decompression
-						
-						// int block_index = i / 16;
-						// bank_data.seek(bank->float_matrix_count() * 24 + block_index * 4);
-						// int position = bank_data.read_unsigned_int();
+						int block_index = i >> 4;
+						int position = *(int*)((unsigned char*)bank_data_ptr + bank->float_matrix_count() * 24 + block_index * 4);
 
-						// unsigned short* compressed_matrix_data = (unsigned short*)bank_data.data();
-						// // printf("bank_data.read_unsigned_int(): %d\n", position);
-						// int v16 = position >> 13;
-						// unsigned short* v17 = &compressed_matrix_data[(position & 0x1FFF) * 6];
-						// unsigned short v18 = *v17;
-						// unsigned short v19 = v17[1];
-						// unsigned short v20 = v17[2];
-						// unsigned short v21 = v17[3];
-						// unsigned short v22 = v17[4];
-						// unsigned short v23 = v17[5];
-						// // unsigned short* v24 = a2 + 6;
-						// for (int sub_index = 0; sub_index < 16 && i + sub_index < total_matrices_count; sub_index++) {
-						// 	unsigned int v26 = compressed_matrix_data[v16];
-						// 	if ((v26 & 3) != 0)
-						// 	{
-						// 		unsigned int result = compressed_matrix_data[v16 + 1];
-						// 		int v27 = v16 + 2;
-						// 		unsigned int v28 = compressed_matrix_data[v16 + 2];
-						// 		unsigned int v29 = v26 & 0xF;
-						// 		if (v29 <= 4)
-						// 		{
-						// 			if (v29 == 1)
-						// 			{
-						// 				v22 += ((v26 << 14) | ((int)result << 30)) >> 18;
-						// 				v23 += (int)result >> 2;
-						// 				v16 = v16 + 2;
-						// 			}
-						// 			else
-						// 			{
-						// 				unsigned int v31 = v18 + (v26 << 21 >> 25);
-						// 				unsigned int v32 = (v26 << 14) | ((int)result << 30);
-						// 				unsigned int v33 = v18 + (v26 << 17 >> 21);
-						// 				unsigned int v34 = v21 + (((v26 << 6) | ((int)result << 22)) >> 21);
-						// 				unsigned int v35 = v22 + ((((int)result << 11) | (v28 << 27)) >> 21);
-						// 				if (v29 == 3)
-						// 					v18 = v33;
-						// 				unsigned int v36 = v28 << 16;
-						// 				if (v29 != 3)
-						// 				{
-						// 					v34 = v21;
-						// 					v35 = v22;
-						// 				}
-						// 				unsigned int v37 = v23 + (v36 >> 21);
-						// 				if (v29 == 3)
-						// 					v16 = v16 + 3;
-						// 				else
-						// 					v37 = v23;
-						// 				v21 += v32 >> 25;
-						// 				if (v29 == 2)
-						// 					v18 = v31;
-						// 				v22 += (int)((int)result << 23) >> 25;
-						// 				if (v29 != 2)
-						// 				{
-						// 					v21 = v34;
-						// 					v22 = v35;
-						// 				}
-						// 				result = (unsigned int)((int)result << 16);
-						// 				v23 += result >> 25;
-						// 				if (v29 == 2)
-						// 					v16 = v27;
-						// 				else
-						// 					v23 = v37;
-						// 			}
-						// 		}
-						// 		else if ((v26 & 0xFu) > 6)
-						// 		{
-						// 			if (v29 == 7)
-						// 			{
-						// 				unsigned int v38 = compressed_matrix_data[v16 + 3];
-						// 				unsigned int v39 = compressed_matrix_data[v16 + 4];
-						// 				v18 += (int)v26 >> 4;
-						// 				v19 += (int)((int)result << 20) >> 20;
-						// 				v20 += (((int)result << 8) | (v28 << 24)) >> 20;
-						// 				v21 += ((v28 << 12) | (v38 << 28)) >> 20;
-						// 				v22 += ((v38 << 14) | (v39 << 30)) >> 18;
-						// 				result = (v39 << 16);
-						// 				v16 = v16 + 5;
-						// 				v23 += v39 >> 2;
-						// 			}
-						// 			else if (v29 == 15)
-						// 			{
-						// 				v18 += result;
-						// 				v19 += v28;
-						// 				v20 += compressed_matrix_data[v16 + 3];
-						// 				v21 += compressed_matrix_data[v16 + 4];
-						// 				v22 += compressed_matrix_data[v16 + 5];
-						// 				result = compressed_matrix_data[v16 + 6];
-						// 				v23 += result;
-						// 				v16 = v16 + 7;
-						// 			}
-						// 		}
-						// 		else if (v29 == 5)
-						// 		{
-						// 			v18 += v26 << 21 >> 25;
-						// 			v19 += ((v26 << 14) | ((int)result << 30)) >> 25;
-						// 			v20 += (int)((int)result << 23) >> 25;
-						// 			v21 += (short)result >> 9;
-						// 			v22 += (char)v28;
-						// 			result = (v28 << 16);
-						// 			v16 = v16 + 3;
-						// 			v23 += v28 >> 8;
-						// 		}
-						// 		else if (v29 == 6)
-						// 		{
-						// 			unsigned int v30 = compressed_matrix_data[v16 + 3];
-						// 			v18 += v26 << 18 >> 22;
-						// 			v19 += ((v26 << 8) | ((int)result << 24)) >> 22;
-						// 			v20 += (((int)result << 14) | (v28 << 30)) >> 22;
-						// 			v21 += v28 << 20 >> 22;
-						// 			v22 += ((v28 << 10) | (v30 << 26)) >> 22;
-						// 			result = (v30 << 16);
-						// 			v16 = v16 + 4;
-						// 			v23 += (short)v30 >> 6;
-						// 		}
-						// 	}
-						// 	else
-						// 	{
-						// 		v22 += v26 << 23 >> 25;
-						// 		// result = (v26 << 16);
-						// 		v16 = v16 + 1;
-						// 		v23 += (short)v26 >> 9;
-						// 	}
-						// 	// printf("decompressed matrix data: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", v18 / 1024.f, v19 / 1024.f, v20 / 1024.f, v21 / 1024.f, v22 / 20.f, v23 / 20.f);
-						// 	auto& matrix = target.matrices[i + sub_index];
+						unsigned short* compressed_matrix_data = (unsigned short*)((unsigned char*)bank_data_ptr + bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4);
+						int v16 = position >> 13;
+						unsigned short* v17 = &compressed_matrix_data[(position & 0x1FFF) * 6];
+						unsigned int v18 = *v17;
+						unsigned int v19 = v17[1];
+						unsigned int v20 = v17[2];
+						unsigned int v21 = v17[3];
+						unsigned int v22 = v17[4];
+						unsigned int v23 = v17[5];
+						for (int sub_index = 0; sub_index < 16 && i + sub_index < total_matrices_count; sub_index++) {
+							unsigned short v33 = compressed_matrix_data[v16];
+							if ((v33 & 3) != 0)
+							{
+								unsigned short a3 = compressed_matrix_data[v16 + 1];
+								unsigned short v34 = compressed_matrix_data[v16 + 2];
+								unsigned short a1;
+								unsigned short v35;
+								switch (v33 & 0xF)
+								{
+								case 1u:
+									v22 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 14 - 4)) >> (64 - 14));
+									v23 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 14 - 18)) >> (64 - 14));
+									v16 += 2;
+									break;
+								case 2u:
+									v18 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 4)) >> (64 - 7));
+									v21 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 11)) >> (64 - 7));
+									v22 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 18)) >> (64 - 7));
+									v23 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 25)) >> (64 - 7));
+									v16 += 2;
+									break;
+								case 3u:
+									v18 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 11 - 4)) >> (64 - 11));
+									v21 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 11 - 15)) >> (64 - 11));
+									v22 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 11 - 26)) >> (64 - 11));
+									v23 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 11 - 37)) >> (64 - 11));
+									v16 += 3;
+									break;
+								case 5u:
+									v18 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 4)) >> (64 - 7));
+									v19 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 11)) >> (64 - 7));
+									v20 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 18)) >> (64 - 7));
+									v21 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 25)) >> (64 - 7));
+									v22 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 8 - 32)) >> (64 - 8));
+									v23 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 8 - 40)) >> (64 - 8));
+									v16 += 3;
+									break;
+								case 6u:
+									a1 = compressed_matrix_data[v16 + 3];
+									v18 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 10 - 4)) >> (64 - 10));
+									v19 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 10 - 14)) >> (64 - 10));
+									v20 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 10 - 24)) >> (64 - 10));
+									v21 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 10 - 34)) >> (64 - 10));
+									v22 += (int32_t)((int64_t)((((uint64_t)a1 << 32) | ((uint64_t)v34 << 16) | (uint64_t)a3) << (64 - 10 - 28)) >> (64 - 10));
+									v23 += (int32_t)((int64_t)((((uint64_t)a1 << 32) | ((uint64_t)v34 << 16) | (uint64_t)a3) << (64 - 10 - 38)) >> (64 - 10));
+									v16 += 4;
+									break;
+								case 7u:
+									a1 = compressed_matrix_data[v16 + 3];
+									v35 = compressed_matrix_data[v16 + 4];
+									v18 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 12 - 4)) >> (64 - 12));
+									v19 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 12 - 16)) >> (64 - 12));
+									v20 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 12 - 28)) >> (64 - 12));
+									v21 += (int32_t)((int64_t)((((uint64_t)v35 << 32) | ((uint64_t)a1 << 16) | (uint64_t)v34) << (64 - 12 - 8)) >> (64 - 12));
+									v22 += (int32_t)((int64_t)((((uint64_t)v35 << 32) | ((uint64_t)a1 << 16) | (uint64_t)v34) << (64 - 14 - 20)) >> (64 - 14));
+									v23 += (int32_t)((int64_t)((((uint64_t)v35 << 32) | ((uint64_t)a1 << 16) | (uint64_t)v34) << (64 - 14 - 34)) >> (64 - 14));
+									v16 += 5;
+									break;
+								case 0xFu:
+									v18 += a3;
+									v19 += v34;
+									v20 += compressed_matrix_data[v16 + 3];
+									v21 += compressed_matrix_data[v16 + 4];
+									v22 += compressed_matrix_data[v16 + 5];
+									v23 += compressed_matrix_data[v16 + 6];
+									v16 += 7;
+									break;
+								default:
+									break;
+								}
+							}
+							else
+							{
+								v22 += (int32_t)((int64_t)((((uint64_t)0 << 32) | ((uint64_t)0 << 16) | (uint64_t)v33) << (64 - 7 - 2)) >> (64 - 7));
+								v23 += (int32_t)((int64_t)((((uint64_t)0 << 32) | ((uint64_t)0 << 16) | (uint64_t)v33) << (64 - 7 - 9)) >> (64 - 7));
+								++v16;
+							}
+							auto& matrix = target.matrices[i + sub_index];
 
-						// 	matrix.a = (short)v18 / 1024.f;
-						// 	matrix.b = (short)v19 / 1024.f;
-						// 	matrix.c = (short)v20 / 1024.f;
-						// 	matrix.d = (short)v21 / 1024.f;
-						// 	matrix.tx = (short)v22 / 20.f;
-						// 	matrix.ty = (short)v23 / 20.f;
-						// }
+							matrix.a = (int16_t)v18 / 1024.f;
+							matrix.b = (int16_t)v19 / 1024.f;
+							matrix.c = (int16_t)v20 / 1024.f;
+							matrix.d = (int16_t)v21 / 1024.f;
+							matrix.tx = (int16_t)v22 / 20.f;
+							matrix.ty = (int16_t)v23 / 20.f;
+						}
 					}
 
 					bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4);
