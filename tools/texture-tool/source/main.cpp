@@ -4,6 +4,7 @@
 #include <iostream>
 #include <chrono>
 #include "core/console/console.h"
+#include <filesystem>
 
 using namespace std;
 using namespace std::chrono;
@@ -50,7 +51,7 @@ int main(int argc, char* argv[])
 
 	fs::path input_path = fs::path(parser.get<std::string>("input"));
 	if (!fs::exists(input_path)) {
-		cout << "Path is inncorrect or does not exist";
+		cout << "Path is incorrect or does not exist";
 		return 1;
 	}
 
@@ -67,27 +68,72 @@ int main(int argc, char* argv[])
 		{
 			if (fs::is_directory(input_path))
 			{
-				print("Input path is a directory! Failed to load file");
-				return 1;
-			}
+				fs::path dump_dir = input_path / "dump";
+				if (!fs::exists(dump_dir))
+				{
+					fs::create_directory(dump_dir);
+				}
 
-			SWFFile file(input_path, use_sprites);
+				for (auto& entry : fs::directory_iterator(input_path))
+				{
+					if (entry.is_regular_file())
+					{
+						fs::path file_path = entry.path();
+						cout << "Processing file: " << file_path.filename().string() << endl;
 
-			fs::path output_directory = input_path.replace_extension();
-			if (!fs::is_directory(output_directory))
-			{
-				fs::create_directory(output_directory);
-			}
+						try
+						{
+							SWFFile file(file_path, use_sprites);
 
-			if (use_sprites)
-			{
-				file.save_sprites_to_folder(output_directory);
+							fs::path file_dump_dir = dump_dir / file_path.stem();
+							if (!fs::exists(file_dump_dir))
+							{
+								fs::create_directory(file_dump_dir);
+							}
+
+							if (use_sprites)
+							{
+								file.save_sprites_to_folder(file_dump_dir);
+							}
+							else
+							{
+								file.save_textures_to_folder(file_dump_dir);
+							}
+						}
+						catch (const std::exception& e)
+						{
+							cout << "Error processing file " << file_path.filename().string()
+							     << ": " << e.what() << endl;
+							continue;
+						}
+					}
+				}
 			}
 			else
 			{
-				file.save_textures_to_folder(output_directory);
+				cout << "Processing file: " << input_path.filename().string() << endl;
+				try
+				{
+					SWFFile file(input_path, use_sprites);
+
+					fs::path output_directory = input_path.parent_path();
+					if (use_sprites)
+					{
+						file.save_sprites_to_folder(output_directory);
+					}
+					else
+					{
+						file.save_textures_to_folder(output_directory);
+					}
+				}
+				catch (const std::exception& e)
+				{
+					cout << "Error processing file " << input_path.filename().string()
+					     << ": " << e.what() << endl;
+				}
 			}
 		}
+
 		else if (operation == "encode")
 		{
 			fs::path dl_file_path;
@@ -107,10 +153,37 @@ int main(int argc, char* argv[])
 			bool is_dl_file = !dl_file_path.empty() && fs::exists(dl_file_path);
 			if (is_dl_file)
 			{
-				file.load(dl_file_path);
+				try {
+					cout << "Loading external file: " << dl_file_path.filename().string() << endl;
+					file.load(dl_file_path);
+				}
+				catch (const std::exception& e)
+				{
+					cout << "Error loading external file " << dl_file_path.filename().string()
+					     << ": " << e.what() << endl;
+				}
 			}
 
-			file.load_textures_from_folder(input_path);
+			for (auto& entry : fs::directory_iterator(input_path))
+			{
+				if (entry.is_regular_file())
+				{
+					fs::path file_path = entry.path();
+					cout << "Processing file: " << file_path.filename().string() << endl;
+
+					try
+					{
+						file.load_textures_from_folder(file_path);
+					}
+					catch (const std::exception& e)
+					{
+						cout << "Error processing file " << file_path.filename().string()
+						     << ": " << e.what() << endl;
+						continue;
+					}
+				}
+			}
+
 			fs::path output_path = fs::path(input_path.parent_path() / fs::path(basename.concat(".sc")));
 			if (is_dl_file)
 			{
@@ -122,7 +195,6 @@ int main(int argc, char* argv[])
 				{
 					file.save_sc2(output_path);
 				}
-				
 			}
 			else
 			{

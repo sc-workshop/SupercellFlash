@@ -1,18 +1,21 @@
-# SupercellFlash
+# Supercell Flash
 
-Supercell Flash is a C++ library that allows you to quickly read, modify and save .sc files
+Supercell Flash is a C++ library that allows you to quickly read, modify and save *.sc files.
 
-### Currently supports:
+## Features:
 - Full support for SC1
 - Support for SC2 V5, partial V6 support 
 
-### TODO: 
-- Support for ScCompressedExternalMatrixBank
-
 ## Building
+### Requirements
+- CMake
+- FlatBuffers
+- IDE (Visual Studio, XCode, etc.)
 
-CMake build system is used. Make sure you have but installed and you can use it. Then just run ```cmake``` command from project root directory with specified generator type and output directory.
-Example for Visual Studio 2019 for Windows (also you can use 2022 version):
-```
-cmake -G "Visual Studio 16 2019" -B ./build
-```
+The CMake build system is used. Make sure that it is installed and you can use it. The FlatBuffers library is also needed to generate templates for some classes (install the latest version of the binary file and add it to the **PATH** system variable!).
+
+To generate the project files, run ```setup.cmd``` file (or ```setup.sh```/```setup.command``` if you are on Linux or Mac OS, but it's not implemented right now). Open the generated project in a new folder and build it using the IDE you prefer.
+
+## TODO: 
+- Support for ScCompressedExternalMatrixBank.
+- Linux and Mac OS support.
