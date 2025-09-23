@@ -13,7 +13,7 @@
 
 #include "flash/SC2/DataStorage_generated.h"
 #include "flash/SC2/MovieClips_generated.h"
-#include "flash/SC2/MovieClipsV6_generated.h"
+#include "flash/SC2/CompressedMovieClips_generated.h"
 
 namespace sc
 {
@@ -60,6 +60,9 @@ namespace sc
 		class MovieClip : public DisplayObject
 		{
 		public:
+			static inline size_t COMPRESSED_CLIP_DATA_MAX_SIZE = 4096;
+
+		public:
 			MovieClip() {};
 			virtual ~MovieClip() = default;
 			MovieClip(const MovieClip&) = default;
@@ -98,7 +101,7 @@ namespace sc
 		public:
 			static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
 		private:
-			static void load_sc2_v6(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
+			static void load_compressed(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
 		};
 	}
 }
