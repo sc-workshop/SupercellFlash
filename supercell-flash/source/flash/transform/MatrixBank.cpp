@@ -174,7 +174,8 @@ namespace sc {
 					uncompressed_matrices_count = std::min<size_t>(uncompressed_matrices_count, 0xFFFF);
 
 					target.matrices.resize(total_matrices_count);
-
+          
+          // Float matrices
 					for (size_t i = 0; bank->float_matrix_count() > i; i++)
 					{
 						auto& matrix = target.matrices[i];
@@ -187,9 +188,115 @@ namespace sc {
 						matrix.tx = bank_data.read_float();
 						matrix.ty = bank_data.read_float();
 					}
+          
+          // Compressed matrices
+					// TODO: refactor this
+					unsigned short* bank_data_ptr = (unsigned short*)bank_data.data();
+					for (size_t i = uncompressed_matrices_count; total_matrices_count > i; i += 16)
+					{
+						int block_index = i >> 4;
+						int position = *(int*)((unsigned char*)bank_data_ptr + bank->float_matrix_count() * 24 + block_index * 4);
 
+						unsigned short* compressed_matrix_data = (unsigned short*)((unsigned char*)bank_data_ptr + bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4);
+						int v16 = position >> 13;
+						unsigned short* v17 = &compressed_matrix_data[(position & 0x1FFF) * 6];
+						unsigned int v18 = *v17;
+						unsigned int v19 = v17[1];
+						unsigned int v20 = v17[2];
+						unsigned int v21 = v17[3];
+						unsigned int v22 = v17[4];
+						unsigned int v23 = v17[5];
+						for (int sub_index = 0; sub_index < 16 && i + sub_index < total_matrices_count; sub_index++) {
+							unsigned short v33 = compressed_matrix_data[v16];
+							if ((v33 & 3) != 0)
+							{
+								unsigned short a3 = compressed_matrix_data[v16 + 1];
+								unsigned short v34 = compressed_matrix_data[v16 + 2];
+								unsigned short a1;
+								unsigned short v35;
+								switch (v33 & 0xF)
+								{
+								case 1u:
+									v22 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 14 - 4)) >> (64 - 14));
+									v23 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 14 - 18)) >> (64 - 14));
+									v16 += 2;
+									break;
+								case 2u:
+									v18 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 4)) >> (64 - 7));
+									v21 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 11)) >> (64 - 7));
+									v22 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 18)) >> (64 - 7));
+									v23 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 25)) >> (64 - 7));
+									v16 += 2;
+									break;
+								case 3u:
+									v18 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 11 - 4)) >> (64 - 11));
+									v21 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 11 - 15)) >> (64 - 11));
+									v22 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 11 - 26)) >> (64 - 11));
+									v23 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 11 - 37)) >> (64 - 11));
+									v16 += 3;
+									break;
+								case 5u:
+									v18 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 4)) >> (64 - 7));
+									v19 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 11)) >> (64 - 7));
+									v20 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 18)) >> (64 - 7));
+									v21 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 7 - 25)) >> (64 - 7));
+									v22 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 8 - 32)) >> (64 - 8));
+									v23 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 8 - 40)) >> (64 - 8));
+									v16 += 3;
+									break;
+								case 6u:
+									a1 = compressed_matrix_data[v16 + 3];
+									v18 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 10 - 4)) >> (64 - 10));
+									v19 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 10 - 14)) >> (64 - 10));
+									v20 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 10 - 24)) >> (64 - 10));
+									v21 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 10 - 34)) >> (64 - 10));
+									v22 += (int32_t)((int64_t)((((uint64_t)a1 << 32) | ((uint64_t)v34 << 16) | (uint64_t)a3) << (64 - 10 - 28)) >> (64 - 10));
+									v23 += (int32_t)((int64_t)((((uint64_t)a1 << 32) | ((uint64_t)v34 << 16) | (uint64_t)a3) << (64 - 10 - 38)) >> (64 - 10));
+									v16 += 4;
+									break;
+								case 7u:
+									a1 = compressed_matrix_data[v16 + 3];
+									v35 = compressed_matrix_data[v16 + 4];
+									v18 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 12 - 4)) >> (64 - 12));
+									v19 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 12 - 16)) >> (64 - 12));
+									v20 += (int32_t)((int64_t)((((uint64_t)v34 << 32) | ((uint64_t)a3 << 16) | (uint64_t)v33) << (64 - 12 - 28)) >> (64 - 12));
+									v21 += (int32_t)((int64_t)((((uint64_t)v35 << 32) | ((uint64_t)a1 << 16) | (uint64_t)v34) << (64 - 12 - 8)) >> (64 - 12));
+									v22 += (int32_t)((int64_t)((((uint64_t)v35 << 32) | ((uint64_t)a1 << 16) | (uint64_t)v34) << (64 - 14 - 20)) >> (64 - 14));
+									v23 += (int32_t)((int64_t)((((uint64_t)v35 << 32) | ((uint64_t)a1 << 16) | (uint64_t)v34) << (64 - 14 - 34)) >> (64 - 14));
+									v16 += 5;
+									break;
+								case 0xFu:
+									v18 += a3;
+									v19 += v34;
+									v20 += compressed_matrix_data[v16 + 3];
+									v21 += compressed_matrix_data[v16 + 4];
+									v22 += compressed_matrix_data[v16 + 5];
+									v23 += compressed_matrix_data[v16 + 6];
+									v16 += 7;
+									break;
+								default:
+									break;
+								}
+							}
+							else
+							{
+								v22 += (int32_t)((int64_t)((((uint64_t)0 << 32) | ((uint64_t)0 << 16) | (uint64_t)v33) << (64 - 7 - 2)) >> (64 - 7));
+								v23 += (int32_t)((int64_t)((((uint64_t)0 << 32) | ((uint64_t)0 << 16) | (uint64_t)v33) << (64 - 7 - 9)) >> (64 - 7));
+								++v16;
+							}
+							auto& matrix = target.matrices[i + sub_index];
+
+							matrix.a = (int16_t)v18 / 1024.f;
+							matrix.b = (int16_t)v19 / 1024.f;
+							matrix.c = (int16_t)v20 / 1024.f;
+							matrix.d = (int16_t)v21 / 1024.f;
+							matrix.tx = (int16_t)v22 / 20.f;
+							matrix.ty = (int16_t)v23 / 20.f;
+						}
+					}
+          
+          // Short matrices
 					bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4);
-					
 					for (size_t i = bank->float_matrix_count(); uncompressed_matrices_count > i; i++)
 					{
 						auto& matrix = target.matrices[i];
@@ -202,10 +309,9 @@ namespace sc {
 						matrix.ty = (float)bank_data.read_short() / 20.f;
 					}
 				}
-
+        
+        // Color Transforms
 				bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4 + bank->short_matrix_data_size() * 2);
-
-				// Color Transforms
 				{
 					target.color_transforms.resize(bank->color_transform_count());
 
@@ -222,9 +328,9 @@ namespace sc {
 						color.add.b = bank_data.read_unsigned_byte();
 					}
 				}
-
+        
+        // Compressed MovieClip Data
 				bank_data.seek(bank->clip_data_offset());
-				// Clip Data
 				{
 					if (bank->clip_data_size() > 0)
 					{

@@ -17,5 +17,4 @@ The CMake build system is used. Make sure that it is installed and you can use i
 To generate the project files, run ```setup.cmd``` file (or ```setup.sh```/```setup.command``` if you are on Linux or Mac OS, but it's not implemented right now). Open the generated project in a new folder and build it using the IDE you prefer.
 
 ## TODO: 
-- Support for ScCompressedExternalMatrixBank.
 - Linux and Mac OS support.
