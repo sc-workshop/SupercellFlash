@@ -162,10 +162,6 @@ namespace sc {
 
 				// Matrices
 				{
-					printf("short matrix data size: %d\n", bank->short_matrix_data_size());
-					printf("compressed matrix data size: %d\n", bank->compressed_matrix_data_size());
-					printf("short matrix count: %d\n", bank->short_matrix_count());
-					printf("float matrix count: %d\n\n", bank->float_matrix_count());
 					size_t uncompressed_matrices_count = bank->short_matrix_count() + bank->float_matrix_count();
 					if (uncompressed_matrices_count % 16 != 0)
 						throw wk::Exception("uncompressed matrix count is not multiple of 16!");
@@ -178,7 +174,8 @@ namespace sc {
 					uncompressed_matrices_count = std::min<size_t>(uncompressed_matrices_count, 0xFFFF);
 
 					target.matrices.resize(total_matrices_count);
-
+          
+          // Float matrices
 					for (size_t i = 0; bank->float_matrix_count() > i; i++)
 					{
 						auto& matrix = target.matrices[i];
@@ -191,7 +188,8 @@ namespace sc {
 						matrix.tx = bank_data.read_float();
 						matrix.ty = bank_data.read_float();
 					}
-					
+          
+          // Compressed matrices
 					// TODO: refactor this
 					unsigned short* bank_data_ptr = (unsigned short*)bank_data.data();
 					for (size_t i = uncompressed_matrices_count; total_matrices_count > i; i += 16)
@@ -296,9 +294,9 @@ namespace sc {
 							matrix.ty = (int16_t)v23 / 20.f;
 						}
 					}
-
+          
+          // Short matrices
 					bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4);
-					
 					for (size_t i = bank->float_matrix_count(); uncompressed_matrices_count > i; i++)
 					{
 						auto& matrix = target.matrices[i];
@@ -311,29 +309,28 @@ namespace sc {
 						matrix.ty = (float)bank_data.read_short() / 20.f;
 					}
 				}
-
+        
+        // Color Transforms
 				bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4 + bank->short_matrix_data_size() * 2);
-
-				// Color Transforms
 				{
 					target.color_transforms.resize(bank->color_transform_count());
 
 					for (auto& color : target.color_transforms)
 					{
-						color.add.r = bank_data.read_unsigned_byte();
-						color.add.g = bank_data.read_unsigned_byte();
-						color.add.b = bank_data.read_unsigned_byte();
-
-						color.alpha = bank_data.read_unsigned_byte();
-
 						color.multiply.r = bank_data.read_unsigned_byte();
 						color.multiply.g = bank_data.read_unsigned_byte();
 						color.multiply.b = bank_data.read_unsigned_byte();
+
+						color.alpha = bank_data.read_unsigned_byte();
+
+						color.add.r = bank_data.read_unsigned_byte();
+						color.add.g = bank_data.read_unsigned_byte();
+						color.add.b = bank_data.read_unsigned_byte();
 					}
 				}
-
+        
+        // Compressed MovieClip Data
 				bank_data.seek(bank->clip_data_offset());
-				// Clip Data
 				{
 					if (bank->clip_data_size() > 0)
 					{

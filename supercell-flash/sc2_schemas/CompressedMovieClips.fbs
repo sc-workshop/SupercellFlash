@@ -1,20 +1,11 @@
+include "MovieClips.fbs";
 namespace sc.flash.SC2;
-
-// Structure for describing properties of each frame of a MovieClip
-struct MovieClipFrameV6
-{
-    // Count of MovieClipFrameElement to be displayed in current frame
-    used_transform: uint;
-
-    // Label name of current frame
-    label_ref_id: uint;
-}
 
 // A movieclip is a timeline and/or animation object with frames and children that are used in the object 
 // It can transform properties of children objecs, and create animation in that way
 // It can have an export name for use in a game or external tools
 // Inherited from DisplayObject
-table MovieClipV6
+table CompressedMovieClip
 {
     // Display Object Id
     id: ushort;
@@ -41,10 +32,10 @@ table MovieClipV6
     children_blending: [ubyte];
 
     // Classic MovieClip frames
-    frames: [MovieClipFrameV6];
+    frames: [MovieClipFrame];
 
     // Ushort offset to frame elements in DataStorage MovieClip frame elements buffer
-    frame_elements_offset: uint = 0xFFFFFFFF;
+    frame_elements_offset: uint = null;
 
     // Index of target bank with transformations
     matrix_bank_index: uint;
@@ -53,12 +44,12 @@ table MovieClipV6
     scaling_grid_index: uint = null;
 
     // Ushort offset to frame data in compressed matrix bank buffer
-    frame_data_offset: uint = 0xFFFFFFFF;
+    compressed_data_offset: uint = 0;
 }
 
-table MovieClipV6s
+table CompressedMovieClips
 {
-    movieclips: [MovieClipV6];
+    movieclips: [CompressedMovieClip];
 }
 
-root_type MovieClipV6s;
+root_type CompressedMovieClips;
