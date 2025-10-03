@@ -132,7 +132,7 @@ namespace sc {
 			}
 		}
 
-		void MatrixBank::load_external(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, wk::Stream& stream)
+		void MatrixBank::load_external(SupercellSWF& swf, const SC2::FileDescriptor*, wk::Stream& stream)
 		{
 			uint32_t descriptor_size = stream.read_unsigned_int();
 			wk::SharedMemoryStream descriptor_data((uint8_t*)stream.data() + stream.position(), descriptor_size);

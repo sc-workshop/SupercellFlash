@@ -472,7 +472,7 @@ namespace sc
 					uint8_t* compressed_frame_data_end = compressed_frame_data - compressed_data_offset + swf.matrixBanks[movieclip_data->matrix_bank_index()].compressed_clip_size;
 					uint16_t total_elements_count = *(uint16_t*)(compressed_frame_data + 4);
 
-					for (int frame_index = 0; frame_index < movieclip.frames.size(); frame_index++)
+					for (size_t frame_index = 0; frame_index < movieclip.frames.size(); frame_index++)
 					{
 						unsigned char* this_frame_data = compressed_frame_data + frame_index * 8 + 8;
 						// unsigned char* last_frame_data = compressed_frame_data + (movieclip.frames.size() - 1) * 8 + 8;
@@ -480,10 +480,10 @@ namespace sc
 						if ((unsigned char*)element_data >= compressed_frame_data_end) abort();
 						unsigned short* element_data_start = (unsigned short*)((unsigned char*)element_data + 2 * *(unsigned short*)(this_frame_data + 4));
 						unsigned short* element_data_end = (unsigned short*)((unsigned char*)element_data + 2 * *(unsigned short*)(this_frame_data + 6));
-						int decompressed_size_shorts = decode_compressed_frame_data(element_data, element_data_start, element_data_end, out_decompressed);
+						size_t decompressed_size_shorts = decode_compressed_frame_data(element_data, element_data_start, element_data_end, out_decompressed);
 						if (decompressed_size_shorts > COMPRESSED_CLIP_DATA_MAX_SIZE) abort();  // FIXME: bro :skull:
 
-						for (int k = 0; k < decompressed_size_shorts / 3; k++) {
+						for (size_t k = 0; k < decompressed_size_shorts / 3; k++) {
 							MovieClipFrameElement& element = movieclip.frame_elements.emplace_back();
 
 							element.instance_index = out_decompressed[k * 3 + 0];
