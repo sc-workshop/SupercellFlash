@@ -687,36 +687,29 @@ namespace sc
 
 		DisplayObject& SupercellSWF::GetDisplayObjectByID(uint16_t id)
 		{
-			for (Shape& shape : shapes)
-			{
-				if (shape.id == id)
+			auto pred = [&id](DisplayObject& obj)
 				{
-					return shape;
-				}
+					return obj.id == id;
+				};
+
+			{
+				auto it = std::find_if(shapes.begin(), shapes.end(), pred);
+				if (it != shapes.end()) return *it;
 			}
 
-			for (TextField& textfield : textfields)
 			{
-				if (textfield.id == id)
-				{
-					return textfield;
-				}
+				auto it = std::find_if(textfields.begin(), textfields.end(), pred);
+				if (it != textfields.end()) return *it;
 			}
 
-			for (MovieClipModifier& modifier : movieclip_modifiers)
 			{
-				if (modifier.id == id)
-				{
-					return modifier;
-				}
+				auto it = std::find_if(movieclip_modifiers.begin(), movieclip_modifiers.end(), pred);
+				if (it != movieclip_modifiers.end()) return *it;
 			}
 
-			for (MovieClip& movie : movieclips)
 			{
-				if (movie.id == id)
-				{
-					return movie;
-				}
+				auto it = std::find_if(movieclips.begin(), movieclips.end(), pred);
+				if (it != movieclips.end()) return *it;
 			}
 
 			throw new wk::Exception("Failed to get Display Object");
