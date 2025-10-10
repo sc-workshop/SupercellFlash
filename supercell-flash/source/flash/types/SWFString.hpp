@@ -84,9 +84,9 @@ namespace sc
 				m_data.clear();
 			}
 
-			int compare(const char* string, size_t len = 0) const
+			int compare(const char* string) const
 			{
-				return m_data.compare(0, len, string, std::min(len, m_data.length()));
+				return m_data.compare(0, std::string::npos, string);
 			}
 
 			int compare(const std::string& string) const
@@ -117,12 +117,12 @@ namespace sc
 
 			bool operator==(const SWFString& other) const
 			{
-				return compare(other.data(), other.length()) == 0;
+				return compare(other.data()) == 0;
 			}
 
 			bool operator==(const char* other) const
 			{
-				return compare(other, strlen(other)) == 0;
+				return compare(other) == 0;
 			}
 
 		public:
