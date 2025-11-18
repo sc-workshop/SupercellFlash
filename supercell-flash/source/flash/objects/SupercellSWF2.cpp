@@ -574,8 +574,10 @@ namespace sc::flash
 				
 			}
 
-			if (texture_data_off.IsNull())
+			if (texture_data_off.IsNull()) {
+				texture.save_buffer(texture_buffer, is_lowres);
 				texture_data_off = builder.CreateVector((uint8_t*)texture_buffer.data(), texture_buffer.length());
+			}
 		}
 
 		result = SC2::CreateTextureData(
