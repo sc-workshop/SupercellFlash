@@ -35,6 +35,11 @@ int main(int argc, char* argv[])
 		.help("_dl.sc or sc2 file for encode");
 
 	parser
+		.add_argument("-o", "--output")
+		.default_value("")
+		.help("Output folder name. Name of sc is default for single, or \"dump\" for multiple files");
+
+	parser
 		.add_argument("-t", "--type")
 		.choices("sc1", "sc2")
 		.default_value("sc1")
@@ -50,6 +55,7 @@ int main(int argc, char* argv[])
 	}
 
 	fs::path input_path = fs::path(parser.get<std::string>("input"));
+	fs::path output_path = fs::path(parser.get<std::string>("output"));
 	if (!fs::exists(input_path)) {
 		cout << "Path is incorrect or does not exist";
 		return 1;
@@ -68,12 +74,10 @@ int main(int argc, char* argv[])
 		{
 			if (fs::is_directory(input_path))
 			{
-				fs::path dump_dir = input_path / "dump";
-				if (!fs::exists(dump_dir))
-				{
-					fs::create_directory(dump_dir);
-				}
+				if (output_path.empty())
+					output_path = "dump";
 
+				fs::path dump_dir = input_path / output_path;
 				for (auto& entry : fs::directory_iterator(input_path))
 				{
 					if (entry.is_regular_file())
@@ -86,10 +90,7 @@ int main(int argc, char* argv[])
 							SWFFile file(file_path, use_sprites);
 
 							fs::path file_dump_dir = dump_dir / file_path.stem();
-							if (!fs::exists(file_dump_dir))
-							{
-								fs::create_directory(file_dump_dir);
-							}
+							fs::create_directory(file_dump_dir);
 
 							if (use_sprites)
 							{
@@ -115,8 +116,12 @@ int main(int argc, char* argv[])
 				try
 				{
 					SWFFile file(input_path, use_sprites);
+					if (output_path.empty())
+						output_path = input_path.stem();
 
-					fs::path output_directory = input_path.parent_path();
+					fs::path output_directory = input_path.parent_path() / output_path;
+					fs::create_directories(output_directory);
+
 					if (use_sprites)
 					{
 						file.save_sprites_to_folder(output_directory);

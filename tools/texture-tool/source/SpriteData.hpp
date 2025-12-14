@@ -25,7 +25,7 @@ namespace sc
 			{
 			public:
 				SWFString name;
-				uint8_t texture_index;
+				uint32_t texture_index;
 				SWFVector<wk::Point_t<uint16_t>> vertices;
 			};
 
@@ -84,7 +84,7 @@ namespace sc
 				for (SpriteInstance& sprite : sprites)
 				{
 					m_stream.write_string(sprite.name);
-					m_stream.write_unsigned_byte(sprite.texture_index);
+					m_stream.write_unsigned_int(sprite.texture_index);
 					m_stream.write_unsigned_short(sprite.vertices.size());
 
 					for (auto& vertex : sprite.vertices)
@@ -110,7 +110,7 @@ namespace sc
 					SpriteInstance& instance = sprites.emplace_back();
 
 					m_stream.read_string(instance.name);
-					instance.texture_index = m_stream.read_unsigned_byte();
+					instance.texture_index = m_stream.read_unsigned_int();
 					uint16_t vertices_count = m_stream.read_unsigned_byte();
 					instance.vertices.reserve(vertices_count);
 
