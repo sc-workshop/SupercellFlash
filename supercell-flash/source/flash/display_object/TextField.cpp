@@ -44,7 +44,7 @@ namespace sc
 
 			if (tag > TAG_TEXT_FIELD_3)
 			{
-				outline_color = swf.stream.read_unsigned_int();
+				outline_color.set_value(swf.stream.read_unsigned_int());
 			}
 
 			if (tag > TAG_TEXT_FIELD_5)
@@ -106,7 +106,7 @@ namespace sc
 			if (unknown_flag)
 				tag = TAG_TEXT_FIELD_3;
 
-			if (outline_color != 0x000000FF)
+			if (outline_color.as_value() != 0x000000FF)
 				tag = TAG_TEXT_FIELD_5;
 
 			if (unknown_short != 0xFFFF || unknown_short2 != 0xFFFF)
@@ -132,7 +132,7 @@ namespace sc
 
 			if (tag == TAG_TEXT_FIELD_2 || tag == TAG_TEXT_FIELD_3) return;
 
-			swf.stream.write_unsigned_int(outline_color);
+			swf.stream.write_unsigned_int(outline_color.as_value());
 
 			if (tag == TAG_TEXT_FIELD_4 || tag == TAG_TEXT_FIELD_5) return;
 
@@ -218,7 +218,9 @@ namespace sc
 				textfield.bottom = textfield_data->bottom();
 
 				textfield.font_color.set_value(textfield_data->font_color());
-				textfield.outline_color = textfield_data->outline_color();
+
+				auto value = textfield_data->outline_color();
+				textfield.outline_color.set_value(value);
 
 				textfield.text = SWFString(
 					strings_vector->Get(

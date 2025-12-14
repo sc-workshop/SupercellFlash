@@ -57,7 +57,7 @@ namespace sc
 			bool is_outlined = false;
 			bool unknown_flag3 = false;
 
-			uint32_t outline_color = 0x000000FF;
+			wk::ColorRGBA outline_color = { 0x0, 0x0, 0x0, 0XFF };
 			bool use_device_font = false;
 			bool auto_kern = false;
 
