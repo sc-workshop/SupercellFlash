@@ -543,7 +543,7 @@ namespace sc::flash
 		Offset<Vector<uint8_t>> texture_data_off;
 		Offset<String> external_path_off;
 		Offset<sc::flash::SC2::TextureData> result;
-		wk::BufferStream texture_buffer;
+		wk::Ref<wk::Stream> texture_buffer;
 
 		SC2::TextureFormat format = SC2::TextureFormat::NONE;
 		if (swf.use_external_textures  && texture.encoding() != SWFTexture::TextureEncoding::Raw)
@@ -556,11 +556,20 @@ namespace sc::flash
 			switch (texture.encoding())
 			{
 			case SWFTexture::TextureEncoding::Raw:
-				format = SC2::TextureFormat::NONE;
+				{
+					format = SC2::TextureFormat::NONE;
+					auto& image = *std::reinterpret_pointer_cast<wk::RawImage>(texture.image());
+					texture_buffer = wk::CreateRef<wk::SharedMemoryStream>(image.data(), image.data_length());
+				}
 				break;
 
 			case SWFTexture::TextureEncoding::KhronosTexture:
-				format = SC2::TextureFormat::KhronosTexture;
+				{
+					format = SC2::TextureFormat::KhronosTexture;
+					auto& image = *std::reinterpret_pointer_cast<texture::KhronosTexture>(texture.image());
+					texture_buffer = wk::CreateRef<wk::BufferStream>();
+					image.write(*texture_buffer);
+				}
 				break;
 
 			default:
@@ -568,14 +577,14 @@ namespace sc::flash
 				{
 					SWFTexture texture_copy = texture;
 					texture_copy.encoding(SWFTexture::TextureEncoding::Raw);
-					texture_copy.save_buffer(texture_buffer, is_lowres);
-					texture_data_off = builder.CreateVector((uint8_t*)texture_buffer.data(), texture_buffer.length());
+
+					texture_buffer = wk::CreateRef<wk::BufferStream>();
+					texture_copy.save_buffer(*texture_buffer, is_lowres);
 				}
 				
 			}
 
-			if (texture_data_off.IsNull())
-				texture_data_off = builder.CreateVector((uint8_t*)texture_buffer.data(), texture_buffer.length());
+			texture_data_off = builder.CreateVector((uint8_t*)texture_buffer->data(), texture_buffer->length());
 		}
 
 		result = SC2::CreateTextureData(
