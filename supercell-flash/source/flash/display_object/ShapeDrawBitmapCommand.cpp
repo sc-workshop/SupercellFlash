@@ -22,8 +22,6 @@ namespace sc
 				vertex.u = (float)swf.stream.read_unsigned_short() / 65535.0f;
 				vertex.v = (float)swf.stream.read_unsigned_short() / 65535.0f;
 			}
-
-			create_triangle_indices(false);
 		}
 
 		void ShapeDrawBitmapCommand::save(SupercellSWF& swf) const
@@ -41,36 +39,6 @@ namespace sc
 			swf.stream.reserve(swf.stream.position() + (vertices.size() * ShapeDrawBitmapCommandVertex::Size));
 
 			write_buffer(swf.stream, true, false);
-		}
-
-		void ShapeDrawBitmapCommand::create_triangle_indices(bool advanced)
-		{
-			uint32_t triangles_count = vertices.size() - 2;
-
-			triangle_indices.resize(triangles_count * 3);
-			for (uint32_t i = 0; triangles_count > i; i++)
-			{
-				if (advanced)
-				{
-					triangle_indices[i * 3] = i;
-					triangle_indices[i * 3 + 1] = i + 1;
-					triangle_indices[i * 3 + 2] = i + 1;
-				}
-				else
-				{
-					triangle_indices[i * 3] = 0;
-					triangle_indices[i * 3 + 1] = i + 1;
-					triangle_indices[i * 3 + 2] = i + 2;
-				}
-			}
-
-			for (uint32_t i = 0; triangle_indices.size() > i; i++)
-			{
-				if (triangle_indices[i] >= vertices.size())
-				{
-					triangle_indices[i] = 0;
-				}
-			}
 		}
 
 		void ShapeDrawBitmapCommand::sort_advanced_vertices(bool forward)
@@ -166,12 +134,11 @@ namespace sc
 		bool ShapeDrawBitmapCommand::operator==(const ShapeDrawBitmapCommand& other) const
 		{
 			if (texture_index != other.texture_index) return false;
-			if (triangle_indices != other.triangle_indices) return false;
 
-			for (uint32_t i = 0; other.triangle_indices.size() > i; i++)
+			for (uint32_t i = 0; other.vertices.size() > i; i++)
 			{
-				const ShapeDrawBitmapCommandVertex& v1 = vertices[other.triangle_indices[i]];
-				const ShapeDrawBitmapCommandVertex& v2 = vertices[other.triangle_indices[i]];
+				const ShapeDrawBitmapCommandVertex& v1 = vertices[i];
+				const ShapeDrawBitmapCommandVertex& v2 = vertices[i];
 
 				if (!(v1 == v2)) return false;
 			}

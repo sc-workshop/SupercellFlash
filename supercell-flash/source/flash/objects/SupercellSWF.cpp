@@ -109,8 +109,6 @@ namespace sc
 
 		void SupercellSWF::load_sc2(wk::Stream& input)
 		{
-			//uint32_t resources_offset = 0;
-
 			// Descriptor
 			uint32_t descriptor_size = input.read_unsigned_int();
 			wk::MemoryStream descriptor_data(descriptor_size);

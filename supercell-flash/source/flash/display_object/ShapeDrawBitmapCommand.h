@@ -3,61 +3,66 @@
 #include "flash/types/SWFContainer.hpp"
 #include "core/io/stream.h"
 
-namespace sc
+namespace sc::flash
 {
-	namespace flash {
-		class SupercellSWF;
+	class SupercellSWF;
 
-		struct ShapeDrawBitmapCommandVertex
-		{
-		public:
-			static const size_t Size = ((sizeof(float) * 2) + (sizeof(uint16_t) * 2));
-		public:
-			float x;
-			float y;
+	enum class TriangulatorFunction : uint8_t {
+		Fan = 0,
+		Strip
+	};
 
-			float u;
-			float v;
+	struct ShapeDrawBitmapCommandVertex
+	{
+	public:
+		static const size_t Size = ((sizeof(float) * 2) + (sizeof(uint16_t) * 2));
+	public:
+		float x;
+		float y;
 
-			bool operator==(const ShapeDrawBitmapCommandVertex& other) const;
-			bool uv_equal(const ShapeDrawBitmapCommandVertex& other) const;
-			bool xy_equal(const ShapeDrawBitmapCommandVertex& other) const;
-		};
+		float u;
+		float v;
 
-		typedef SWFVector<ShapeDrawBitmapCommandVertex, uint32_t> ShapeDrawBitmapCommandVertexArray;
-		typedef SWFVector<uint32_t, uint32_t> ShapeDrawBitmapCommandTrianglesArray;
+		bool operator==(const ShapeDrawBitmapCommandVertex& other) const;
+		bool uv_equal(const ShapeDrawBitmapCommandVertex& other) const;
+		bool xy_equal(const ShapeDrawBitmapCommandVertex& other) const;
+	};
 
-		class ShapeDrawBitmapCommand
-		{
-		public:
-			ShapeDrawBitmapCommand() {};
-			virtual ~ShapeDrawBitmapCommand() = default;
-			ShapeDrawBitmapCommand(const ShapeDrawBitmapCommand&) = default;
-			ShapeDrawBitmapCommand(ShapeDrawBitmapCommand&&) = default;
-			ShapeDrawBitmapCommand& operator=(const ShapeDrawBitmapCommand&) = default;
-			ShapeDrawBitmapCommand& operator=(ShapeDrawBitmapCommand&&) = default;
+	typedef SWFVector<ShapeDrawBitmapCommandVertex, uint32_t> ShapeDrawBitmapCommandVertexArray;
+	typedef SWFVector<uint32_t, uint32_t> ShapeDrawBitmapCommandTrianglesArray;
 
-		public:
-			uint32_t texture_index = 0;
-			ShapeDrawBitmapCommandVertexArray vertices;
-			ShapeDrawBitmapCommandTrianglesArray triangle_indices;
+	class ShapeDrawBitmapCommand
+	{
+	public:
+		ShapeDrawBitmapCommand() {};
+		virtual ~ShapeDrawBitmapCommand() = default;
+		ShapeDrawBitmapCommand(const ShapeDrawBitmapCommand&) = default;
+		ShapeDrawBitmapCommand(ShapeDrawBitmapCommand&&) = default;
+		ShapeDrawBitmapCommand& operator=(const ShapeDrawBitmapCommand&) = default;
+		ShapeDrawBitmapCommand& operator=(ShapeDrawBitmapCommand&&) = default;
 
-		public:
-			void create_triangle_indices(bool advanced);
+	public:
+		// Bitmap texture atlas index
+		uint32_t texture_index = 0;
 
-		public:
-			void sort_advanced_vertices(bool forward = false);
+		// Bitmap vertices
+		ShapeDrawBitmapCommandVertexArray vertices;
 
-		public:
-			virtual void load(SupercellSWF& swf, uint8_t tag);
-			virtual void save(SupercellSWF& swf) const;
+		// Read-only property with vertex triangulation method
+		TriangulatorFunction type = TriangulatorFunction::Fan;
 
-			virtual uint8_t tag(SupercellSWF& swf) const;
+	public:
+		void sort_advanced_vertices(bool forward = false);
 
-			void write_buffer(wk::Stream& stream, bool normalized = false, bool ordered = false) const;
+	public:
+		virtual void load(SupercellSWF& swf, uint8_t tag);
+		virtual void save(SupercellSWF& swf) const;
 
-		public:
-			bool operator==(const ShapeDrawBitmapCommand& other) const;
-		};
-	}
+		virtual uint8_t tag(SupercellSWF& swf) const;
+
+		void write_buffer(wk::Stream& stream, bool normalized = false, bool ordered = false) const;
+
+	public:
+		bool operator==(const ShapeDrawBitmapCommand& other) const;
+	};
 }

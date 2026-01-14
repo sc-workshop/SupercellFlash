@@ -35,6 +35,8 @@ namespace sc
 				case TAG_SHAPE_DRAW_BITMAP_COMMAND_2:
 				case TAG_SHAPE_DRAW_BITMAP_COMMAND_3:
 					commands[commands_total].load(swf, command_tag);
+					commands[commands_total].type = TriangulatorFunction::Fan;
+
 					vertices_count += (uint8_t)commands[commands_total].vertices.size();
 					if (vertices_count < vertices_total)
 					{
@@ -126,6 +128,7 @@ namespace sc
 					auto command_data = commands_vector->Get(c);
 					ShapeDrawBitmapCommand& command = shape.commands.emplace_back();
 					command.texture_index = command_data->texture_index();
+					command.type = TriangulatorFunction::Strip;
 
 					uint32_t vertex_count = command_data->points_count();
 					command.vertices.reserve(vertex_count);
@@ -142,8 +145,6 @@ namespace sc
 						vertex.u = (float)(*(const uint16_t*)(vertex_data + (sizeof(float) * 2))) / 0xFFFF;
 						vertex.v = (float)(*(const uint16_t*)(vertex_data + (sizeof(float) * 2) + sizeof(uint16_t))) / 0xFFFF;
 					}
-
-					command.create_triangle_indices(true);
 				}
 			}
 		}

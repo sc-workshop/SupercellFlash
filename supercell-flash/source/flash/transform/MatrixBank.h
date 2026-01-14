@@ -11,36 +11,34 @@
 
 #include "core/io/stream.h"
 
-namespace sc
+namespace sc::flash
 {
-	namespace flash {
-		class SupercellSWF;
+	class SupercellSWF;
 
-		struct MatrixBank
-		{
-		public:
-			MatrixBank(uint16_t matrix_count = 0, uint16_t color_transforms_count = 0);
-			virtual ~MatrixBank() = default;
-			MatrixBank(const MatrixBank&) = default;
-			MatrixBank(MatrixBank&&) = default;
-			MatrixBank& operator=(const MatrixBank&) = default;
-			MatrixBank& operator=(MatrixBank&&) = default;
+	struct MatrixBank
+	{
+	public:
+		MatrixBank(uint16_t matrix_count = 0, uint16_t color_transforms_count = 0);
+		virtual ~MatrixBank() = default;
+		MatrixBank(const MatrixBank&) = default;
+		MatrixBank(MatrixBank&&) = default;
+		MatrixBank& operator=(const MatrixBank&) = default;
+		MatrixBank& operator=(MatrixBank&&) = default;
 
-		public:
-			SWFVector<Matrix2D> matrices;
-			SWFVector<ColorTransform> color_transforms;
-			uint8_t* compressed_clip_data = nullptr;
-			int32_t compressed_clip_size = -1;
+	public:
+		SWFVector<Matrix2D> matrices;
+		SWFVector<ColorTransform> color_transforms;
+		uint8_t* compressed_clip_data = nullptr;
+		int32_t compressed_clip_size = -1;
 
-		public:
-			bool get_matrix_index(const Matrix2D& matrix, uint16_t& index) const;
-			bool get_colorTransform_index(const ColorTransform& color, uint16_t& index) const;
+	public:
+		bool get_matrix_index(const Matrix2D& matrix, uint16_t& index) const;
+		bool get_colorTransform_index(const ColorTransform& color, uint16_t& index) const;
 
-			virtual uint8_t tag(SupercellSWF& swf) const;
+		virtual uint8_t tag(SupercellSWF& swf) const;
 
-		public:
-			static void load(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, const SC2::DataStorage* storage);
-			static void load_external(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, wk::Stream& data);
-		};
-	}
+	public:
+		static void load(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, const SC2::DataStorage* storage);
+		static void load_external(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, wk::Stream& data);
+	};
 }

@@ -2,30 +2,29 @@
 
 #include <core/math/color_rgb.h>
 
-namespace sc
+namespace sc::flash
 {
-	namespace flash {
-		class SupercellSWF;
+	class SupercellSWF;
 
-		struct ColorTransform
-		{
-		public:
-			ColorTransform() {};
+	struct ColorTransform
+	{
+	public:
+		ColorTransform() {};
 
-		public:
-			uint8_t alpha = 255;
+	public:
+		uint8_t alpha = 255;
 
-			wk::ColorRGB add{ 0, 0, 0 };
-			wk::ColorRGB multiply{ 255, 255, 255 };
+		wk::ColorRGB add{ 0, 0, 0 };
+		wk::ColorRGB multiply{ 255, 255, 255 };
 
-		public:
-			void load(SupercellSWF& swf);
-			void save(SupercellSWF& swf) const;
+	public:
+		void load(SupercellSWF& swf);
+		void save(SupercellSWF& swf) const;
 
-			uint8_t tag(SupercellSWF& swf) const;
+		uint8_t tag(SupercellSWF& swf) const;
 
-		public:
-			bool operator==(const ColorTransform& color) const;
-		};
-	}
+	public:
+		ColorTransform operator*(const ColorTransform& color) const;
+		bool operator==(const ColorTransform& color) const;
+	};
 }
