@@ -606,8 +606,6 @@ namespace sc
 				size_t position = stream.write_tag_header(texture.tag(*this, has_data));
 				if (use_external_textures && has_data)
 				{
-					texture.encoding(SWFTexture::TextureEncoding::KhronosTexture);
-
 					// Path String In Tag
 					fs::path filename = texture.save_to_external_file(*this, i, is_lowres);
 
