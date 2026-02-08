@@ -490,16 +490,17 @@ namespace sc
 							element.matrix_index = out_decompressed[k * 3 + 1];
 							element.colorTransform_index = out_decompressed[k * 3 + 2];
 
-							if (element.colorTransform_index != 0xFFFF && element.colorTransform_index >= swf.matrixBanks[movieclip.bank_index].color_transforms.size() ||
-								element.instance_index >= children_count) {
-								abort();  // FIXME: bro :skull:
+							if (element.colorTransform_index != 0xFFFF && (element.colorTransform_index >= swf.matrixBanks[movieclip.bank_index].color_transforms.size() ||
+                                                                           element.instance_index >= children_count)) {
+                                throw wk::Exception("ColorTransform index out of range");
 							}
+                            
 							if (element.matrix_index != 0xFFFF && element.matrix_index >= swf.matrixBanks[movieclip.bank_index].matrices.size()) {
-								abort();  // FIXME: bro :skull:
+                                throw wk::Exception("Matrices index out of range");
 							}
 						}
 
-						movieclip.frames[frame_index].elements_count = decompressed_size_shorts / 3;
+						movieclip.frames[frame_index].elements_count = (uint32_t)decompressed_size_shorts / 3;
 					}
 				}
 			}
@@ -517,7 +518,8 @@ namespace sc
 				stream.write_unsigned_short(element.colorTransform_index);
 			}
 		}
-		int MovieClip::decode_compressed_frame_data(unsigned short* element_data, unsigned short* element_data_start, unsigned short* element_data_end, unsigned short* result)
+    
+		size_t MovieClip::decode_compressed_frame_data(unsigned short* element_data, unsigned short* element_data_start, unsigned short* element_data_end, unsigned short* result)
 		{
 			unsigned short* v7 = result;
 			unsigned short* v8 = &result[COMPRESSED_CLIP_DATA_MAX_SIZE];
@@ -551,7 +553,6 @@ namespace sc
 						if ((v17 & 3) != 0)
 						{
 							int v23 = (v17 & 7) - 1;
-							// printf("switch: %d\n", v23 + 1);
 							switch (v17 & 7)
 							{
 							case 1:

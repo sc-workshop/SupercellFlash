@@ -50,7 +50,7 @@ namespace sc::flash
 
 		if (!required && target.empty()) return 0;
 
-		auto it = std::find(std::execution::par_unseq, strings.begin() + 1, strings.end(), target);
+		auto it = wk::find_parallel(strings.begin() + 1, strings.end(), target);
 		if (it != strings.end())
 		{
 			return (uint32_t)std::distance(strings.begin(), it);
@@ -65,7 +65,7 @@ namespace sc::flash
 
 	uint32_t SupercellSWF2CompileTable::get_rect_ref(const wk::RectF& rect)
 	{
-		auto it = std::find_if(std::execution::par_unseq, rectangles.begin(), rectangles.end(), [&rect](const SC2::Typing::Rect& other)
+		auto it = wk::find_if_parallel(rectangles.begin(), rectangles.end(), [&rect](const SC2::Typing::Rect& other)
 			{
 				return rect.left == other.left() && rect.right == other.right() && rect.top == other.top() && rect.bottom == other.bottom();
 			}

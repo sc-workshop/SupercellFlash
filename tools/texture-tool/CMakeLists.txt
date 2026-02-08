@@ -12,7 +12,7 @@ wk_include_json()
 wk_include_argparse()
 
 set_target_properties(${CLI_TARGET} PROPERTIES
-    FOLDER SupercellSDK/tools
+    FOLDER Supercell/CLI
 )
 
 target_include_directories(${CLI_TARGET} PUBLIC source)

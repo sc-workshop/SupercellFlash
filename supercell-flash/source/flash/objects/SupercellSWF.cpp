@@ -8,6 +8,7 @@
 #include "flash/SC2/ExternalMatrixBank_generated.h"
 
 #include "core/asset_manager/asset_manager.h"
+#include "core/algorithm/find.hpp"
 
 namespace fs = std::filesystem;
 
@@ -657,7 +658,7 @@ namespace sc
 
 		ExportName* SupercellSWF::GetExportName(const SWFString& name)
 		{
-			auto it = std::find_if(std::execution::par_unseq, exports.begin(), exports.end(), [&name](const ExportName& other)
+			auto it = wk::find_if_parallel(exports.begin(), exports.end(), [&name](const ExportName& other)
 				{
 					return other.name == name;
 				});
