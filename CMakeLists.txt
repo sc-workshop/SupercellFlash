@@ -19,3 +19,5 @@ if(SC_FLASH_BUILD_TOOLS)
     add_subdirectory(tools/test-tool)
     add_subdirectory(tools/texture-tool)
 endif()
+
+include(CPack)

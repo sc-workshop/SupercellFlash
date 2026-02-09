@@ -23,3 +23,8 @@ set_target_properties(${CLI_TARGET} PROPERTIES
     FOLDER supercell-sdk/cli
     OUTPUT_NAME "SCTex"
 )
+
+install(
+    TARGETS ${CLI_TARGET} 
+    RUNTIME DESTINATION bin
+)

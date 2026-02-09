@@ -13,3 +13,8 @@ set_target_properties(${CLI_TARGET} PROPERTIES
 
 target_link_libraries(${CLI_TARGET} PRIVATE supercell::flash)
 wk_project_setup(${CLI_TARGET})
+
+install(
+    TARGETS ${CLI_TARGET}
+    RUNTIME DESTINATION bin
+)
