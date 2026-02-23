@@ -2,24 +2,22 @@
 
 #include <core/math/matrix2d.h>
 
-namespace sc
+namespace sc::flash
 {
-	namespace flash {
-		class SupercellSWF;
+	class SupercellSWF;
 
-		struct Matrix2D : public wk::Matrix2D
-		{
-		public:
-			Matrix2D() {};
+	struct Matrix2D : public wk::Matrix2D
+	{
+	public:
+		Matrix2D() {};
 
-		public:
-			void load(SupercellSWF& swf, uint8_t tag);
-			void save(SupercellSWF& swf) const;
+	public:
+		void load(SupercellSWF& swf, uint8_t tag);
+		void save(SupercellSWF& swf) const;
 
-			uint8_t tag(SupercellSWF& swf) const;
+		uint8_t tag(SupercellSWF& swf) const;
 
-		public:
-			bool operator==(const Matrix2D& matrix) const;
-		};
-	}
+	public:
+		bool operator==(const Matrix2D& matrix) const;
+	};
 }

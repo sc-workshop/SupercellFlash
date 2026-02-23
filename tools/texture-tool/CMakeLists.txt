@@ -12,7 +12,7 @@ wk_include_json()
 wk_include_argparse()
 
 set_target_properties(${CLI_TARGET} PROPERTIES
-    FOLDER SupercellSDK/tools
+    FOLDER supercell-sdk/cli
 )
 
 target_include_directories(${CLI_TARGET} PUBLIC source)
@@ -20,6 +20,11 @@ target_include_directories(${CLI_TARGET} PUBLIC source)
 target_link_libraries(${CLI_TARGET} PRIVATE supercell::flash)
 
 set_target_properties(${CLI_TARGET} PROPERTIES
-    FOLDER Supercell/CLI
+    FOLDER supercell-sdk/cli
     OUTPUT_NAME "SCTex"
+)
+
+install(
+    TARGETS ${CLI_TARGET} 
+    RUNTIME DESTINATION bin
 )

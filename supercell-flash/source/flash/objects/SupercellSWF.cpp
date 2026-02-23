@@ -8,6 +8,7 @@
 #include "flash/SC2/ExternalMatrixBank_generated.h"
 
 #include "core/asset_manager/asset_manager.h"
+#include "core/algorithm/find.hpp"
 
 namespace fs = std::filesystem;
 
@@ -109,8 +110,6 @@ namespace sc
 
 		void SupercellSWF::load_sc2(wk::Stream& input)
 		{
-			//uint32_t resources_offset = 0;
-
 			// Descriptor
 			uint32_t descriptor_size = input.read_unsigned_int();
 			wk::MemoryStream descriptor_data(descriptor_size);
@@ -608,8 +607,6 @@ namespace sc
 				size_t position = stream.write_tag_header(texture.tag(*this, has_data));
 				if (use_external_textures && has_data)
 				{
-					texture.encoding(SWFTexture::TextureEncoding::KhronosTexture);
-
 					// Path String In Tag
 					fs::path filename = texture.save_to_external_file(*this, i, is_lowres);
 
@@ -661,7 +658,7 @@ namespace sc
 
 		ExportName* SupercellSWF::GetExportName(const SWFString& name)
 		{
-			auto it = std::find_if(std::execution::par_unseq, exports.begin(), exports.end(), [&name](const ExportName& other)
+			auto it = wk::find_if_parallel(exports.begin(), exports.end(), [&name](const ExportName& other)
 				{
 					return other.name == name;
 				});

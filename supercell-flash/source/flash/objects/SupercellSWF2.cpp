@@ -50,7 +50,7 @@ namespace sc::flash
 
 		if (!required && target.empty()) return 0;
 
-		auto it = std::find(std::execution::par_unseq, strings.begin() + 1, strings.end(), target);
+		auto it = wk::find_parallel(strings.begin() + 1, strings.end(), target);
 		if (it != strings.end())
 		{
 			return (uint32_t)std::distance(strings.begin(), it);
@@ -65,7 +65,7 @@ namespace sc::flash
 
 	uint32_t SupercellSWF2CompileTable::get_rect_ref(const wk::RectF& rect)
 	{
-		auto it = std::find_if(std::execution::par_unseq, rectangles.begin(), rectangles.end(), [&rect](const SC2::Typing::Rect& other)
+		auto it = wk::find_if_parallel(rectangles.begin(), rectangles.end(), [&rect](const SC2::Typing::Rect& other)
 			{
 				return rect.left == other.left() && rect.right == other.right() && rect.top == other.top() && rect.bottom == other.bottom();
 			}
@@ -543,7 +543,7 @@ namespace sc::flash
 		Offset<Vector<uint8_t>> texture_data_off;
 		Offset<String> external_path_off;
 		Offset<sc::flash::SC2::TextureData> result;
-		wk::BufferStream texture_buffer;
+		wk::Ref<wk::Stream> texture_buffer;
 
 		SC2::TextureFormat format = SC2::TextureFormat::NONE;
 		if (swf.use_external_textures  && texture.encoding() != SWFTexture::TextureEncoding::Raw)
@@ -556,11 +556,20 @@ namespace sc::flash
 			switch (texture.encoding())
 			{
 			case SWFTexture::TextureEncoding::Raw:
-				format = SC2::TextureFormat::NONE;
+				{
+					format = SC2::TextureFormat::NONE;
+					auto& image = *std::reinterpret_pointer_cast<wk::RawImage>(texture.image());
+					texture_buffer = wk::CreateRef<wk::SharedMemoryStream>(image.data(), image.data_length());
+				}
 				break;
 
 			case SWFTexture::TextureEncoding::KhronosTexture:
-				format = SC2::TextureFormat::KhronosTexture;
+				{
+					format = SC2::TextureFormat::KhronosTexture;
+					auto& image = *std::reinterpret_pointer_cast<texture::KhronosTexture>(texture.image());
+					texture_buffer = wk::CreateRef<wk::BufferStream>();
+					image.write(*texture_buffer);
+				}
 				break;
 
 			default:
@@ -568,8 +577,9 @@ namespace sc::flash
 				{
 					SWFTexture texture_copy = texture;
 					texture_copy.encoding(SWFTexture::TextureEncoding::Raw);
-					texture_copy.save_buffer(texture_buffer, is_lowres);
-					texture_data_off = builder.CreateVector((uint8_t*)texture_buffer.data(), texture_buffer.length());
+
+					texture_buffer = wk::CreateRef<wk::BufferStream>();
+					texture_copy.save_buffer(*texture_buffer, is_lowres);
 				}
 				
 			}

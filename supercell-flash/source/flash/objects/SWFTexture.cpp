@@ -83,7 +83,7 @@ namespace sc
 				break;
 
 			case SWFTexture::TextureEncoding::KhronosTexture:
-				m_image = CreateRef<KhronosTexture1>(*target_image, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
+				m_image = CreateRef<KhronosTexture1>(*target_image, KhronosTexture::glInternalFormat::COMPRESSED_RGBA_ASTC_4x4);
 				break;
 
 			case SWFTexture::TextureEncoding::SupercellTexture:
@@ -322,7 +322,7 @@ namespace sc
 					{
 					case SWFTexture::TextureEncoding::KhronosTexture:
 					{
-						KhronosTexture1 compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4);
+						KhronosTexture1 compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::COMPRESSED_RGBA_ASTC_4x4);
 						compressed_lowres.write(stream);
 					}
 						break;

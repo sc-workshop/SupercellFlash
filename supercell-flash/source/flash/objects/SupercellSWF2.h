@@ -5,6 +5,7 @@
 #include "flash/objects/SWFTexture.h"
 #include "core/io/buffer_stream.h"
 #include "core/math/rect.h"
+#include "core/algorithm/find.hpp"
 
 #include "flash/SC2/DataStorage_generated.h"
 #include "flash/SC2/FileDescriptor_generated.h"
