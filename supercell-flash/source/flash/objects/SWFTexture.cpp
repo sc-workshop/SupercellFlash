@@ -10,6 +10,10 @@ using namespace wk;
 namespace sc
 {
 	namespace flash {
+		// ASTC 4x4 by default
+		KhronosTexture::glInternalFormat SWFTexture::KhronosCompressionFormat = KhronosTexture::glInternalFormat::COMPRESSED_RGBA_ASTC_4x4;
+		ScPixel::Type SWFTexture::SupercellCompressionFormat = ScPixel::Type::ASTC_RGBA8_4x4;
+
 		const SWFVector<SWFTexture::PixelFormat, uint8_t> SWFTexture::pixel_format_table =
 		{
 				SWFTexture::PixelFormat::RGBA8,		// 0
@@ -83,11 +87,11 @@ namespace sc
 				break;
 
 			case SWFTexture::TextureEncoding::KhronosTexture:
-				m_image = CreateRef<KhronosTexture1>(*target_image, KhronosTexture::glInternalFormat::COMPRESSED_RGBA_ASTC_4x4);
+				m_image = CreateRef<KhronosTexture1>(*target_image, SWFTexture::KhronosCompressionFormat);
 				break;
 
 			case SWFTexture::TextureEncoding::SupercellTexture:
-				m_image = CreateRef<SupercellTexture>(*target_image, ScPixel::Type::ASTC_RGBA8_4x4, false);
+				m_image = CreateRef<SupercellTexture>(*target_image, SWFTexture::SupercellCompressionFormat, false);
 				break;
 
 			default:
@@ -322,16 +326,16 @@ namespace sc
 					{
 					case SWFTexture::TextureEncoding::KhronosTexture:
 					{
-						KhronosTexture1 compressed_lowres(lowres_texture, KhronosTexture::glInternalFormat::COMPRESSED_RGBA_ASTC_4x4);
+						KhronosTexture1 compressed_lowres(lowres_texture, SWFTexture::KhronosCompressionFormat);
 						compressed_lowres.write(stream);
 					}
-						break;
+					break;
 					case SWFTexture::TextureEncoding::SupercellTexture:
 					{
-						SupercellTexture compressed_lowres(lowres_texture, ScPixel::Type::ASTC_RGBA8_4x4);
+						SupercellTexture compressed_lowres(lowres_texture, SWFTexture::SupercellCompressionFormat);
 						compressed_lowres.write(stream);
 					}
-						break;
+					break;
 					default:
 						break;
 					}
@@ -609,9 +613,9 @@ namespace sc
 				auto texture_set = textures_vector->Get(i);
 				swf.use_low_resolution = texture_set->lowres();
 				swf.use_multi_resolution = swf.use_low_resolution;
-				
-				auto selected_texture = swf.low_memory_usage_mode && texture_set->lowres() ? 
-					texture_set->lowres() : 
+
+				auto selected_texture = swf.low_memory_usage_mode && texture_set->lowres() ?
+					texture_set->lowres() :
 					texture_set->highres();
 
 				if (selected_texture->external_texture())

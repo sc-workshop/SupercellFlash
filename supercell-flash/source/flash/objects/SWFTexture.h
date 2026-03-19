@@ -53,6 +53,11 @@ namespace sc
 			static const SWFVector<PixelFormat, uint8_t> pixel_format_table;
 			static const SWFVector<wk::Image::PixelDepth, uint8_t> pixel_depth_table;
 
+			// Default compression settings for textures. Used when compressing textures to ktx/sctx.
+		public:
+			static texture::KhronosTexture::glInternalFormat KhronosCompressionFormat;
+			static texture::ScPixel::Type SupercellCompressionFormat;
+
 		public:
 			TextureEncoding encoding() const;
 			PixelFormat pixel_format() const;
