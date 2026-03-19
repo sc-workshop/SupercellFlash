@@ -590,10 +590,18 @@ namespace sc::flash
 			}
 		}
 
+		uint16_t target_width = texture.image()->width();
+		uint16_t target_height = texture.image()->height();
+		if (is_lowres)
+		{
+			target_width = (uint16_t)(round(target_width / 2));
+			target_height = (uint16_t)(round(target_height / 2));
+		}
+
 		result = SC2::CreateTextureData(
 			builder, format, (uint8_t)texture.pixel_format(),
-			texture.image()->width(),
-			texture.image()->height(),
+			target_width,
+			target_height,
 			texture_data_off,
 			external_path_off
 		);
