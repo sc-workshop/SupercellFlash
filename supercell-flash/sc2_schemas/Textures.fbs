@@ -1,6 +1,6 @@
 namespace sc.flash.SC2;
 
-enum TextureFormat : ubyte(bit_flags) {
+enum TextureFormat : uint(bit_flags) {
     Unk1,
     Unk2,
     Unk3,
