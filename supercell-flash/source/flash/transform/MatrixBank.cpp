@@ -9,6 +9,16 @@
 #define floatEqual(a, b) (fabs(a - b) <= ((fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * 0.001f))
 
 namespace sc::flash {
+    /// @brief Extract N-bits number from packed 48-bit
+    static WK_INLINE int32_t extract_bits(uint64_t packed, int bits, int shift) {
+        return (int32_t) ((int64_t) (packed << (64 - bits - shift)) >> (64 - bits));
+    }
+
+    /// @brief Create a packed number
+    static WK_INLINE uint64_t make_packed(uint16_t a, uint16_t b, uint16_t c) {
+        return ((uint64_t) c << 32) | ((uint64_t) b << 16) | (uint64_t) a;
+    }
+
     MatrixBank::MatrixBank(uint16_t matrix_count, uint16_t color_transforms_count) {
         matrices.resize(matrix_count);
         color_transforms.resize(color_transforms_count);
@@ -127,7 +137,7 @@ namespace sc::flash {
         swf.matrixBanks.resize(banks->size());
         for (const auto* bank : *banks) {
             auto& target = swf.matrixBanks[bank->index()];
-            wk::MemoryStream bank_data(bank->decompressed_data_size());
+            wk::MemoryStream bank_buffer(bank->decompressed_data_size());
 
             {
                 wk::MemoryStream compressed(bank->compressed_data_size());
@@ -136,8 +146,8 @@ namespace sc::flash {
                 compressed.seek(0);
 
                 ZstdDecompressor decompressor;
-                decompressor.decompress(compressed, bank_data);
-                bank_data.seek(0);
+                decompressor.decompress(compressed, bank_buffer);
+                bank_buffer.seek(0);
             }
 
             // Matrices
@@ -155,184 +165,185 @@ namespace sc::flash {
                 for (size_t i = 0; bank->float_matrix_count() > i; i++) {
                     auto& matrix = target.matrices[i];
 
-                    matrix.a = bank_data.read_float();
-                    matrix.b = bank_data.read_float();
-                    matrix.c = bank_data.read_float();
-                    matrix.d = bank_data.read_float();
+                    matrix.a = bank_buffer.read_float();
+                    matrix.b = bank_buffer.read_float();
+                    matrix.c = bank_buffer.read_float();
+                    matrix.d = bank_buffer.read_float();
 
-                    matrix.tx = bank_data.read_float();
-                    matrix.ty = bank_data.read_float();
+                    matrix.tx = bank_buffer.read_float();
+                    matrix.ty = bank_buffer.read_float();
                 }
 
                 // Compressed matrices
-                // TODO: refactor this
-                unsigned short* bank_data_ptr = (unsigned short*) bank_data.data();
+                uint16_t* bank_data = reinterpret_cast<uint16_t*>(bank_buffer.data());
+                size_t float_matrices_size = static_cast<size_t>(bank->float_matrix_count()) * 24;
+                size_t compressed_matrices_size = static_cast<size_t>(bank->compressed_matrix_data_size()) * 4;
+                size_t compressed_offsets = float_matrices_size;
+                size_t compressed_data_offset = float_matrices_size + compressed_matrices_size;
+
+                uint16_t* compressed_data = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(bank_data) + compressed_data_offset);
                 for (size_t i = uncompressed_matrices_count; total_matrices_count > i; i += 16) {
                     size_t block_index = i >> 4;
-                    int position = *(int*) ((unsigned char*) bank_data_ptr + bank->float_matrix_count() * 24 + block_index * 4);
+                    int32_t block_offset = *reinterpret_cast<int32_t*>(reinterpret_cast<uint8_t*>(bank_data) + compressed_offsets + block_index * 4);
 
-                    unsigned short* compressed_matrix_data =
-                        (unsigned short*) ((unsigned char*) bank_data_ptr + bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4);
-                    int v16 = position >> 13;
-                    unsigned short* v17 = &compressed_matrix_data[(position & 0x1FFF) * 6];
-                    unsigned int v18 = *v17;
-                    unsigned int v19 = v17[1];
-                    unsigned int v20 = v17[2];
-                    unsigned int v21 = v17[3];
-                    unsigned int v22 = v17[4];
-                    unsigned int v23 = v17[5];
+                    int32_t offset = block_offset >> 13;
+                    int32_t base_index = block_offset & 0x1FFF;
+
+                    uint16_t* base_matrix = &compressed_data[base_index * 6];
+                    uint32_t a = base_matrix[0];
+                    uint32_t b = base_matrix[1];
+                    uint32_t c = base_matrix[2];
+                    uint32_t d = base_matrix[3];
+                    uint32_t tx = base_matrix[4];
+                    uint32_t ty = base_matrix[5];
+
                     for (int sub_index = 0; sub_index < 16 && i + sub_index < total_matrices_count; sub_index++) {
-                        unsigned short v33 = compressed_matrix_data[v16];
-                        if ((v33 & 3) != 0) {
-                            unsigned short a3 = compressed_matrix_data[v16 + 1];
-                            unsigned short v34 = compressed_matrix_data[v16 + 2];
-                            unsigned short a1;
-                            unsigned short v35;
-                            switch (v33 & 0xF) {
+                        uint16_t flags = compressed_data[offset];
+
+                        // Simple case: Translation only, 7 bits for each value
+                        if ((flags & 3) == 0) {
+                            tx += extract_bits(flags, 7, 2);
+                            ty += extract_bits(flags, 7, 9);
+                            offset++;
+                        } else {
+                            uint16_t low_bits = compressed_data[offset + 1];
+                            uint16_t high_bits = compressed_data[offset + 2];
+
+                            uint64_t packed = make_packed(flags, low_bits, high_bits);
+                            switch (flags & 0xF) {
+                                // Translation (High precision: 14 bits for each value)
                                 case 1u:
-                                    v22 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 14 - 4)) >> (64 - 14));
-                                    v23 += (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 14 - 18)) >>
-                                                      (64 - 14));
-                                    v16 += 2;
+                                    tx += extract_bits(packed, 14, 4);
+                                    ty += extract_bits(packed, 14, 18);
+                                    offset += 2;
                                     break;
+
+                                // Translation + Scale (Low precision: 7 bits for each value)
                                 case 2u:
-                                    v18 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 7 - 4)) >> (64 - 7));
-                                    v21 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 7 - 11)) >> (64 - 7));
-                                    v22 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 7 - 18)) >> (64 - 7));
-                                    v23 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 7 - 25)) >> (64 - 7));
-                                    v16 += 2;
+                                    a += extract_bits(packed, 7, 4);
+                                    d += extract_bits(packed, 7, 11);
+                                    tx += extract_bits(packed, 7, 18);
+                                    ty += extract_bits(packed, 7, 25);
+                                    offset += 2;
                                     break;
+
+                                // Translation + Scale (Mid precision: 11 bits for each value)
                                 case 3u:
-                                    v18 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 11 - 4)) >> (64 - 11));
-                                    v21 += (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 11 - 15)) >>
-                                                      (64 - 11));
-                                    v22 += (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 11 - 26)) >>
-                                                      (64 - 11));
-                                    v23 += (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 11 - 37)) >>
-                                                      (64 - 11));
-                                    v16 += 3;
+                                    a += extract_bits(packed, 11, 4);
+                                    d += extract_bits(packed, 11, 15);
+                                    tx += extract_bits(packed, 11, 26);
+                                    ty += extract_bits(packed, 11, 37);
+                                    offset += 3;
                                     break;
+
+                                // Translation + Scale + Skew (Low precision: 7 bits for scale and skew, 8 bits for translation)
                                 case 5u:
-                                    v18 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 7 - 4)) >> (64 - 7));
-                                    v19 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 7 - 11)) >> (64 - 7));
-                                    v20 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 7 - 18)) >> (64 - 7));
-                                    v21 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 7 - 25)) >> (64 - 7));
-                                    v22 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 8 - 32)) >> (64 - 8));
-                                    v23 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 8 - 40)) >> (64 - 8));
-                                    v16 += 3;
+                                    a += extract_bits(packed, 7, 4);
+                                    b += extract_bits(packed, 7, 11);
+                                    c += extract_bits(packed, 7, 18);
+                                    d += extract_bits(packed, 7, 25);
+                                    tx += extract_bits(packed, 8, 32);
+                                    ty += extract_bits(packed, 8, 40);
+                                    offset += 3;
                                     break;
-                                case 6u:
-                                    a1 = compressed_matrix_data[v16 + 3];
-                                    v18 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 10 - 4)) >> (64 - 10));
-                                    v19 += (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 10 - 14)) >>
-                                                      (64 - 10));
-                                    v20 += (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 10 - 24)) >>
-                                                      (64 - 10));
-                                    v21 += (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 10 - 34)) >>
-                                                      (64 - 10));
-                                    v22 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) a1 << 32) | ((uint64_t) v34 << 16) | (uint64_t) a3) << (64 - 10 - 28)) >> (64 - 10));
-                                    v23 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) a1 << 32) | ((uint64_t) v34 << 16) | (uint64_t) a3) << (64 - 10 - 38)) >> (64 - 10));
-                                    v16 += 4;
-                                    break;
-                                case 7u:
-                                    a1 = compressed_matrix_data[v16 + 3];
-                                    v35 = compressed_matrix_data[v16 + 4];
-                                    v18 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 12 - 4)) >> (64 - 12));
-                                    v19 += (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 12 - 16)) >>
-                                                      (64 - 12));
-                                    v20 += (int32_t) ((int64_t) ((((uint64_t) v34 << 32) | ((uint64_t) a3 << 16) | (uint64_t) v33) << (64 - 12 - 28)) >>
-                                                      (64 - 12));
-                                    v21 +=
-                                        (int32_t) ((int64_t) ((((uint64_t) v35 << 32) | ((uint64_t) a1 << 16) | (uint64_t) v34) << (64 - 12 - 8)) >> (64 - 12));
-                                    v22 += (int32_t) ((int64_t) ((((uint64_t) v35 << 32) | ((uint64_t) a1 << 16) | (uint64_t) v34) << (64 - 14 - 20)) >>
-                                                      (64 - 14));
-                                    v23 += (int32_t) ((int64_t) ((((uint64_t) v35 << 32) | ((uint64_t) a1 << 16) | (uint64_t) v34) << (64 - 14 - 34)) >>
-                                                      (64 - 14));
-                                    v16 += 5;
-                                    break;
+
+                                // Translation + Scale + Skew (Mid precision: 10 bits for each value)
+                                case 6u: {
+                                    uint16_t mid_bits = compressed_data[offset + 3];
+                                    uint64_t translation_bits = make_packed(low_bits, high_bits, mid_bits);
+
+                                    a += extract_bits(packed, 10, 4);
+                                    b += extract_bits(packed, 10, 14);
+                                    c += extract_bits(packed, 10, 24);
+                                    d += extract_bits(packed, 10, 34);
+                                    tx += extract_bits(translation_bits, 10, 28);
+                                    ty += extract_bits(translation_bits, 10, 38);
+
+                                    offset += 4;
+                                } break;
+
+                                // Translation + Scale + Skew (High precision: 12 bits for scale and skew, 14 bits for translation)
+                                case 7u: {
+                                    uint16_t mid_bits = compressed_data[offset + 3];
+                                    uint16_t high_bits = compressed_data[offset + 4];
+
+                                    uint64_t translation_bits = make_packed(high_bits, mid_bits, high_bits);
+
+                                    a += extract_bits(packed, 12, 4);
+                                    b += extract_bits(packed, 12, 16);
+                                    c += extract_bits(packed, 12, 28);
+                                    d += extract_bits(translation_bits, 12, 8);
+                                    tx += extract_bits(translation_bits, 14, 20);
+                                    ty += extract_bits(translation_bits, 14, 34);
+
+                                    offset += 5;
+                                }
+                                break;
+
+                                // Translation + Scale + Skew (Full Precision)
                                 case 0xFu:
-                                    v18 += a3;
-                                    v19 += v34;
-                                    v20 += compressed_matrix_data[v16 + 3];
-                                    v21 += compressed_matrix_data[v16 + 4];
-                                    v22 += compressed_matrix_data[v16 + 5];
-                                    v23 += compressed_matrix_data[v16 + 6];
-                                    v16 += 7;
+                                    a += low_bits;
+                                    b += high_bits;
+                                    c += compressed_data[offset + 3];
+                                    d += compressed_data[offset + 4];
+                                    tx += compressed_data[offset + 5];
+                                    ty += compressed_data[offset + 6];
+                                    offset += 7;
                                     break;
                                 default:
                                     break;
                             }
-                        } else {
-                            v22 += (int32_t) ((int64_t) ((((uint64_t) 0 << 32) | ((uint64_t) 0 << 16) | (uint64_t) v33) << (64 - 7 - 2)) >> (64 - 7));
-                            v23 += (int32_t) ((int64_t) ((((uint64_t) 0 << 32) | ((uint64_t) 0 << 16) | (uint64_t) v33) << (64 - 7 - 9)) >> (64 - 7));
-                            ++v16;
                         }
-                        auto& matrix = target.matrices[i + sub_index];
 
-                        matrix.a = (int16_t) v18 / 1024.f;
-                        matrix.b = (int16_t) v19 / 1024.f;
-                        matrix.c = (int16_t) v20 / 1024.f;
-                        matrix.d = (int16_t) v21 / 1024.f;
-                        matrix.tx = (int16_t) v22 / 20.f;
-                        matrix.ty = (int16_t) v23 / 20.f;
+                        auto& matrix = target.matrices[i + sub_index];
+                        matrix.a = (int16_t) a / 1024.f;
+                        matrix.b = (int16_t) b / 1024.f;
+                        matrix.c = (int16_t) c / 1024.f;
+                        matrix.d = (int16_t) d / 1024.f;
+                        matrix.tx = (int16_t) tx / 20.f;
+                        matrix.ty = (int16_t) ty / 20.f;
                     }
                 }
 
                 // Short matrices
-                bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4);
+                bank_buffer.seek(compressed_data_offset);
                 for (size_t i = bank->float_matrix_count(); uncompressed_matrices_count > i; i++) {
                     auto& matrix = target.matrices[i];
 
-                    matrix.a = (float) bank_data.read_short() / 1024.f;
-                    matrix.b = (float) bank_data.read_short() / 1024.f;
-                    matrix.c = (float) bank_data.read_short() / 1024.f;
-                    matrix.d = (float) bank_data.read_short() / 1024.f;
-                    matrix.tx = (float) bank_data.read_short() / 20.f;
-                    matrix.ty = (float) bank_data.read_short() / 20.f;
+                    matrix.a = (float) bank_buffer.read_short() / 1024.f;
+                    matrix.b = (float) bank_buffer.read_short() / 1024.f;
+                    matrix.c = (float) bank_buffer.read_short() / 1024.f;
+                    matrix.d = (float) bank_buffer.read_short() / 1024.f;
+                    matrix.tx = (float) bank_buffer.read_short() / 20.f;
+                    matrix.ty = (float) bank_buffer.read_short() / 20.f;
                 }
             }
 
             // Color Transforms
-            bank_data.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4 + bank->short_matrix_data_size() * 2);
+            bank_buffer.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4 + bank->short_matrix_data_size() * 2);
             {
                 target.color_transforms.resize(bank->color_transform_count());
 
                 for (auto& color : target.color_transforms) {
-                    color.multiply.r = bank_data.read_unsigned_byte();
-                    color.multiply.g = bank_data.read_unsigned_byte();
-                    color.multiply.b = bank_data.read_unsigned_byte();
+                    color.multiply.r = bank_buffer.read_unsigned_byte();
+                    color.multiply.g = bank_buffer.read_unsigned_byte();
+                    color.multiply.b = bank_buffer.read_unsigned_byte();
 
-                    color.alpha = bank_data.read_unsigned_byte();
+                    color.alpha = bank_buffer.read_unsigned_byte();
 
-                    color.add.r = bank_data.read_unsigned_byte();
-                    color.add.g = bank_data.read_unsigned_byte();
-                    color.add.b = bank_data.read_unsigned_byte();
+                    color.add.r = bank_buffer.read_unsigned_byte();
+                    color.add.g = bank_buffer.read_unsigned_byte();
+                    color.add.b = bank_buffer.read_unsigned_byte();
                 }
             }
 
             // Compressed MovieClip Data
-            bank_data.seek(bank->clip_data_offset());
+            bank_buffer.seek(bank->clip_data_offset());
             {
                 if (bank->clip_data_size() > 0) {
                     target.compressed_clip_size = bank->clip_data_size();
                     target.compressed_clip_data = new unsigned char[bank->clip_data_size()];
-                    bank_data.read(target.compressed_clip_data, bank->clip_data_size());
+                    bank_buffer.read(target.compressed_clip_data, bank->clip_data_size());
                 }
             }
         }
