@@ -1,131 +1,102 @@
 #pragma once
 
-#include <core/io/buffer_stream.h>
-#include <core/io/file_stream.h>
-#include <core/asset_manager/asset_manager.h>
-#include <compression/compression.h>
-
 #include "SWFString.hpp"
 
-namespace sc
-{
-	namespace flash {
-		using namespace sc::compression::flash;
-		class SWFStream : public wk::BufferStream
-		{
-		public:
-			SWFStream() {};
-			SWFStream(const SWFStream&) {};
-			SWFStream& operator=(const SWFStream&) { return *this; };
+#include <compression/compression.h>
+#include <core/asset_manager/asset_manager.h>
+#include <core/io/buffer_stream.h>
+#include <core/io/file_stream.h>
 
-		public:
-#pragma region File IO
-		public:
-			void open_file(const std::filesystem::path& path)
-			{
-				wk::AssetManager& manager = wk::AssetManager::Instance();
-				clear();
+namespace sc::flash {
+    using namespace sc::compression::flash;
+    class SWFStream : public wk::BufferStream {
+    public:
+        SWFStream() {};
+        SWFStream(const SWFStream&) {};
+        SWFStream& operator=(const SWFStream&) { return *this; };
 
-				auto file = manager.load_file(path);
-				Decompressor::decompress(*file, *this);
+    public:
+        void open_file(const std::filesystem::path& path) {
+            wk::AssetManager& manager = wk::AssetManager::Instance();
+            clear();
 
-				seek(0);
-			}
+            auto file = manager.load_file(path);
+            Decompressor::decompress(*file, *this);
 
-			void save_file(const std::filesystem::path& path, Signature signature)
-			{
-				wk::OutputFileStream file(path);
+            seek(0);
+        }
 
-				Compressor::Context context;
-				context.signature = signature;
+        void save_file(const std::filesystem::path& path, Signature signature) {
+            wk::OutputFileStream file(path);
 
-				seek(0);
-				Compressor::compress(*this, file, context);
-				clear();
-			}
+            Compressor::Context context;
+            context.signature = signature;
 
-			void save_sc2_file(const std::filesystem::path& path)
-			{
-				wk::OutputFileStream file(path);
+            seek(0);
+            Compressor::compress(*this, file, context);
+            clear();
+        }
 
-				file.write_unsigned_int(5);
-				file.write_unsigned_int(0);
+        void save_sc2_file(const std::filesystem::path& path) {
+            wk::OutputFileStream file(path);
 
-				seek(0);
+            file.write_unsigned_int(5);
+            file.write_unsigned_int(0);
 
-				ZstdCompressor::Props props;
-				props.compression_level = 20;
-				props.checksum_flag = false;
-				props.content_size_flag = true;
+            seek(0);
 
-				ZstdCompressor compressor(props);
-				compressor.compress(*this, file);
-				clear();
-			}
-#pragma endregion
+            ZstdCompressor::Props props;
+            props.compression_level = 20;
+            props.checksum_flag = false;
+            props.content_size_flag = true;
 
-#pragma region Writing Functions
-		public:
-			void inline write_string(const SWFString& string)
-			{
-				uint8_t string_size = string.length();
-				if (string_size)
-				{
-					write_unsigned_byte(string_size);
-					write(string.data(), string_size);
-				}
-				else
-				{
-					write_unsigned_byte(0xFF);
-				}
-			}
+            ZstdCompressor compressor(props);
+            compressor.compress(*this, file);
+            clear();
+        }
 
-			void inline write_twip(float twip) {
-				write_int((int)(twip / 0.05f));
-			}
+    public:
+        void inline write_string(const SWFString& string) {
+            uint8_t string_size = string.length();
+            if (string_size) {
+                write_unsigned_byte(string_size);
+                write(string.data(), string_size);
+            } else {
+                write_unsigned_byte(0xFF);
+            }
+        }
 
-			size_t inline write_tag_header(uint8_t tag)
-			{
-				write_unsigned_byte(tag);
-				write_int(-1);
-				return position();
-			}
+        void inline write_twip(float twip) { write_int((int) (twip / 0.05f)); }
 
-			void inline write_tag_final(size_t tag_start)
-			{
-				int* tag_length = (int*)((uint8_t*)data() + (tag_start - 4));
-				*tag_length = static_cast<int>(position() - tag_start);
-			}
+        size_t inline write_tag_header(uint8_t tag) {
+            write_unsigned_byte(tag);
+            write_int(-1);
+            return position();
+        }
 
-			void inline write_tag_flag(uint8_t tag)
-			{
-				write_unsigned_byte(tag);
-				write_int(0);
-			}
+        void inline write_tag_final(size_t tag_start) {
+            int* tag_length = (int*) ((uint8_t*) data() + (tag_start - 4));
+            *tag_length = static_cast<int>(position() - tag_start);
+        }
 
-#pragma endregion
+        void inline write_tag_flag(uint8_t tag) {
+            write_unsigned_byte(tag);
+            write_int(0);
+        }
 
-#pragma region Reading Functions
-		public:
-			void inline read_string(SWFString& string)
-			{
-				uint8_t string_size = read_unsigned_byte();
+    public:
+        void inline read_string(SWFString& string) {
+            uint8_t string_size = read_unsigned_byte();
 
-				if (string_size != 0xFF)
-				{
-					string.resize(string_size);
-					read(string.data(), string_size);
-					return;
-				}
+            if (string_size != 0xFF) {
+                string.resize(string_size);
+                read(string.data(), string_size);
+                return;
+            }
 
-				string.resize(0);
-			}
+            string.resize(0);
+        }
 
-			float inline read_twip()
-			{
-				return (float)read_int() * 0.05f;
-			}
-#pragma endregion
-		};
-	}
+        float inline read_twip() { return (float) read_int() * 0.05f; }
+    };
 }

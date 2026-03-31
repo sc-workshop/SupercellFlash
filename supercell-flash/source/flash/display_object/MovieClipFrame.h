@@ -2,30 +2,21 @@
 
 #include "flash/types/SWFString.hpp"
 
-namespace sc
-{
-	namespace flash {
-		class SupercellSWF;
+namespace sc::flash {
+    class SupercellSWF;
 
-		struct MovieClipFrame
-		{
-		public:
-			MovieClipFrame() {};
-			virtual ~MovieClipFrame() = default;
-			MovieClipFrame(const MovieClipFrame&) = default;
-			MovieClipFrame(MovieClipFrame&&) = default;
-			MovieClipFrame& operator=(const MovieClipFrame&) = default;
-			MovieClipFrame& operator=(MovieClipFrame&&) = default;
+    struct MovieClipFrame {
+    public:
+        /// @brief Frame label
+        SWFString label;
 
-		public:
-			uint32_t elements_count = 0;
-			SWFString label;
+        /// @brief Numbers of elements that should play this frame
+        uint32_t elements_count = 0;
 
-		public:
-			virtual void load(SupercellSWF& swf);
-			virtual void save(SupercellSWF& swf) const;
+    public:
+        virtual void load(SupercellSWF& swf);
+        virtual void save(SupercellSWF& swf) const;
 
-			virtual uint8_t tag(SupercellSWF& swf) const;
-		};
-	}
+        virtual uint8_t tag(SupercellSWF& swf) const;
+    };
 }

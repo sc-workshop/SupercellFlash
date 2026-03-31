@@ -1,107 +1,97 @@
 #pragma once
 
-#include <any>
-#include <optional>
-
-#include <core/math/rect.h>
-
-#include "flash/types/SWFString.hpp"
-#include "flash/types/SWFContainer.hpp"
-
-#include "flash/display_object/DisplayObject.h"
-#include "flash/display_object/MovieClipFrame.h"
-
+#include "flash/SC2/CompressedMovieClips_generated.h"
 #include "flash/SC2/DataStorage_generated.h"
 #include "flash/SC2/MovieClips_generated.h"
-#include "flash/SC2/CompressedMovieClips_generated.h"
+#include "flash/display_object/DisplayObject.h"
+#include "flash/display_object/MovieClipFrame.h"
+#include "flash/types/SWFContainer.hpp"
+#include "flash/types/SWFString.hpp"
 
-namespace sc
-{
-	namespace flash {
-		class SupercellSWF;
+#include <any>
+#include <core/math/rect.h>
+#include <optional>
 
-		struct MovieClipFrameElement
-		{
-			uint16_t instance_index;
-			uint16_t matrix_index = 0xFFFF;
-			uint16_t colorTransform_index = 0xFFFF;
-		};
+namespace sc::flash {
+    class SupercellSWF;
 
-		struct DisplayObjectInstance
-		{
-			enum class BlendMode : uint8_t
-			{
-				Normal = 0,
-				// Normal1 = 1,
-				Layer = 2,
-				Multiply,
-				Screen,
-				Lighten,
-				Darken,
-				Difference,
-				Add,
-				Subtract,
-				Invert,
-				Alpha,
-				Erase,
-				Overlay,
-				HardLight,
-			};
+    struct MovieClipFrameElement {
+        uint16_t instance_index;
+        uint16_t matrix_index = 0xFFFF;
+        uint16_t colorTransform_index = 0xFFFF;
+    };
 
-			uint16_t id;
-			BlendMode blend_mode = BlendMode::Normal;
-			SWFString name;
-		};
+    struct DisplayObjectInstance {
+        enum class BlendMode : uint8_t {
+            Normal = 0,
+            // Normal1 = 1,
+            Layer = 2,
+            Multiply,
+            Screen,
+            Lighten,
+            Darken,
+            Difference,
+            Add,
+            Subtract,
+            Invert,
+            Alpha,
+            Erase,
+            Overlay,
+            HardLight,
+        };
 
-		typedef SWFVector<MovieClipFrameElement, uint32_t> MovieClipFrameElementsArray;
-		typedef SWFVector<DisplayObjectInstance> MovieClipChildrensArray;
-		typedef SWFVector<MovieClipFrame> MovieClipFrameArray;
+        uint16_t id;
+        BlendMode blend_mode = BlendMode::Normal;
+        SWFString name;
+    };
 
-		class MovieClip : public DisplayObject
-		{
-		public:
-			static inline size_t COMPRESSED_CLIP_DATA_MAX_SIZE = 4096;
+    typedef SWFVector<MovieClipFrameElement, uint32_t> MovieClipFrameElementsArray;
+    typedef SWFVector<DisplayObjectInstance> MovieClipChildrensArray;
+    typedef SWFVector<MovieClipFrame> MovieClipFrameArray;
 
-		public:
-			MovieClip() {};
-			virtual ~MovieClip() = default;
-			MovieClip(const MovieClip&) = default;
-			MovieClip(MovieClip&&) = default;
-			MovieClip& operator=(const MovieClip&) = default;
-			MovieClip& operator=(MovieClip&&) = default;
+    class MovieClip : public DisplayObject {
+    public:
+        static inline size_t COMPRESSED_CLIP_DATA_MAX_SIZE = 4096;
 
-		public:
-			MovieClipFrameElementsArray frame_elements;
-			MovieClipChildrensArray childrens;
-			MovieClipFrameArray frames;
+    public:
+        virtual ~MovieClip() = default;
 
-		public:
-			uint8_t frame_rate = 24;
+    public:
+        MovieClipFrameElementsArray frame_elements;
+        MovieClipChildrensArray childrens;
+        MovieClipFrameArray frames;
 
-			uint32_t bank_index = 0;
+    public:
+        /// @brief Map of custom properties
+        SWFVector<std::any, uint8_t> custom_properties;
 
-			std::optional<wk::RectF> scaling_grid;
+        /// @brief Scaling grid guide for 9-slice MovieClips
+        std::optional<wk::RectF> scaling_grid;
 
-			SWFVector<std::any, uint8_t> custom_properties;
+        /// @brief Index of MatrixBank source from which should load transformation matrices
+        uint32_t bank_index = 0;
 
-		public:
-			bool unknown_flag = false;
+        /// @brief Frames per second that should play by this MovieClip
+        uint8_t frame_rate = 24;
 
-		public:
-			virtual void load(SupercellSWF& swf, uint8_t tag);
-			virtual void save(SupercellSWF& swf) const;
+        bool unknown_flag = false;
 
-			virtual uint8_t tag(SupercellSWF& swf) const;
+    public:
+        virtual void load(SupercellSWF& swf, uint8_t tag);
+        virtual void save(SupercellSWF& swf) const;
 
-			virtual bool is_movieclip() const;
+        virtual uint8_t tag(SupercellSWF& swf) const;
 
-			void write_frame_elements_buffer(wk::Stream& stream) const;
+        virtual bool is_movieclip() const;
 
-			static size_t decode_compressed_frame_data(uint16_t* m_pKeyframes, uint16_t* m_pData, uint16_t* m_pDataEnd, uint16_t* out);
-		public:
-			static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
-		private:
-			static void load_compressed(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
-		};
-	}
+        void write_frame_elements_buffer(wk::Stream& stream) const;
+
+        static size_t decode_compressed_frame_data(uint16_t* m_pKeyframes, uint16_t* m_pData, uint16_t* m_pDataEnd, uint16_t* out);
+
+    public:
+        static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
+
+    private:
+        static void load_compressed(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);
+    };
 }
