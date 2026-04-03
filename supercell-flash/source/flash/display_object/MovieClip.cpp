@@ -192,7 +192,8 @@ namespace sc::flash {
             return;
 
         uint16_t movieclips_count = (uint16_t) movieclips_vector->size();
-        swf.movieclips.reserve(movieclips_count);
+        if (movieclips_count != swf.movieclips.size())
+            throw wk::Exception("Incorrect MovieClip count");
 
         auto strings_vector = storage->strings();
         auto elements_vector = storage->movieclips_frame_elements();
@@ -294,8 +295,7 @@ namespace sc::flash {
         auto elements_vector = storage->movieclips_frame_elements();
         auto rectangles_vector = storage->rectangles();
 
-        uint16_t* out_decompressed = new uint16_t[COMPRESSED_CLIP_DATA_MAX_SIZE];
-
+        std::vector<uint16_t> compressed_buffer(COMPRESSED_CLIP_DATA_MAX_SIZE);
         for (uint16_t i = 0; movieclips_count > i; i++) {
             auto movieclip_data = movieclips_vector->Get(i);
 
@@ -341,12 +341,9 @@ namespace sc::flash {
                 }
             }
 
-            // TODO: short frames support? (idk)
             auto frames_vector = movieclip_data->frames();
-            // auto short_frames_vector = movieclip_data->short_frames();
             uint16_t frames_count = (uint16_t) movieclip_data->frames_count();
             movieclip.frames.reserve(frames_count);
-            // swf.sc2_compile_settings.use_short_frames |= short_frames_vector != nullptr;
 
             if (frames_vector) {
                 for (auto frame_data : *frames_vector) {
@@ -361,6 +358,7 @@ namespace sc::flash {
             uint32_t compressed_data_offset = movieclip_data->compressed_data_offset();
             auto elements_data = movieclip_data->frame_elements_offset();
 
+            // Load elements as usual
             if (elements_data.has_value()) {
                 uint32_t elements_offset = elements_data.value();
 
@@ -379,50 +377,50 @@ namespace sc::flash {
                 }
             }
 
-            // FIXME: scope below
+            // Load compressed MovieClip frame elements from MatrixBank
             else {
-                uint8_t* compressed_frame_data = &swf.matrixBanks[movieclip_data->matrix_bank_index()].compressed_clip_data[compressed_data_offset];
-                uint8_t* compressed_frame_data_end =
-                    compressed_frame_data - compressed_data_offset + swf.matrixBanks[movieclip_data->matrix_bank_index()].compressed_clip_size;
-                // uint16_t total_elements_count = *(uint16_t*) (compressed_frame_data + 4);
+                auto& bank = swf.matrixBanks[movieclip.bank_index];
 
-                for (size_t frame_index = 0; frame_index < movieclip.frames.size(); frame_index++) {
-                    unsigned char* this_frame_data = compressed_frame_data + frame_index * 8 + 8;
-                    // unsigned char* last_frame_data = compressed_frame_data + (movieclip.frames.size() - 1) * 8 + 8;
-                    unsigned short* element_data = (unsigned short*) (compressed_frame_data + *(int*) (this_frame_data));
-                    if ((unsigned char*) element_data >= compressed_frame_data_end)
-                        abort();
-                    unsigned short* element_data_start = (unsigned short*) ((unsigned char*) element_data + 2 * *(unsigned short*) (this_frame_data + 4));
-                    unsigned short* element_data_end = (unsigned short*) ((unsigned char*) element_data + 2 * *(unsigned short*) (this_frame_data + 6));
-                    size_t decompressed_size_shorts = decode_compressed_frame_data(element_data, element_data_start, element_data_end, out_decompressed);
-                    if (decompressed_size_shorts > COMPRESSED_CLIP_DATA_MAX_SIZE)
-                        abort(); // FIXME: bro :skull:
+                uint8_t* compressed_data = bank.movieclip_elements.data() + compressed_data_offset;
+                uint8_t* compressed_data_end = bank.movieclip_elements.data() + bank.movieclip_elements.size();
 
-                    for (size_t k = 0; k < decompressed_size_shorts / 3; k++) {
+                for (uint16_t frame_index = 0; frame_index < movieclip.frames.size(); frame_index++) {
+                    uint8_t* compressed_frame_data = compressed_data + frame_index * 8 + 8;
+                    int32_t compressed_frame_offset = *(int32_t*) compressed_frame_data;
+                    uint16_t* element_data = (uint16_t*) (compressed_data + compressed_frame_offset);
+
+                    if ((unsigned char*) element_data >= compressed_data_end)
+                        throw wk::Exception("Compressed MovieClip frame data out of bound at frame %i", frame_index);
+
+                    uint16_t* element_data_start = (uint16_t*) ((uint16_t*) element_data + 2 * *(uint16_t*) (compressed_frame_data + 4));
+                    uint16_t* element_data_end = (uint16_t*) ((uint16_t*) element_data + 2 * *(uint16_t*) (compressed_frame_data + 6));
+                    size_t decompressed_size = decode_compressed_frame_data(element_data, element_data_start, element_data_end, compressed_buffer);
+                    if (decompressed_size > COMPRESSED_CLIP_DATA_MAX_SIZE)
+                        throw wk::Exception("Decompressed size of MovieClip frame data is too big");
+
+                    uint32_t elements_count = (uint32_t) decompressed_size / 3;
+                    for (uint32_t element_index = 0; element_index < elements_count; element_index++) {
                         MovieClipFrameElement& element = movieclip.frame_elements.emplace_back();
 
-                        element.instance_index = out_decompressed[k * 3 + 0];
-                        element.matrix_index = out_decompressed[k * 3 + 1];
-                        element.colorTransform_index = out_decompressed[k * 3 + 2];
+                        element.instance_index = compressed_buffer[element_index * 3];
+                        element.matrix_index = compressed_buffer[element_index * 3 + 1];
+                        element.colorTransform_index = compressed_buffer[element_index * 3 + 2];
 
                         if (element.colorTransform_index != 0xFFFF &&
-                            (element.colorTransform_index >= swf.matrixBanks[movieclip.bank_index].color_transforms.size() ||
+                            (element.colorTransform_index >= bank.color_transforms.size() ||
                              element.instance_index >= children_count)) {
                             throw wk::Exception("ColorTransform index out of range");
                         }
 
-                        if (element.matrix_index != 0xFFFF && element.matrix_index >= swf.matrixBanks[movieclip.bank_index].matrices.size()) {
+                        if (element.matrix_index != 0xFFFF && element.matrix_index >= bank.matrices.size()) {
                             throw wk::Exception("Matrices index out of range");
                         }
                     }
 
-                    movieclip.frames[frame_index].elements_count = (uint32_t) decompressed_size_shorts / 3;
+                    movieclip.frames[frame_index].elements_count = elements_count;
                 }
             }
         }
-
-        // TODO: wrap it into smart pointer maybe to avoid possible memory leaks?
-        delete[] out_decompressed;
     }
 
     void MovieClip::write_frame_elements_buffer(wk::Stream& stream) const {
@@ -436,17 +434,19 @@ namespace sc::flash {
     size_t MovieClip::decode_compressed_frame_data(uint16_t* element_data,
                                                    uint16_t* element_data_start,
                                                    uint16_t* element_data_end,
-                                                   uint16_t* result) {
-        unsigned short* v7 = result;
+                                                   std::vector<uint16_t>& result) {
+        unsigned short* v7 = result.data();
         unsigned short* v8 = &result[COMPRESSED_CLIP_DATA_MAX_SIZE];
+
         int v6 = 0;
         if (element_data_start == element_data) {
-            memcpy(result, element_data_start, (unsigned char*) element_data_end - (unsigned char*) element_data_start);
+            memcpy(v7, element_data_start, (unsigned char*) element_data_end - (unsigned char*) element_data_start);
             return element_data_end - element_data_start;
         } else if (element_data_start != element_data_end || v6) {
             while (element_data_start != element_data_end && v8 - v7 >= 6) {
                 if (element_data_start >= element_data_end)
-                    abort();
+                    throw wk::Exception("Compressed MovieClip frame data out of bound");
+
                 unsigned short v17 = element_data_start[0];
                 unsigned short v13 = element_data[0];
                 unsigned short v14 = element_data[1];
@@ -536,7 +536,7 @@ namespace sc::flash {
             if (element_data_start == element_data_end) {
                 while (v6 && v8 - v7 >= 3) {
                     if ((v6 & 1) == 0) {
-                        abort();
+                        throw wk::Exception("Invalid compressed MovieClip frame data");
                     }
                     *v7 = *element_data;
                     v7[1] = element_data[1];
@@ -547,11 +547,11 @@ namespace sc::flash {
                 }
             }
             if (v7 > v8) {
-                abort();
+                throw wk::Exception("Invalid compressed MovieClip frame data");
             }
-            return v7 - result;
+            return v7 - result.data();
         } else {
-            abort();
+            throw wk::Exception("Invalid compressed MovieClip frame data");
         }
     }
 }

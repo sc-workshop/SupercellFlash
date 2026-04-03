@@ -20,8 +20,7 @@ namespace sc::flash {
     public:
         SWFVector<Matrix2D> matrices;
         SWFVector<ColorTransform> color_transforms;
-        uint8_t* compressed_clip_data = nullptr;
-        int32_t compressed_clip_size = -1;
+        SWFVector<uint8_t, uint32_t> movieclip_elements;
 
     public:
         bool get_matrix_index(const Matrix2D& matrix, uint16_t& index) const;

@@ -86,7 +86,7 @@ namespace sc::flash {
 
         void write_frame_elements_buffer(wk::Stream& stream) const;
 
-        static size_t decode_compressed_frame_data(uint16_t* m_pKeyframes, uint16_t* m_pData, uint16_t* m_pDataEnd, uint16_t* out);
+        static size_t decode_compressed_frame_data(uint16_t* m_pKeyframes, uint16_t* m_pData, uint16_t* m_pDataEnd, std::vector<uint16_t>& result);
 
     public:
         static void load_sc2(SupercellSWF&, const SC2::DataStorage*, const uint8_t*);

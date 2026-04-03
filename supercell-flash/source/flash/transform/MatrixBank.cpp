@@ -152,17 +152,18 @@ namespace sc::flash {
 
             // Matrices
             {
-                size_t uncompressed_matrices_count = bank->short_matrix_count() + bank->float_matrix_count();
+                uint32_t uncompressed_matrices_count = bank->short_matrix_count() + bank->float_matrix_count();
                 if (uncompressed_matrices_count % 16 != 0)
                     throw wk::Exception("uncompressed matrix count is not multiple of 16!");
-                size_t total_matrices_count = std::min<size_t>(std::max<size_t>(uncompressed_matrices_count, bank->compressed_matrix_data_size() * 16), 0xFFFF);
+                uint16_t total_matrices_count =
+                    (uint16_t) std::min<uint32_t>(std::max<uint32_t>(uncompressed_matrices_count, bank->compressed_matrix_data_size() * 16), 0xFFFF);
 
-                uncompressed_matrices_count = std::min<size_t>(uncompressed_matrices_count, 0xFFFF);
+                uncompressed_matrices_count = std::min<uint32_t>(uncompressed_matrices_count, 0xFFFF);
 
                 target.matrices.resize(total_matrices_count);
 
                 // Float matrices
-                for (size_t i = 0; bank->float_matrix_count() > i; i++) {
+                for (uint16_t i = 0; (uint16_t) bank->float_matrix_count() > i; i++) {
                     auto& matrix = target.matrices[i];
 
                     matrix.a = bank_buffer.read_float();
@@ -182,8 +183,8 @@ namespace sc::flash {
                 size_t compressed_data_offset = float_matrices_size + compressed_matrices_size;
 
                 uint16_t* compressed_data = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(bank_data) + compressed_data_offset);
-                for (size_t i = uncompressed_matrices_count; total_matrices_count > i; i += 16) {
-                    size_t block_index = i >> 4;
+                for (uint16_t i = (uint16_t) uncompressed_matrices_count; total_matrices_count > i; i += 16) {
+                    uint16_t block_index = i >> 4;
                     int32_t block_offset = *reinterpret_cast<int32_t*>(reinterpret_cast<uint8_t*>(bank_data) + compressed_offsets + block_index * 4);
 
                     int32_t offset = block_offset >> 13;
@@ -197,7 +198,7 @@ namespace sc::flash {
                     uint32_t tx = base_matrix[4];
                     uint32_t ty = base_matrix[5];
 
-                    for (int sub_index = 0; sub_index < 16 && i + sub_index < total_matrices_count; sub_index++) {
+                    for (uint16_t sub_index = 0; sub_index < 16 && i + sub_index < total_matrices_count; sub_index++) {
                         uint16_t flags = compressed_data[offset];
 
                         // Simple case: Translation only, 7 bits for each value
@@ -265,9 +266,9 @@ namespace sc::flash {
                                 // Translation + Scale + Skew (High precision: 12 bits for scale and skew, 14 bits for translation)
                                 case 7u: {
                                     uint16_t mid_bits = compressed_data[offset + 3];
-                                    uint16_t high_bits = compressed_data[offset + 4];
+                                    uint16_t highest_bits = compressed_data[offset + 4];
 
-                                    uint64_t translation_bits = make_packed(high_bits, mid_bits, high_bits);
+                                    uint64_t translation_bits = make_packed(high_bits, mid_bits, highest_bits);
 
                                     a += extract_bits(packed, 12, 4);
                                     b += extract_bits(packed, 12, 16);
@@ -277,8 +278,7 @@ namespace sc::flash {
                                     ty += extract_bits(translation_bits, 14, 34);
 
                                     offset += 5;
-                                }
-                                break;
+                                } break;
 
                                 // Translation + Scale + Skew (Full Precision)
                                 case 0xFu:
@@ -290,7 +290,9 @@ namespace sc::flash {
                                     ty += compressed_data[offset + 6];
                                     offset += 7;
                                     break;
+
                                 default:
+                                    throw wk::Exception("Unknown compressed matrix encoding");
                                     break;
                             }
                         }
@@ -307,7 +309,7 @@ namespace sc::flash {
 
                 // Short matrices
                 bank_buffer.seek(compressed_data_offset);
-                for (size_t i = bank->float_matrix_count(); uncompressed_matrices_count > i; i++) {
+                for (uint16_t i = (uint16_t) bank->float_matrix_count(); uncompressed_matrices_count > i; i++) {
                     auto& matrix = target.matrices[i];
 
                     matrix.a = (float) bank_buffer.read_short() / 1024.f;
@@ -322,7 +324,7 @@ namespace sc::flash {
             // Color Transforms
             bank_buffer.seek(bank->float_matrix_count() * 24 + bank->compressed_matrix_data_size() * 4 + bank->short_matrix_data_size() * 2);
             {
-                target.color_transforms.resize(bank->color_transform_count());
+                target.color_transforms.resize((uint16_t) bank->color_transform_count());
 
                 for (auto& color : target.color_transforms) {
                     color.multiply.r = bank_buffer.read_unsigned_byte();
@@ -341,9 +343,8 @@ namespace sc::flash {
             bank_buffer.seek(bank->clip_data_offset());
             {
                 if (bank->clip_data_size() > 0) {
-                    target.compressed_clip_size = bank->clip_data_size();
-                    target.compressed_clip_data = new unsigned char[bank->clip_data_size()];
-                    bank_buffer.read(target.compressed_clip_data, bank->clip_data_size());
+                    target.movieclip_elements = SWFVector<uint8_t, uint32_t>(bank->clip_data_size());
+                    bank_buffer.read(target.movieclip_elements.data(), bank->clip_data_size());
                 }
             }
         }
