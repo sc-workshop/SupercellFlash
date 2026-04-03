@@ -46,15 +46,16 @@ namespace sc::flash {
         bool is_outlined = false;
         bool unknown_flag3 = false;
 
-        wk::ColorRGBA outline_color = {0x0, 0x0, 0x0, 0XFF};
+        wk::ColorRGBA outline_color = {0x0, 0x0, 0x0, 0x0};
         bool use_device_font = false;
         bool auto_kern = false;
 
         float bend_angle = 0.0f;
 
         bool unknown_flag = false;
-        uint16_t unknown_short = 0xFFFF;
-        uint16_t unknown_short2 = 0xFFFF;
+
+        float outline_strength = 0.0f;
+        float unknown_value = 1.0f;
 
         SWFString typography_file = "";
 

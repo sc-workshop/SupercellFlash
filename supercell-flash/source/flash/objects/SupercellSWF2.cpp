@@ -305,7 +305,7 @@ namespace sc::flash {
                                               textfield.get_align_flags(),
                                               textfield.font_size,
                                               0,
-                                              textfield.unknown_short);
+                                              (uint16_t)(textfield.outline_strength * 0xFFFF));
 
                 textfields_data.push_back(textfield_data);
             }
