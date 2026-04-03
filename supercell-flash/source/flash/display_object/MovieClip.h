@@ -74,7 +74,7 @@ namespace sc::flash {
         /// @brief Frames per second that should play by this MovieClip
         uint8_t frame_rate = 24;
 
-        bool unknown_flag = false;
+        bool unknown_flag = true;
 
     public:
         virtual void load(SupercellSWF& swf, uint8_t tag);
