@@ -27,31 +27,14 @@ namespace sc::flash {
         }
 
         void save_file(const std::filesystem::path& path, Signature signature) {
-            wk::OutputFileStream file(path);
+            wk::AssetManager& manager = wk::AssetManager::Instance();
+            wk::Ref<wk::Stream> file = manager.write_file(path);
 
             Compressor::Context context;
             context.signature = signature;
 
             seek(0);
-            Compressor::compress(*this, file, context);
-            clear();
-        }
-
-        void save_sc2_file(const std::filesystem::path& path) {
-            wk::OutputFileStream file(path);
-
-            file.write_unsigned_int(5);
-            file.write_unsigned_int(0);
-
-            seek(0);
-
-            ZstdCompressor::Props props;
-            props.compression_level = 20;
-            props.checksum_flag = false;
-            props.content_size_flag = true;
-
-            ZstdCompressor compressor(props);
-            compressor.compress(*this, file);
+            Compressor::compress(*this, *file, context);
             clear();
         }
 
