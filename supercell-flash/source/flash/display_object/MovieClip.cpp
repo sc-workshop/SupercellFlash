@@ -382,18 +382,18 @@ namespace sc::flash {
                 auto& bank = swf.matrixBanks[movieclip.bank_index];
 
                 uint8_t* compressed_data = bank.movieclip_elements.data() + compressed_data_offset;
-                uint8_t* compressed_data_end = bank.movieclip_elements.data() + bank.movieclip_elements.size();
+                uint8_t* compressed_data_end = compressed_data - compressed_data_offset + bank.movieclip_elements.size();
 
                 for (uint16_t frame_index = 0; frame_index < movieclip.frames.size(); frame_index++) {
                     uint8_t* compressed_frame_data = compressed_data + frame_index * 8 + 8;
                     int32_t compressed_frame_offset = *(int32_t*) compressed_frame_data;
                     uint16_t* element_data = (uint16_t*) (compressed_data + compressed_frame_offset);
 
-                    if ((unsigned char*) element_data >= compressed_data_end)
+                    if ((uint8_t*) element_data >= compressed_data_end)
                         throw wk::Exception("Compressed MovieClip frame data out of bound at frame %i", frame_index);
 
-                    uint16_t* element_data_start = (uint16_t*) ((uint16_t*) element_data + 2 * *(uint16_t*) (compressed_frame_data + 4));
-                    uint16_t* element_data_end = (uint16_t*) ((uint16_t*) element_data + 2 * *(uint16_t*) (compressed_frame_data + 6));
+                    uint16_t* element_data_start = (uint16_t*) ((uint8_t*) element_data + 2 * *(uint16_t*) (compressed_frame_data + 4));
+                    uint16_t* element_data_end = (uint16_t*) ((uint8_t*) element_data + 2 * *(uint16_t*) (compressed_frame_data + 6));
                     size_t decompressed_size = decode_compressed_frame_data(element_data, element_data_start, element_data_end, compressed_buffer);
                     if (decompressed_size > COMPRESSED_CLIP_DATA_MAX_SIZE)
                         throw wk::Exception("Decompressed size of MovieClip frame data is too big");
@@ -406,9 +406,11 @@ namespace sc::flash {
                         element.matrix_index = compressed_buffer[element_index * 3 + 1];
                         element.colorTransform_index = compressed_buffer[element_index * 3 + 2];
 
-                        if (element.colorTransform_index != 0xFFFF &&
-                            (element.colorTransform_index >= bank.color_transforms.size() ||
-                             element.instance_index >= children_count)) {
+                        if (element.instance_index >= children_count) {
+                            throw wk::Exception("Children index out of range");
+                        }
+
+                        if (element.colorTransform_index != 0xFFFF && element.colorTransform_index >= bank.color_transforms.size()) {
                             throw wk::Exception("ColorTransform index out of range");
                         }
 
@@ -435,15 +437,15 @@ namespace sc::flash {
                                                    uint16_t* element_data_start,
                                                    uint16_t* element_data_end,
                                                    std::vector<uint16_t>& result) {
-        unsigned short* v7 = result.data();
-        unsigned short* v8 = &result[COMPRESSED_CLIP_DATA_MAX_SIZE];
+        uint16_t* begin = result.data();
+        uint16_t* end = result.data() + result.size();
 
         int v6 = 0;
         if (element_data_start == element_data) {
-            memcpy(v7, element_data_start, (unsigned char*) element_data_end - (unsigned char*) element_data_start);
+            memcpy(begin, element_data_start, (unsigned char*) element_data_end - (unsigned char*) element_data_start);
             return element_data_end - element_data_start;
         } else if (element_data_start != element_data_end || v6) {
-            while (element_data_start != element_data_end && v8 - v7 >= 6) {
+            while (element_data_start != element_data_end && end - begin >= 6) {
                 if (element_data_start >= element_data_end)
                     throw wk::Exception("Compressed MovieClip frame data out of bound");
 
@@ -452,10 +454,10 @@ namespace sc::flash {
                 unsigned short v14 = element_data[1];
                 unsigned short v16 = element_data[2];
                 if ((v6 & 1) != 0) {
-                    *v7 = v13;
-                    v7[1] = v14;
-                    v7[2] = v16;
-                    v7 += 3;
+                    *begin = v13;
+                    begin[1] = v14;
+                    begin[2] = v16;
+                    begin += 3;
                     element_data += 3;
                     v6 >>= 1;
                 } else {
@@ -464,38 +466,38 @@ namespace sc::flash {
                         int v23 = (v17 & 7) - 1;
                         switch (v17 & 7) {
                             case 1:
-                                *v7 = v13;
+                                *begin = v13;
                                 v23 = v14;
-                                v7[1] = ((int32_t) (v17 << (32 - 13 - 3)) >> (32 - 13)) + v14;
-                                v7[2] = v16;
-                                v7 += 3;
+                                begin[1] = ((int32_t) (v17 << (32 - 13 - 3)) >> (32 - 13)) + v14;
+                                begin[2] = v16;
+                                begin += 3;
                                 element_data += 3;
                                 ++element_data_start;
                                 break;
                             case 2:
-                                *v7 = v13;
+                                *begin = v13;
                                 v23 = v14;
-                                v7[1] = ((int32_t) (v17 << (32 - 4 - 3)) >> (32 - 4)) + v14;
+                                begin[1] = ((int32_t) (v17 << (32 - 4 - 3)) >> (32 - 4)) + v14;
                                 v23 = v16;
-                                v7[2] = ((int32_t) (v17 << (32 - 9 - 7)) >> (32 - 9)) + v16;
-                                v7 += 3;
+                                begin[2] = ((int32_t) (v17 << (32 - 9 - 7)) >> (32 - 9)) + v16;
+                                begin += 3;
                                 element_data += 3;
                                 ++element_data_start;
                                 break;
                             case 3:
-                                *v7 = v13;
-                                v7[1] = element_data_start[1] + v14;
+                                *begin = v13;
+                                begin[1] = element_data_start[1] + v14;
                                 v23 = v16;
-                                v7[2] = ((int32_t) (v17 << (32 - 13 - 3)) >> (32 - 13)) + v16;
-                                v7 += 3;
+                                begin[2] = ((int32_t) (v17 << (32 - 13 - 3)) >> (32 - 13)) + v16;
+                                begin += 3;
                                 element_data += 3;
                                 element_data_start += 2;
                                 break;
                             case 5:
-                                *v7 = v13;
-                                v7[1] = v14;
-                                v7[2] = v16;
-                                v7 += 3;
+                                *begin = v13;
+                                begin[1] = v14;
+                                begin[2] = v16;
+                                begin += 3;
                                 element_data += 3;
                                 ++element_data_start;
                                 v6 = (int32_t) v17 >> 3;
@@ -505,10 +507,10 @@ namespace sc::flash {
                                 ++element_data_start;
                                 break;
                             case 7:
-                                *v7 = ((int32_t) (v17 << (32 - 12 - 3)) >> (32 - 12));
-                                v7[1] = element_data_start[1];
-                                v7[2] = element_data_start[2];
-                                v7 += 3;
+                                *begin = ((int32_t) (v17 << (32 - 12 - 3)) >> (32 - 12));
+                                begin[1] = element_data_start[1];
+                                begin[2] = element_data_start[2];
+                                begin += 3;
                                 element_data_start += 3;
                                 if ((v17 & 0x8000) != 0)
                                     v23 = 3;
@@ -520,13 +522,13 @@ namespace sc::flash {
                                 continue;
                         }
                     } else {
-                        *v7 = v13;
-                        v7[1] = ((int32_t) (v17 << (32 - 7 - 2)) >> (32 - 7)) + v14;
-                        v7[2] = v16;
-                        v7[3] = element_data[3];
-                        v7[4] = ((int32_t) (v17 << (32 - 7 - 9)) >> (32 - 7)) + element_data[4];
-                        v7[5] = element_data[5];
-                        v7 += 6;
+                        *begin = v13;
+                        begin[1] = ((int32_t) (v17 << (32 - 7 - 2)) >> (32 - 7)) + v14;
+                        begin[2] = v16;
+                        begin[3] = element_data[3];
+                        begin[4] = ((int32_t) (v17 << (32 - 7 - 9)) >> (32 - 7)) + element_data[4];
+                        begin[5] = element_data[5];
+                        begin += 6;
                         element_data += 6;
                         ++element_data_start;
                         v6 >>= 1;
@@ -534,22 +536,22 @@ namespace sc::flash {
                 }
             }
             if (element_data_start == element_data_end) {
-                while (v6 && v8 - v7 >= 3) {
+                while (v6 && end - begin >= 3) {
                     if ((v6 & 1) == 0) {
                         throw wk::Exception("Invalid compressed MovieClip frame data");
                     }
-                    *v7 = *element_data;
-                    v7[1] = element_data[1];
-                    v7[2] = element_data[2];
-                    v7 += 3;
+                    *begin = *element_data;
+                    begin[1] = element_data[1];
+                    begin[2] = element_data[2];
+                    begin += 3;
                     element_data += 3;
                     v6 >>= 1;
                 }
             }
-            if (v7 > v8) {
+            if (begin > end) {
                 throw wk::Exception("Invalid compressed MovieClip frame data");
             }
-            return v7 - result.data();
+            return begin - result.data();
         } else {
             throw wk::Exception("Invalid compressed MovieClip frame data");
         }
