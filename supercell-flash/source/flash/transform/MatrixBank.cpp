@@ -9,14 +9,12 @@
 #define floatEqual(a, b) (fabs(a - b) <= ((fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * 0.001f))
 
 namespace sc::flash {
-    /// @brief Extract N-bits number from packed 48-bit
-    static WK_INLINE int32_t extract_bits(uint64_t packed, int bits, int shift) {
-        return (int32_t) ((int64_t) (packed << (64 - bits - shift)) >> (64 - bits));
+    static WK_INLINE int32_t extract_bits(uint64_t packed, int bit_count, int shift) {
+        return (int32_t) ((int64_t) (packed << (64 - bit_count - shift)) >> (64 - bit_count));
     }
 
-    /// @brief Create a packed number
-    static WK_INLINE uint64_t make_packed(uint16_t a, uint16_t b, uint16_t c) {
-        return ((uint64_t) c << 32) | ((uint64_t) b << 16) | (uint64_t) a;
+    static WK_INLINE uint64_t pack_bits(uint16_t low, uint16_t mid, uint16_t high) {
+        return ((uint64_t) high << 32) | ((uint64_t) mid << 16) | (uint64_t) low;
     }
 
     MatrixBank::MatrixBank(uint16_t matrix_count, uint16_t color_transforms_count) {
@@ -154,7 +152,7 @@ namespace sc::flash {
             {
                 uint32_t uncompressed_matrices_count = bank->short_matrix_count() + bank->float_matrix_count();
                 if (uncompressed_matrices_count % 16 != 0)
-                    throw wk::Exception("uncompressed matrix count is not multiple of 16!");
+                    throw wk::Exception("uncompressed delta_matrix count is not multiple of 16!");
                 uint16_t total_matrices_count =
                     (uint16_t) std::min<uint32_t>(std::max<uint32_t>(uncompressed_matrices_count, bank->compressed_matrix_data_size() * 16), 0xFFFF);
 
@@ -176,21 +174,19 @@ namespace sc::flash {
                 }
 
                 // Compressed matrices
-                uint16_t* bank_data = reinterpret_cast<uint16_t*>(bank_buffer.data());
                 size_t float_matrices_size = static_cast<size_t>(bank->float_matrix_count()) * 24;
                 size_t compressed_matrices_size = static_cast<size_t>(bank->compressed_matrix_data_size()) * 4;
-                size_t compressed_offsets = float_matrices_size;
-                size_t compressed_data_offset = float_matrices_size + compressed_matrices_size;
+                size_t compressed_matrix_data_offset = float_matrices_size + compressed_matrices_size;
+                auto* compressed_matrix_data = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(bank_buffer.data()) + compressed_matrix_data_offset);
 
-                uint16_t* compressed_data = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(bank_data) + compressed_data_offset);
-                for (uint16_t i = (uint16_t) uncompressed_matrices_count; total_matrices_count > i; i += 16) {
-                    uint16_t block_index = i >> 4;
-                    int32_t block_offset = *reinterpret_cast<int32_t*>(reinterpret_cast<uint8_t*>(bank_data) + compressed_offsets + block_index * 4);
+                for (uint32_t i = uncompressed_matrices_count; total_matrices_count > i; i += 16) {
+                    size_t block_index = i >> 4;
+                    int32_t encoded_block = *reinterpret_cast<int32_t*>(reinterpret_cast<uint8_t*>(bank_buffer.data()) + float_matrices_size + block_index * 4);
 
-                    int32_t offset = block_offset >> 13;
-                    int32_t base_index = block_offset & 0x1FFF;
+                    int32_t data_offset = encoded_block >> 13;
+                    uint16_t base_matrix_index = encoded_block & 0x1FFF;
+                    uint16_t* base_matrix = &compressed_matrix_data[base_matrix_index * 6];
 
-                    uint16_t* base_matrix = &compressed_data[base_index * 6];
                     uint32_t a = base_matrix[0];
                     uint32_t b = base_matrix[1];
                     uint32_t c = base_matrix[2];
@@ -198,45 +194,36 @@ namespace sc::flash {
                     uint32_t tx = base_matrix[4];
                     uint32_t ty = base_matrix[5];
 
-                    for (uint16_t sub_index = 0; sub_index < 16 && i + sub_index < total_matrices_count; sub_index++) {
-                        uint16_t flags = compressed_data[offset];
+                    for (int sub_index = 0; sub_index < 16 && i + sub_index < total_matrices_count; sub_index++) {
+                        uint16_t flags = compressed_matrix_data[data_offset];
+                        if ((flags & 3) != 0) {
+                            uint16_t low_bits = compressed_matrix_data[data_offset + 1];
+                            uint16_t high_bits = compressed_matrix_data[data_offset + 2];
+                            uint64_t packed = pack_bits(flags, low_bits, high_bits);
 
-                        // Simple case: Translation only, 7 bits for each value
-                        if ((flags & 3) == 0) {
-                            tx += extract_bits(flags, 7, 2);
-                            ty += extract_bits(flags, 7, 9);
-                            offset++;
-                        } else {
-                            uint16_t low_bits = compressed_data[offset + 1];
-                            uint16_t high_bits = compressed_data[offset + 2];
-
-                            uint64_t packed = make_packed(flags, low_bits, high_bits);
                             switch (flags & 0xF) {
                                 // Translation (High precision: 14 bits for each value)
                                 case 1u:
                                     tx += extract_bits(packed, 14, 4);
                                     ty += extract_bits(packed, 14, 18);
-                                    offset += 2;
+                                    data_offset += 2;
                                     break;
-
                                 // Translation + Scale (Low precision: 7 bits for each value)
                                 case 2u:
                                     a += extract_bits(packed, 7, 4);
                                     d += extract_bits(packed, 7, 11);
                                     tx += extract_bits(packed, 7, 18);
                                     ty += extract_bits(packed, 7, 25);
-                                    offset += 2;
+                                    data_offset += 2;
                                     break;
-
                                 // Translation + Scale (Mid precision: 11 bits for each value)
                                 case 3u:
                                     a += extract_bits(packed, 11, 4);
                                     d += extract_bits(packed, 11, 15);
                                     tx += extract_bits(packed, 11, 26);
                                     ty += extract_bits(packed, 11, 37);
-                                    offset += 3;
+                                    data_offset += 3;
                                     break;
-
                                 // Translation + Scale + Skew (Low precision: 7 bits for scale and skew, 8 bits for translation)
                                 case 5u:
                                     a += extract_bits(packed, 7, 4);
@@ -245,13 +232,12 @@ namespace sc::flash {
                                     d += extract_bits(packed, 7, 25);
                                     tx += extract_bits(packed, 8, 32);
                                     ty += extract_bits(packed, 8, 40);
-                                    offset += 3;
+                                    data_offset += 3;
                                     break;
-
                                 // Translation + Scale + Skew (Mid precision: 10 bits for each value)
                                 case 6u: {
-                                    uint16_t mid_bits = compressed_data[offset + 3];
-                                    uint64_t translation_bits = make_packed(low_bits, high_bits, mid_bits);
+                                    uint16_t mid_bits = compressed_matrix_data[data_offset + 3];
+                                    uint64_t translation_bits = pack_bits(low_bits, high_bits, mid_bits);
 
                                     a += extract_bits(packed, 10, 4);
                                     b += extract_bits(packed, 10, 14);
@@ -259,16 +245,13 @@ namespace sc::flash {
                                     d += extract_bits(packed, 10, 34);
                                     tx += extract_bits(translation_bits, 10, 28);
                                     ty += extract_bits(translation_bits, 10, 38);
-
-                                    offset += 4;
+                                    data_offset += 4;
                                 } break;
-
                                 // Translation + Scale + Skew (High precision: 12 bits for scale and skew, 14 bits for translation)
                                 case 7u: {
-                                    uint16_t mid_bits = compressed_data[offset + 3];
-                                    uint16_t highest_bits = compressed_data[offset + 4];
-
-                                    uint64_t translation_bits = make_packed(high_bits, mid_bits, highest_bits);
+                                    uint16_t mid_bits = compressed_matrix_data[data_offset + 3];
+                                    uint16_t highest_bits = compressed_matrix_data[data_offset + 4];
+                                    uint64_t translation_bits = pack_bits(high_bits, mid_bits, highest_bits);
 
                                     a += extract_bits(packed, 12, 4);
                                     b += extract_bits(packed, 12, 16);
@@ -276,28 +259,28 @@ namespace sc::flash {
                                     d += extract_bits(translation_bits, 12, 8);
                                     tx += extract_bits(translation_bits, 14, 20);
                                     ty += extract_bits(translation_bits, 14, 34);
-
-                                    offset += 5;
+                                    data_offset += 5;
                                 } break;
-
                                 // Translation + Scale + Skew (Full Precision)
                                 case 0xFu:
                                     a += low_bits;
                                     b += high_bits;
-                                    c += compressed_data[offset + 3];
-                                    d += compressed_data[offset + 4];
-                                    tx += compressed_data[offset + 5];
-                                    ty += compressed_data[offset + 6];
-                                    offset += 7;
+                                    c += compressed_matrix_data[data_offset + 3];
+                                    d += compressed_matrix_data[data_offset + 4];
+                                    tx += compressed_matrix_data[data_offset + 5];
+                                    ty += compressed_matrix_data[data_offset + 6];
+                                    data_offset += 7;
                                     break;
-
                                 default:
                                     throw wk::Exception("Unknown compressed matrix encoding");
-                                    break;
                             }
+                        } else {
+                            tx += extract_bits(flags, 7, 2);
+                            ty += extract_bits(flags, 7, 9);
+                            data_offset++;
                         }
 
-                        auto& matrix = target.matrices[i + sub_index];
+                        auto& matrix = target.matrices[static_cast<uint16_t>(i + sub_index)];
                         matrix.a = (int16_t) a / 1024.f;
                         matrix.b = (int16_t) b / 1024.f;
                         matrix.c = (int16_t) c / 1024.f;
@@ -308,7 +291,7 @@ namespace sc::flash {
                 }
 
                 // Short matrices
-                bank_buffer.seek(compressed_data_offset);
+                bank_buffer.seek(compressed_matrix_data_offset);
                 for (uint16_t i = (uint16_t) bank->float_matrix_count(); uncompressed_matrices_count > i; i++) {
                     auto& matrix = target.matrices[i];
 
