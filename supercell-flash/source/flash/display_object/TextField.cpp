@@ -230,8 +230,8 @@ namespace sc::flash {
             result |= (uint8_t) Style::is_multiline;
         if (is_outlined)
             result |= (uint8_t) Style::has_outline;
-        if (unknown_flag3)
-            result |= (uint8_t) Style::unknown_flag3;
+        if (use_device_font)
+            result |= (uint8_t) Style::use_device_font;
         if (unknown_flag)
             result |= (uint8_t) Style::unknown_flag;
         if (auto_kern)
@@ -247,7 +247,7 @@ namespace sc::flash {
         is_italic = (style & (uint8_t) Style::italic) > 0;
         is_multiline = (style & (uint8_t) Style::is_multiline) > 0;
         is_outlined = (style & (uint8_t) Style::has_outline) > 0;
-        unknown_flag3 = (style & (uint8_t) Style::unknown_flag3) > 0;
+        use_device_font = (style & (uint8_t) Style::use_device_font) > 0;
         unknown_flag = (style & (uint8_t) Style::unknown_flag) > 0;
         auto_kern = (style & (uint8_t) Style::auto_kern) > 0;
     }
