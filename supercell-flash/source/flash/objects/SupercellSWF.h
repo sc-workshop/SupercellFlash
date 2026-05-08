@@ -81,7 +81,7 @@ namespace sc::flash {
 
         bool load_sc1(bool is_texture);
         void load_sc2(wk::Stream& stream);
-        void load_sc2_internal(const SC2::FileDescriptor* descriptor);
+        void load_sc2_internal(const SC2::Header* descriptor);
 
         virtual void save(const fs::path& filepath, Signature signature, bool save_lowres = false);
         void save_internal(bool is_texture, bool is_lowres);

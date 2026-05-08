@@ -47,7 +47,7 @@ struct TextField
     font_size: ubyte;
 
     unused2: ubyte;
-    outline_strength: ushort;
+    outline_angle: short;
 }
 
 // Third chunk. Contains TextField structures

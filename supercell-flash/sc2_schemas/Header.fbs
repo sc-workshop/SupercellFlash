@@ -1,7 +1,7 @@
 namespace sc.flash.SC2;
 
 // A table that represents a hash of export names that is most likely used when compiling SC to speed up some processes like sprite packaging
-table ExportNameHash
+table AssetMetaEntry
 {
     // Export name it self
     name: string;
@@ -25,7 +25,7 @@ enum Precision : uint
 }
 
 // A table that describes some properties of SC2 file that help to make some optimizations when loading decompressed file content
-table FileDescriptor
+table Header
 {
     // Im not sure but these values ​​are different only in files where matrices are normalized
     translation_precision: Precision = None;
@@ -47,8 +47,8 @@ table FileDescriptor
     // Length of texture chunk buffer
     textures_length: uint;
 
-    // Export names hash array
-    exports: [ExportNameHash];
+    // Assets metadata
+    metadata: [AssetMetaEntry];
 	
 	// Size of compressed ZSTD data
 	compressed_size: uint;
@@ -57,4 +57,4 @@ table FileDescriptor
     external_matrix_bank_size: uint;
 }
 
-root_type FileDescriptor;
+root_type Header;

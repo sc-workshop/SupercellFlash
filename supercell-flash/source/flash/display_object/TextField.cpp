@@ -41,8 +41,8 @@ namespace sc::flash {
         }
 
         if (tag > TAG_TEXT_FIELD_5) {
-            outline_strength = (float) swf.stream.read_short() / 0xFFFFF;
-            unknown_value = (float) swf.stream.read_short() / 0xFFFFF;
+            outline_angle = (outline_angle & 0xFFFF0000) | swf.stream.read_short();
+            outline_angle = (outline_angle & 0x0000FFFF) | ((32767 * swf.stream.read_short()) / 360);
         }
 
         if (tag > TAG_TEXT_FIELD_6) {
@@ -96,7 +96,7 @@ namespace sc::flash {
         if (outline_color.as_value() != 0x000000FF)
             tag = TAG_TEXT_FIELD_5;
 
-        if (outline_strength != 0.f || unknown_value != 1.0f)
+        if (outline_angle != 0xFFFFFFFF)
             tag = TAG_TEXT_FIELD_6;
 
         if (bend_angle != 0.0f)
@@ -125,8 +125,8 @@ namespace sc::flash {
         if (tag == TAG_TEXT_FIELD_4 || tag == TAG_TEXT_FIELD_5)
             return;
 
-        swf.stream.write_short((uint16_t) (outline_strength * 0xFFFF));
-        swf.stream.write_short((uint16_t) (unknown_value * 0xFFFF));
+        swf.stream.write_short(outline_angle & 0xFFFF);
+        swf.stream.write_short((((outline_angle >> 16) & 0xFFFF) * 360) / 32767);
 
         if (tag == TAG_TEXT_FIELD_6)
             return;
@@ -213,7 +213,7 @@ namespace sc::flash {
             textfield.set_align_flags(textfield_data->align());
 
             textfield.font_size = textfield_data->font_size();
-            textfield.outline_strength = (float) textfield_data->outline_strength() / 0xFFFF;
+            textfield.outline_angle = textfield_data->outline_angle();
         }
     }
 

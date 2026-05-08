@@ -305,7 +305,7 @@ namespace sc::flash {
                                               textfield.get_align_flags(),
                                               textfield.font_size,
                                               0,
-                                              (uint16_t)(textfield.outline_strength * 0xFFFF));
+                                              textfield.outline_angle);
 
                 textfields_data.push_back(textfield_data);
             }
@@ -561,9 +561,9 @@ namespace sc::flash {
     }
 
     void SupercellSWF2CompileTable::save_descriptor(wk::Stream& stream, size_t compressed_size) {
-        Offset<Vector<Offset<SC2::ExportNameHash>>> exports_hash_off = 0;
+        Offset<Vector<Offset<SC2::AssetMetaEntry>>> exports_hash_off = 0;
         {
-            std::vector<Offset<SC2::ExportNameHash>> exports_hashes_offs;
+            std::vector<Offset<SC2::AssetMetaEntry>> exports_hashes_offs;
             for (const ExportName& export_name : swf.exports) {
                 if (export_name.name.empty())
                     continue;
@@ -577,7 +577,7 @@ namespace sc::flash {
                     export_name_hash_off = builder.CreateVector(export_name.hash.data(), export_name.hash.size());
                 }
 
-                Offset<SC2::ExportNameHash> name_off = SC2::CreateExportNameHash(builder, export_name_off, export_name_hash_off);
+                Offset<SC2::AssetMetaEntry> name_off = SC2::CreateAssetMetaEntry(builder, export_name_off, export_name_hash_off);
 
                 exports_hashes_offs.push_back(name_off);
             }
@@ -585,7 +585,7 @@ namespace sc::flash {
             exports_hash_off = builder.CreateVector(exports_hashes_offs);
         }
 
-        Offset<SC2::FileDescriptor> root_off = SC2::CreateFileDescriptor(builder,
+        Offset<SC2::Header> root_off = SC2::CreateHeader(builder,
                                                                          translation_precision,
                                                                          scale_presicion,
                                                                          swf.shapes.size(),

@@ -58,7 +58,7 @@ namespace sc::flash {
         return TAG_MATRIX_BANK;
     };
 
-    void MatrixBank::load(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, const SC2::DataStorage* storage) {
+    void MatrixBank::load(SupercellSWF& swf, const SC2::Header* descritptor, const SC2::DataStorage* storage) {
         auto matrix_banks_vector = storage->matrix_banks();
         // Return if empty
         if (!matrix_banks_vector)
@@ -122,7 +122,7 @@ namespace sc::flash {
         }
     }
 
-    void MatrixBank::load_external(SupercellSWF& swf, const SC2::FileDescriptor*, wk::Stream& stream) {
+    void MatrixBank::load_external(SupercellSWF& swf, const SC2::Header*, wk::Stream& stream) {
         uint32_t descriptor_size = stream.read_unsigned_int();
         wk::SharedMemoryStream descriptor_data((uint8_t*) stream.data() + stream.position(), descriptor_size);
         const SC2::ExternalMatrixBanks* root = SC2::GetExternalMatrixBanks(descriptor_data.data());

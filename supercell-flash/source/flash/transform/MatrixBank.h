@@ -5,7 +5,7 @@
 #include "core/io/stream.h"
 #include "flash/SC2/DataStorage_generated.h"
 #include "flash/SC2/ExternalMatrixBank_generated.h"
-#include "flash/SC2/FileDescriptor_generated.h"
+#include "flash/SC2/Header_generated.h"
 #include "flash/flash_tags.h"
 #include "flash/types/SWFContainer.hpp"
 
@@ -29,7 +29,7 @@ namespace sc::flash {
         virtual uint8_t tag(SupercellSWF& swf) const;
 
     public:
-        static void load(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, const SC2::DataStorage* storage);
-        static void load_external(SupercellSWF& swf, const SC2::FileDescriptor* descritptor, wk::Stream& data);
+        static void load(SupercellSWF& swf, const SC2::Header* descritptor, const SC2::DataStorage* storage);
+        static void load_external(SupercellSWF& swf, const SC2::Header* descritptor, wk::Stream& data);
     };
 }

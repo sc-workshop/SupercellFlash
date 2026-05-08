@@ -4,7 +4,7 @@
 #include "core/io/buffer_stream.h"
 #include "core/math/rect.h"
 #include "flash/SC2/DataStorage_generated.h"
-#include "flash/SC2/FileDescriptor_generated.h"
+#include "flash/SC2/Header_generated.h"
 #include "flash/objects/SWFTexture.h"
 #include "flash/types/SWFContainer.hpp"
 #include "flash/types/SWFString.hpp"

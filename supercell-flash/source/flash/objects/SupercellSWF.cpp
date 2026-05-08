@@ -4,7 +4,7 @@
 #include "core/algorithm/find.hpp"
 #include "core/asset_manager/asset_manager.h"
 #include "flash/SC2/ExternalMatrixBank_generated.h"
-#include "flash/SC2/FileDescriptor_generated.h"
+#include "flash/SC2/Header_generated.h"
 #include "flash/flash_tags.h"
 
 #include <cmath>
@@ -93,8 +93,12 @@ namespace sc::flash {
         wk::MemoryStream descriptor_data(descriptor_size);
         input.read(descriptor_data.data(), descriptor_data.length());
 
-        const SC2::FileDescriptor* descriptor = SC2::GetFileDescriptor(descriptor_data.data());
+        flatbuffers::Verifier verifier((const uint8_t*) descriptor_data.data(), descriptor_data.length());
+        if (!SC2::VerifyHeaderBuffer(verifier)) {
+            throw wk::Exception("Invalid SC2 header");
+        }
 
+        const SC2::Header* descriptor = SC2::GetHeader(descriptor_data.data());
         uint32_t shape_count = descriptor->shape_count();
         shapes.resize(shape_count);
 
@@ -109,12 +113,12 @@ namespace sc::flash {
 
         // resources_offset = descriptor->resources_offset();
 
-        auto export_names_hash = descriptor->exports();
-        if (export_names_hash) {
-            exports.resize(export_names_hash->size());
+        auto metadata_entry = descriptor->metadata();
+        if (metadata_entry) {
+            exports.resize(metadata_entry->size());
 
-            for (uint32_t i = 0; export_names_hash->size() > i; i++) {
-                auto export_name_data = export_names_hash->Get(i);
+            for (uint32_t i = 0; metadata_entry->size() > i; i++) {
+                auto export_name_data = metadata_entry->Get(i);
                 ExportName& export_name = exports[i];
                 export_name.name = SWFString(export_name_data->name()->data(), export_name_data->name()->size());
 
@@ -193,7 +197,7 @@ namespace sc::flash {
         return load_tags();
     }
 
-    void SupercellSWF::load_sc2_internal(const SC2::FileDescriptor* descriptor) {
+    void SupercellSWF::load_sc2_internal(const SC2::Header* descriptor) {
         const SC2::DataStorage* storage = nullptr;
         {
             stream.seek(0);
