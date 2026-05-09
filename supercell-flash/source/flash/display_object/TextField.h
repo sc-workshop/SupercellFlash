@@ -54,7 +54,7 @@ namespace sc::flash {
 
         bool unknown_flag = false;
 
-        int32_t outline_angle = 0xFFFFFFFF;
+        int32_t outline_angle = 0xFFFF0000;
         SWFString typography_file = "";
 
     public:
