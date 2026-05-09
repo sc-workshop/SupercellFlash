@@ -40,9 +40,8 @@ namespace sc::flash {
             outline_color.set_value(swf.stream.read_unsigned_int());
         }
 
-        if (tag > TAG_TEXT_FIELD_5) {
-            outline_angle = (outline_angle & 0xFFFF0000) | swf.stream.read_short();
-            outline_angle = (outline_angle & 0x0000FFFF) | ((32767 * swf.stream.read_short()) / 360);
+        if (tag > TAG_TEXT_FIELD_5) {            
+            outline_angle = (swf.stream.read_short() & 0xFFFF) | ((swf.stream.read_short() & 0xFFFF) << 16);
         }
 
         if (tag > TAG_TEXT_FIELD_6) {
