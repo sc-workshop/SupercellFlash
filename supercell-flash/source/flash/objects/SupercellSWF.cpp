@@ -130,13 +130,18 @@ namespace sc::flash {
         }
 
         ZstdDecompressor decompressor;
+        bool compressed = ZstdDecompressor::validate(input);
+        size_t buffer_size = descriptor->compressed_size() ? descriptor->compressed_size() : input.length() - input.position();
 
-        // Compressed buffer
-        if (descriptor->compressed_size()) {
-            wk::MemoryStream compressed_data(descriptor->compressed_size());
-            input.read(compressed_data.data(), descriptor->compressed_size());
+        if (descriptor->compressed_size() || !compressed) {
+            wk::MemoryStream proxy_buffer(buffer_size);
+            input.read(proxy_buffer.data(), buffer_size);
 
-            decompressor.decompress(compressed_data, stream);
+            if (compressed) {
+                decompressor.decompress(proxy_buffer, stream);
+            } else {
+                stream.write(proxy_buffer.data(), proxy_buffer.length());
+            }
         } else {
             decompressor.decompress(input, stream);
         }
