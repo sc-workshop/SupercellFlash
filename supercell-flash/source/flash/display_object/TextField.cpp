@@ -95,7 +95,7 @@ namespace sc::flash {
         if (outline_color.as_value() != 0x000000FF)
             tag = TAG_TEXT_FIELD_5;
 
-        if (outline_angle != 0xFFFFFFFF)
+        if (outline_angle != int32_t(0xFFFF0000))
             tag = TAG_TEXT_FIELD_6;
 
         if (bend_angle != 0.0f)
