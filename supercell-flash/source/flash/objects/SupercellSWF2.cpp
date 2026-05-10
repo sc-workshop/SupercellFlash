@@ -301,7 +301,7 @@ namespace sc::flash {
                                               textfield.outline_color.as_value(),
                                               text,
                                               style_path,
-                                              textfield.get_style_flags(),
+                                              textfield.style.flags(),
                                               textfield.get_align_flags(),
                                               textfield.font_size,
                                               0,

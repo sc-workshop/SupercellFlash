@@ -9,10 +9,16 @@ namespace sc::flash {
         swf.stream.read_string(font_name);
         font_color.set_value(swf.stream.read_unsigned_int());
 
-        is_bold = swf.stream.read_bool();
-        is_italic = swf.stream.read_bool();
-        is_multiline = swf.stream.read_bool();
-        unknown_flag3 = swf.stream.read_bool();
+        if (swf.stream.read_bool())
+            style.set_bold(true);
+
+        if (swf.stream.read_bool())
+            style.set_italic(true);
+
+        if (swf.stream.read_bool())
+            style.set_multiline(true);
+
+        swf.stream.read_bool(); // Unused
 
         set_align_flags(swf.stream.read_unsigned_byte());
 
@@ -23,37 +29,52 @@ namespace sc::flash {
         right = swf.stream.read_short();
         bottom = swf.stream.read_short();
 
-        is_outlined = swf.stream.read_bool();
+        if (swf.stream.read_bool())
+            style.set_outlined(true);
 
         swf.stream.read_string(text);
 
         if (tag == TAG_TEXT_FIELD)
             return;
 
-        use_device_font = swf.stream.read_bool();
+        if (swf.stream.read_bool())
+            style.set_use_device_font(true);
 
-        if (tag > TAG_TEXT_FIELD_2) {
-            unknown_flag = (tag != 25);
-        }
+        switch (tag) {
+            case TAG_TEXT_FIELD_2:
+                return;
+            case TAG_TEXT_FIELD_3:
+                style.set_unknown_flag(true);
+                return;
+            case TAG_TEXT_FIELD_4:
+                outline_color.set_value(swf.stream.read_unsigned_int());
+                style.set_unknown_flag(true);
+                return;
+            case TAG_TEXT_FIELD_5:
+                outline_color.set_value(swf.stream.read_unsigned_int());
+                return;
+            case TAG_TEXT_FIELD_6:
+            case TAG_TEXT_FIELD_7:
+            case TAG_TEXT_FIELD_8:
+            case TAG_TEXT_FIELD_9:
+                outline_color.set_value(swf.stream.read_unsigned_int());
+                outline_angle = (swf.stream.read_short() & 0xFFFF) | ((swf.stream.read_short() & 0xFFFF) << 16);
+                style.set_unknown_flag(true);
 
-        if (tag > TAG_TEXT_FIELD_3) {
-            outline_color.set_value(swf.stream.read_unsigned_int());
-        }
+                if (tag == TAG_TEXT_FIELD_6)
+                    return;
 
-        if (tag > TAG_TEXT_FIELD_5) {            
-            outline_angle = (swf.stream.read_short() & 0xFFFF) | ((swf.stream.read_short() & 0xFFFF) << 16);
-        }
+                bend_angle = (std::numeric_limits<int16_t>::max() * swf.stream.read_short()) / 360.f;
+                if (tag == TAG_TEXT_FIELD_7)
+                    return;
 
-        if (tag > TAG_TEXT_FIELD_6) {
-            bend_angle = swf.stream.read_short() * 91.019f;
-        }
+                if (swf.stream.read_bool())
+                    style.set_auto_kern(true);
 
-        if (tag > TAG_TEXT_FIELD_7) {
-            auto_kern = swf.stream.read_bool();
-        }
+                if (tag == TAG_TEXT_FIELD_8)
+                    return;
 
-        if (tag > TAG_TEXT_FIELD_8) {
-            swf.stream.read_string(typography_file);
+                swf.stream.read_string(typography_file);
         }
     }
 
@@ -63,10 +84,10 @@ namespace sc::flash {
         swf.stream.write_string(font_name);
         swf.stream.write_unsigned_int(font_color.as_value());
 
-        swf.stream.write_bool(is_bold);
-        swf.stream.write_bool(is_italic);
-        swf.stream.write_bool(is_multiline);
-        swf.stream.write_bool(unknown_flag3);
+        swf.stream.write_bool(style.is_bold());
+        swf.stream.write_bool(style.is_italic());
+        swf.stream.write_bool(style.is_multiline());
+        swf.stream.write_bool(false);
 
         swf.stream.write_unsigned_byte(get_align_flags());
         swf.stream.write_unsigned_byte(font_size);
@@ -76,7 +97,7 @@ namespace sc::flash {
         swf.stream.write_short(right);
         swf.stream.write_short(bottom);
 
-        swf.stream.write_bool(is_outlined);
+        swf.stream.write_bool(style.is_outlined());
 
         swf.stream.write_string(text);
 
@@ -86,13 +107,13 @@ namespace sc::flash {
     uint8_t TextField::tag(SupercellSWF&) const {
         uint8_t tag = TAG_TEXT_FIELD;
 
-        if (use_device_font)
+        if (style.use_device_font())
             tag = TAG_TEXT_FIELD_2;
 
-        if (unknown_flag)
+        if (style.unknown_flag())
             tag = TAG_TEXT_FIELD_3;
 
-        if (outline_color.as_value() != 0x000000FF)
+        if (style.is_outlined() && outline_color.as_value() != 0)
             tag = TAG_TEXT_FIELD_5;
 
         if (outline_angle != int32_t(0xFFFF0000))
@@ -101,7 +122,7 @@ namespace sc::flash {
         if (bend_angle != 0.0f)
             tag = TAG_TEXT_FIELD_7;
 
-        if (auto_kern)
+        if (style.auto_kern())
             tag = TAG_TEXT_FIELD_8;
 
         if (!typography_file.empty())
@@ -114,7 +135,7 @@ namespace sc::flash {
         if (tag == TAG_TEXT_FIELD)
             return;
 
-        swf.stream.write_bool(use_device_font);
+        swf.stream.write_bool(style.use_device_font());
 
         if (tag == TAG_TEXT_FIELD_2 || tag == TAG_TEXT_FIELD_3)
             return;
@@ -130,12 +151,12 @@ namespace sc::flash {
         if (tag == TAG_TEXT_FIELD_6)
             return;
 
-        swf.stream.write_short((int16_t) (bend_angle / 91.019f));
+        swf.stream.write_short((int16_t) (360.f * bend_angle / std::numeric_limits<int16_t>::max()));
 
         if (tag == TAG_TEXT_FIELD_7)
             return;
 
-        swf.stream.write_bool(auto_kern);
+        swf.stream.write_bool(style.auto_kern());
 
         if (tag == TAG_TEXT_FIELD_8)
             return;
@@ -193,7 +214,7 @@ namespace sc::flash {
             textfield.id = textfield_data->id();
             textfield.font_name = SWFString(strings_vector->Get(textfield_data->font_name_ref_id())->c_str());
 
-            textfield.set_style_flags(textfield_data->styles());
+            textfield.style = TextFieldStyle(textfield_data->styles());
 
             textfield.left = textfield_data->left();
             textfield.right = textfield_data->right();
@@ -214,41 +235,6 @@ namespace sc::flash {
             textfield.font_size = textfield_data->font_size();
             textfield.outline_angle = textfield_data->outline_angle();
         }
-    }
-
-    uint8_t TextField::get_style_flags() const {
-        using Style = SC2::TextFieldStyle;
-
-        uint8_t result = 0;
-
-        if (is_bold)
-            result |= (uint8_t) Style::bold;
-        if (is_italic)
-            result |= (uint8_t) Style::italic;
-        if (is_multiline)
-            result |= (uint8_t) Style::is_multiline;
-        if (is_outlined)
-            result |= (uint8_t) Style::has_outline;
-        if (use_device_font)
-            result |= (uint8_t) Style::use_device_font;
-        if (unknown_flag)
-            result |= (uint8_t) Style::unknown_flag;
-        if (auto_kern)
-            result |= (uint8_t) Style::auto_kern;
-
-        return result;
-    }
-
-    void TextField::set_style_flags(uint8_t style) {
-        using Style = SC2::TextFieldStyle;
-
-        is_bold = (style & (uint8_t) Style::bold) > 0;
-        is_italic = (style & (uint8_t) Style::italic) > 0;
-        is_multiline = (style & (uint8_t) Style::is_multiline) > 0;
-        is_outlined = (style & (uint8_t) Style::has_outline) > 0;
-        use_device_font = (style & (uint8_t) Style::use_device_font) > 0;
-        unknown_flag = (style & (uint8_t) Style::unknown_flag) > 0;
-        auto_kern = (style & (uint8_t) Style::auto_kern) > 0;
     }
 
     uint8_t TextField::get_align_flags() const {

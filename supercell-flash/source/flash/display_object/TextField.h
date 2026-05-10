@@ -6,8 +6,42 @@
 #include "flash/SC2/TextFields_generated.h"
 #include "flash/types/SWFString.hpp"
 
+#include <bitset>
+
 namespace sc::flash {
     class SupercellSWF;
+
+    class TextFieldStyle {
+    public:
+        TextFieldStyle(uint16_t flags = 0) :
+            m_flags(flags) {}
+
+    public:
+        void set_use_device_font(bool value) { m_flags.set(1, value); }
+        bool use_device_font() const { return m_flags.test(1); }
+
+        void set_outlined(bool value) { m_flags.set(1, value); }
+        bool is_outlined() const { return m_flags.test(1); }
+
+        void set_bold(bool value) { m_flags.set(2, value); }
+        bool is_bold() const { return m_flags.test(2); }
+
+        void set_italic(bool value) { m_flags.set(3, value); }
+        bool is_italic() const { return m_flags.test(3); }
+
+        void set_multiline(bool value) { m_flags.set(4, value); }
+        bool is_multiline() const { return m_flags.test(4); }
+
+        void set_unknown_flag(bool value) { m_flags.set(5, value); }
+        bool unknown_flag() const { return m_flags.test(5); }
+
+        void set_auto_kern(bool value) { m_flags.set(6, value); }
+        bool auto_kern() const { return m_flags.test(6); }
+
+        uint8_t flags() const { return (uint8_t) m_flags.to_ulong(); }
+    private:
+        std::bitset<8> m_flags;
+    };
 
     class TextField : public DisplayObject {
     public:
@@ -40,19 +74,11 @@ namespace sc::flash {
         int16_t right = 0;
         int16_t bottom = 0;
 
-        bool is_bold = false;
-        bool is_italic = false;
-        bool is_multiline = false;
-        bool is_outlined = false;
-        bool unknown_flag3 = false;
+        TextFieldStyle style;
 
         wk::ColorRGBA outline_color = {0x0, 0x0, 0x0, 0x0};
-        bool use_device_font = false;
-        bool auto_kern = false;
 
         float bend_angle = 0.0f;
-
-        bool unknown_flag = false;
 
         int32_t outline_angle = 0xFFFF0000;
         SWFString typography_file = "";
@@ -65,9 +91,6 @@ namespace sc::flash {
         virtual uint8_t tag(SupercellSWF& swf) const;
 
         virtual bool is_textfield() const;
-
-        uint8_t get_style_flags() const;
-        void set_style_flags(uint8_t style);
 
         uint8_t get_align_flags() const;
         void set_align_flags(uint8_t style);
