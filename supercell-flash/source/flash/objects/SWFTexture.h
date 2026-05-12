@@ -42,7 +42,7 @@ namespace sc::flash {
 
         // Default compression settings for textures. Used when compressing textures to ktx/sctx.
     public:
-        static texture::KhronosTexture::glInternalFormat KhronosCompressionFormat;
+        static texture::glInternalFormat KhronosCompressionFormat;
         static texture::ScPixel::Type SupercellCompressionFormat;
 
     public:

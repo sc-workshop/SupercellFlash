@@ -11,7 +11,7 @@ namespace sc
 {
 	namespace flash {
 		// ASTC 4x4 by default
-		KhronosTexture::glInternalFormat SWFTexture::KhronosCompressionFormat = KhronosTexture::glInternalFormat::COMPRESSED_RGBA_ASTC_4x4;
+		glInternalFormat SWFTexture::KhronosCompressionFormat = glInternalFormat::COMPRESSED_RGBA_ASTC_4x4;
 		ScPixel::Type SWFTexture::SupercellCompressionFormat = ScPixel::Type::ASTC_RGBA8_4x4;
 
 		const SWFVector<SWFTexture::PixelFormat, uint8_t> SWFTexture::pixel_format_table =
@@ -400,6 +400,7 @@ namespace sc
 
 			Image::PixelDepth depth = SWFTexture::pixel_depth_table[(uint8_t)m_pixel_format];
 			m_image = CreateRef<RawImage>(width, height, depth);
+            m_encoding = TextureEncoding::Raw;
 
 			if (has_data)
 			{
@@ -433,13 +434,13 @@ namespace sc
 			}
 		}
 
-		void SWFTexture::load_from_khronos_texture(Stream& data)
+        void SWFTexture::load_from_khronos_texture(Stream& data)
 		{
 			m_encoding = TextureEncoding::KhronosTexture;
 			m_image = CreateRef<KhronosTexture1>(data);
 		}
 
-		void SWFTexture::load_from_supercell_texture(Stream& data)
+        void SWFTexture::load_from_supercell_texture(Stream& data)
 		{
 			m_encoding = TextureEncoding::SupercellTexture;
 			m_image = CreateRef<SupercellTexture>(data);
@@ -560,7 +561,8 @@ namespace sc
 
 		void SWFTexture::save_to_external_file(const SupercellSWF& swf, const std::filesystem::path& path, bool is_lowres) const
 		{
-			wk::OutputFileStream file(path);
+            auto& manager = wk::AssetManager::Instance();
+            auto file = manager.write_file(path);
 
 			switch (m_encoding)
 			{
@@ -575,11 +577,11 @@ namespace sc
 					ZstdCompressor cctx(props);
 
 					input_data.seek(0);
-					cctx.compress(input_data, file);
+					cctx.compress(input_data, *file);
 				}
 				else
 				{
-					save_buffer(file, is_lowres);
+					save_buffer(*file, is_lowres);
 				}
 			}
 			break;
@@ -588,7 +590,7 @@ namespace sc
 			{
 				SupercellTexture* texture = (SupercellTexture*)m_image.get();
 				texture->use_compression = swf.compress_external_textures;
-				save_buffer(file, is_lowres);
+				save_buffer(*file, is_lowres);
 			}
 			break;
 

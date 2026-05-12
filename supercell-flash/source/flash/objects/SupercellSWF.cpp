@@ -557,6 +557,8 @@ namespace sc::flash {
     }
 
     void SupercellSWF::save_sc2(const fs::path& filepath) const {
+        wk::AssetManager& manager = wk::AssetManager::Instance();
+
         current_file = filepath;
         SupercellSWF2CompileTable table(*this);
         stream.clear();
@@ -566,20 +568,20 @@ namespace sc::flash {
         stream.seek(0);
 
         // Output stream
-        wk::OutputFileStream file(filepath);
-        file.write_unsigned_short(SC_MAGIC);                              // Magic
-        file.write_unsigned_int((uint32_t) sc2_compile_settings.version); // Version
+        wk::Ref<wk::Stream> file = manager.write_file(filepath);
+        file->write_unsigned_short(SC_MAGIC);                              // Magic
+        file->write_unsigned_int((uint32_t) sc2_compile_settings.version); // Version
         if (sc2_compile_settings.version == Sc2CompileSettings::Version::Unknown1) {
-            file.write_unsigned_short(0); // Unknown 0
+            file->write_unsigned_short(0); // Unknown 0
 
             wk::BufferStream compressed_data;
             Compressor::compress(stream, compressed_data, Signature::Zstandard);
 
-            table.save_descriptor(file, compressed_data.length());        // Descriptor
-            file.write(compressed_data.data(), compressed_data.length()); // File Content
+            table.save_descriptor(*file, compressed_data.length());        // Descriptor
+            file->write(compressed_data.data(), compressed_data.length()); // File Content
         } else {
-            table.save_descriptor(file);                              // Descriptor
-            Compressor::compress(stream, file, Signature::Zstandard); // File Content
+            table.save_descriptor(*file);                              // Descriptor
+            Compressor::compress(stream, *file, Signature::Zstandard); // File Content
         }
     }
 
