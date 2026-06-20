@@ -641,6 +641,8 @@ namespace sc
 					default:
 						assert(false);
 					}
+
+					texture.m_pixel_format = (PixelFormat) selected_texture->pixel_type();
 				}
 			}
 		}

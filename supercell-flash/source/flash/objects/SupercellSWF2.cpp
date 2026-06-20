@@ -475,15 +475,25 @@ namespace sc::flash {
             switch (texture.encoding()) {
                 case SWFTexture::TextureEncoding::Raw: {
                     format = SC2::TextureFormat::NONE;
-                    auto& image = *std::reinterpret_pointer_cast<wk::RawImage>(texture.image());
-                    texture_buffer = wk::CreateRef<wk::SharedMemoryStream>(image.data(), image.data_length());
+
+                    // Trying to reuse existing memory as much as possible
+                    if (!is_lowres) {
+                        auto& image = *std::reinterpret_pointer_cast<wk::RawImage>(texture.image());
+                        texture_buffer = wk::CreateRef<wk::SharedMemoryStream>(image.data(), image.data_length());
+                        
+                    } else {
+                        // Create new buffer and generate lowres
+                        texture_buffer = wk::CreateRef<wk::BufferStream>();
+                        texture.save_buffer(*texture_buffer, is_lowres);
+                    }
+                    
                 } break;
 
                 case SWFTexture::TextureEncoding::KhronosTexture: {
                     format = SC2::TextureFormat::KhronosTexture;
-                    auto& image = *std::reinterpret_pointer_cast<texture::KhronosTexture>(texture.image());
                     texture_buffer = wk::CreateRef<wk::BufferStream>();
-                    image.write(*texture_buffer);
+
+                    texture.save_buffer(*texture_buffer, is_lowres);
                 } break;
 
                 default:
